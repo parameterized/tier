@@ -22,6 +22,9 @@ end
 menu.addBtn{text='Play', y=math.floor(gsy/2), action = function()
     gameState = 'playing'
 end}
+menu.addBtn{text='Exit', y=math.floor(gsy*2/3), action = function()
+    love.event.quit()
+end}
 
 function menu.mousepressed(mx, my, btn)
     mx, my = screen2game(mx, my)

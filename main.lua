@@ -4,11 +4,14 @@ require 'loadassets'
 Camera = require 'camera'
 camera = Camera{ssx=gsx, ssy=gsy}
 require 'menu'
+require 'physics'
 require 'world'
 require 'player'
 
 function love.load()
     gameState = 'menu'
+    physics.load()
+    player.load()
 end
 
 gameScale = math.min(ssx/gsx, ssy/gsy)
@@ -27,6 +30,8 @@ function screen2game(x, y)
 end
 
 function love.update(dt)
+    love.window.setTitle('Tier (' .. love.timer.getFPS() .. ' FPS)')
+    physics.update(dt)
     player.update(dt)
 end
 
