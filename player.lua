@@ -42,7 +42,7 @@ function player.update(dt)
             player.swinging = false
         end
     else
-        if math.abs(xv) > 10 then
+        if math.abs(vd) > 10 then
             if player.direction == 1 then
                 if xv < 0 then player.direction = -1 end
             else
@@ -72,29 +72,54 @@ end
 
 function player.draw()
     local px, py = player.body:getPosition()
+    local xv, yv = player.body:getLinearVelocity()
+    local vd = math.sqrt(xv^2 + yv^2)
     love.graphics.setColor(0, 0, 0, 0.2)
     local walkFrameIdx = math.floor(player.walkTimer*12) % #anims.player.walk.quads + 1
     local shadowWidth = ({6, 5, 4, 5, 5})[walkFrameIdx]
-    if player.swinging then shadowWidth = 6 end
+    if player.swinging or vd < 10 then shadowWidth = 6 end
     love.graphics.ellipse('fill', math.floor(px), math.floor(py), shadowWidth, 2)
+    love.graphics.setShader(shaders.outline)
     love.graphics.setColor(1, 1, 1)
     if player.swinging then
         local frameIdx = math.floor(player.swingTimer*12) + 1
         frameIdx = clamp(frameIdx, 1, 5)
         local quad = anims.player.swing.quads[frameIdx]
         local _, _, w, h = quad:getViewport()
+        shaders.outline:send('stepSize', {
+            1/anims.player.swing.sheet:getWidth(),
+            1/anims.player.swing.sheet:getHeight()
+        });
         love.graphics.draw(anims.player.swing.sheet, quad,
             math.floor(px), math.floor(py),
             0, player.direction, 1,
-            22, h)
+            23, h)
     else
-        local quad = anims.player.walk.quads[walkFrameIdx]
-        local _, _, w, h = quad:getViewport()
-        love.graphics.draw(anims.player.walk.sheet, quad,
-            math.floor(px), math.floor(py),
-            0, player.direction, 1,
-            math.floor(w/2), h)
+        if vd < 10 then
+            local quad = anims.player.swing.quads[1]
+            local _, _, w, h = quad:getViewport()
+            shaders.outline:send('stepSize', {
+                1/anims.player.swing.sheet:getWidth(),
+                1/anims.player.swing.sheet:getHeight()
+            });
+            love.graphics.draw(anims.player.swing.sheet, quad,
+                math.floor(px), math.floor(py),
+                0, player.direction, 1,
+                23, h)
+        else
+            local quad = anims.player.walk.quads[walkFrameIdx]
+            local _, _, w, h = quad:getViewport()
+            shaders.outline:send('stepSize', {
+                1/anims.player.walk.sheet:getWidth(),
+                1/anims.player.walk.sheet:getHeight()
+            });
+            love.graphics.draw(anims.player.walk.sheet, quad,
+                math.floor(px), math.floor(py),
+                0, player.direction, 1,
+                8, h)
+        end
     end
+    love.graphics.setShader()
     if false then
         love.graphics.setColor(0, 0, 0.5, 0.5)
         love.graphics.circle('fill',

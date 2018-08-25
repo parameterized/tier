@@ -30,8 +30,8 @@ function newAnim(sheet, w, h, pad, num)
         quads = {}
     }
     for i=1, num do
-        local x = (i-1)*(w + pad)
-        local y = 0
+        local x = (i-1)*(w + pad*2) + 1
+        local y = 1
         local sw, sh = sheet:getDimensions()
         t.quads[i] = love.graphics.newQuad(x, y, w, h, sw, sh)
     end
@@ -39,8 +39,8 @@ function newAnim(sheet, w, h, pad, num)
 end
 
 anims.player = {
-    walk = newAnim(gfx.player.walkSheet, 12, 27, 1, 4),
-    swing = newAnim(gfx.player.swingSheet, 41, 32, 1, 5)
+    walk = newAnim(gfx.player.walkSheet, 20, 29, 1, 5),
+    swing = newAnim(gfx.player.swingSheet, 43, 34, 1, 5)
 }
 
 tileSheets = {}
@@ -51,15 +51,15 @@ function newTileSheet(sheet, w, h, pad, num, names)
     }
     names = names or {}
     for i=1, num do
-        local x = (i-1)*(w + pad)
-        local y = 0
+        local x = (i-1)*(w + pad*2) + 1
+        local y = 1
         local sw, sh = sheet:getDimensions()
         t.quads[names[i] or i] = love.graphics.newQuad(x, y, w, h, sw, sh)
     end
     return t
 end
 
-tileSheets.ts1 = newTileSheet(gfx.tiles.tileSheet1, 15, 15, 0, 4, {'grass', 'sand', 'rock', 'water'})
+tileSheets.ts1 = newTileSheet(gfx.tiles.tileSheet1, 15, 15, 1, 4, {'grass', 'sand', 'rock', 'water'})
 
 fonts = {
     f10 = love.graphics.newFont(10),
@@ -70,6 +70,7 @@ fonts = {
 
 shaders = {
     fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),
+    outline = love.graphics.newShader('shaders/outline.glsl'),
     mapGen = love.graphics.newShader('shaders/mapGen.glsl')
 }
 
