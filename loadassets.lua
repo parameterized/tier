@@ -66,5 +66,18 @@ fonts = {
 }
 
 shaders = {
-    fontAlias = love.graphics.newShader('shaders/fontAlias.glsl')
+    fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),
+    mapGen = love.graphics.newShader('shaders/mapGen.glsl')
 }
+
+local tileCanv = love.graphics.newCanvas(15, 15)
+love.graphics.setColor(1, 1, 1)
+local tileImgs = {}
+for _, v in pairs({'grass', 'sand', 'rock', 'water'}) do
+    love.graphics.setCanvas(tileCanv)
+    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.draw(tileSheets.ts1.sheet, tileSheets.ts1.quads[v], 0, 0)
+    love.graphics.setCanvas()
+    table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
+end
+shaders.mapGen:send('tiles', unpack(tileImgs))

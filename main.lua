@@ -31,8 +31,11 @@ end
 
 function love.update(dt)
     love.window.setTitle('Tier (' .. love.timer.getFPS() .. ' FPS)')
-    physics.update(dt)
-    player.update(dt)
+    if gameState == 'playing' then
+        physics.update(dt)
+        world.update(dt)
+        player.update(dt)
+    end
 end
 
 function love.mousepressed(x, y, btn, isTouch)
@@ -42,18 +45,22 @@ end
 function love.keypressed(k, scancode, isrepeat)
     if k == 'escape' then
         gameState = 'menu'
+    elseif k == 'space' then
+        --world.shader = not world.shader
     end
 end
 
 function love.draw()
     love.graphics.setCanvas(canvases.game)
-    camera:set()
-
     love.graphics.clear(0.1, 0.1, 0.1)
-    world.draw()
-    player.draw()
+    if gameState == 'playing' then
+        camera:set()
 
-    camera:reset()
+        world.draw()
+        player.draw()
+
+        camera:reset()
+    end
 
     menu.draw()
 

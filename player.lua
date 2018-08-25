@@ -39,25 +39,27 @@ function player.update(dt)
         if xv > 0 then player.direction = 1 end
     end
 
-    camera.x = math.floor(player.body:getX()) + math.floor((mx-gsx/2)/6)
-    camera.y = math.floor(player.body:getY()) + math.floor((my-gsy/2)/6)
+    local dx = mx - gsx/2
+    local dy = my - gsy/2
+    local a = math.atan2(dx, dy) - math.pi/2
+    local d = math.min(math.sqrt(dx^2 + dy^2), gsy/2)
+    camera.x = math.floor(player.body:getX()) + math.floor(math.cos(a)*d/6)
+    camera.y = math.floor(player.body:getY()) + math.floor(-math.sin(a)*d/6)
 end
 
 function player.draw()
-    if gameState == 'playing' then
-        love.graphics.setColor(1, 1, 1)
-        local frameIdx = math.floor(player.animTimer*12) % #anims.player.walk.quads + 1
-        local quad = anims.player.walk.quads[frameIdx]
-        local _, _, w, h = quad:getViewport()
-        local px, py = player.body:getPosition()
-        love.graphics.draw(anims.player.walk.sheet, quad,
-            math.floor(px), math.floor(py),
-            0, player.direction, 1,
-            math.floor(w/2), math.floor(h))
-        if true then
-            love.graphics.setColor(0, 0, 0.5, 0.5)
-            love.graphics.circle('fill', 
-                math.floor(px), math.floor(py), player.shape:getRadius())
-        end
+    love.graphics.setColor(1, 1, 1)
+    local frameIdx = math.floor(player.animTimer*12) % #anims.player.walk.quads + 1
+    local quad = anims.player.walk.quads[frameIdx]
+    local _, _, w, h = quad:getViewport()
+    local px, py = player.body:getPosition()
+    love.graphics.draw(anims.player.walk.sheet, quad,
+        math.floor(px), math.floor(py),
+        0, player.direction, 1,
+        math.floor(w/2), math.floor(h))
+    if true then
+        love.graphics.setColor(0, 0, 0.5, 0.5)
+        love.graphics.circle('fill',
+            math.floor(px), math.floor(py), player.shape:getRadius())
     end
 end
