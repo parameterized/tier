@@ -7,6 +7,7 @@ require 'menu'
 require 'physics'
 require 'world'
 require 'player'
+require 'hud'
 
 function love.load()
     gameState = 'menu'
@@ -39,6 +40,9 @@ function love.update(dt)
 end
 
 function love.mousepressed(x, y, btn, isTouch)
+    if gameState == 'playing' then
+        player.mousepressed(x, y, btn)
+    end
     menu.mousepressed(x, y, btn)
 end
 
@@ -60,6 +64,8 @@ function love.draw()
         player.draw()
 
         camera:reset()
+
+        hud.draw()
     end
 
     menu.draw()

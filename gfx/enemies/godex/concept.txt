@@ -2,5 +2,10 @@
 /ˈgoh-decks/
 
  - A VERY powerful enemy who remains floating in place and is passive until a certain amount of DPS is dealt to him, where he will then enter his attack phase
- - Upon his attack phase, Godex releases a shockwave of divine fireballs with a semi-recognizable pattern 
+ - Godex's attack phase starts by releasing a shockwave of divine fireballs 360 degrees around him
+ - Phase 2 (most of his attack phase) consists of two fire types: a swirl of divine fireballs and 
+ 
+ - particles
+	- divine fireballs
+	- godex aura
 ```

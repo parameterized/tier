@@ -13,8 +13,10 @@ canvases = {
 
 gfx = {
     logo = love.graphics.newImage('gfx/logo.png'),
+    hud = love.graphics.newImage('gfx/hud/hud.png'),
     player = {
-        walkSheet = love.graphics.newImage('gfx/char/char-walk.png')
+        walkSheet = love.graphics.newImage('gfx/char/player_walk.png'),
+        swingSheet = love.graphics.newImage('gfx/char/player_swing.png')
     },
     tiles = {
         tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png')
@@ -37,7 +39,8 @@ function newAnim(sheet, w, h, pad, num)
 end
 
 anims.player = {
-    walk = newAnim(gfx.player.walkSheet, 14, 22, 0, 6)
+    walk = newAnim(gfx.player.walkSheet, 12, 27, 1, 4),
+    swing = newAnim(gfx.player.swingSheet, 41, 32, 1, 5)
 }
 
 tileSheets = {}

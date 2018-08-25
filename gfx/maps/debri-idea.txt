@@ -1,0 +1,13 @@
+BIOME-BASED DEBRIS:
+
+GRASS --
+    SHRUB,
+    ROCK,
+    MUSHROOM,
+    TREE
+
+SAND  --
+        SHELLS,
+        BOTTLE,
+        BONE,
+    SAND CASTLE,
