@@ -7,12 +7,14 @@ require 'menu'
 require 'physics'
 require 'world'
 require 'player'
+require 'enemies'
 require 'hud'
 
 function love.load()
     gameState = 'menu'
     physics.load()
     player.load()
+    enemies.load()
 end
 
 gameScale = math.min(ssx/gsx, ssy/gsy)
@@ -36,7 +38,9 @@ function love.update(dt)
         physics.update(dt)
         world.update(dt)
         player.update(dt)
+        enemies.update(dt)
     end
+    menu.update(dt)
 end
 
 function love.mousepressed(x, y, btn, isTouch)
@@ -46,21 +50,27 @@ function love.mousepressed(x, y, btn, isTouch)
     menu.mousepressed(x, y, btn)
 end
 
+function love.mousereleased(x, y, btn, isTouch)
+    menu.mousereleased(x, y, btn)
+end
+
+drawDebug = false
 function love.keypressed(k, scancode, isrepeat)
     if k == 'escape' then
         gameState = 'menu'
-    elseif k == 'space' then
-        --world.shader = not world.shader
+    elseif k == 'f1' then
+        drawDebug = not drawDebug
     end
 end
 
 function love.draw()
     love.graphics.setCanvas(canvases.game)
-    love.graphics.clear(0.1, 0.1, 0.1)
+    love.graphics.clear(0.15, 0.15, 0.15)
     if gameState == 'playing' then
         camera:set()
 
         world.draw()
+        enemies.draw()
         player.draw()
 
         camera:reset()

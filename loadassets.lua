@@ -8,18 +8,25 @@ love.graphics.setDefaultFilter('nearest', 'nearest')
 
 gsx, gsy = 480, 270
 canvases = {
-    game = love.graphics.newCanvas(gsx, gsy)
+    game = love.graphics.newCanvas(gsx, gsy),
+    tempGame = love.graphics.newCanvas(gsx, gsy),
+    hpBar = love.graphics.newCanvas(18, 4)
 }
 
 gfx = {
     logo = love.graphics.newImage('gfx/logo.png'),
+    logoAnim = love.graphics.newImage('gfx/logo_anim.png'),
     hud = love.graphics.newImage('gfx/hud/hud.png'),
+    tiles = {
+        tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png')
+    },
     player = {
         walkSheet = love.graphics.newImage('gfx/char/player_walk.png'),
         swingSheet = love.graphics.newImage('gfx/char/player_swing.png')
     },
-    tiles = {
-        tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png')
+    enemies = {
+        slime1 = love.graphics.newImage('gfx/enemies/slime1.png'),
+        slime2 = love.graphics.newImage('gfx/enemies/slime2.png')
     }
 }
 
@@ -38,6 +45,7 @@ function newAnim(sheet, w, h, pad, num)
     return t
 end
 
+anims.logo = newAnim(gfx.logoAnim, 54, 41, 1, 8)
 anims.player = {
     walk = newAnim(gfx.player.walkSheet, 20, 29, 1, 5),
     swing = newAnim(gfx.player.swingSheet, 43, 34, 1, 5)
@@ -71,6 +79,7 @@ fonts = {
 shaders = {
     fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),
     outline = love.graphics.newShader('shaders/outline.glsl'),
+    hpBar = love.graphics.newShader('shaders/hpBar.glsl'),
     mapGen = love.graphics.newShader('shaders/mapGen.glsl')
 }
 

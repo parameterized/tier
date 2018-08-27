@@ -3,6 +3,8 @@ menu = {}
 
 menu.state = 'main'
 menu.btns = {}
+menu.buttonDown = false
+menu.logoAnimTimer = 0
 
 function menu.addBtn(t)
     t.state = t.state or 'main'
@@ -26,23 +28,34 @@ menu.addBtn{text='Exit', y=math.floor(gsy*2/3), action = function()
     love.event.quit()
 end}
 
+function menu.update(dt)
+    menu.logoAnimTimer = menu.logoAnimTimer + dt
+end
+
 function menu.mousepressed(mx, my, btn)
     mx, my = screen2game(mx, my)
     if gameState == 'menu' then
         for _, v in pairs(menu.btns[menu.state] or {}) do
             if mx > v.bx and my < v.bx + v.bw and my > v.by and my < v.by + v.bh then
                 v.action()
+                menu.buttonDown = true
                 return
             end
         end
     end
 end
 
+function menu.mousereleased(mx, my, btn)
+    menu.buttonDown = false
+end
+
 function menu.draw()
     if gameState == 'menu' then
         local mx, my = screen2game(love.mouse.getPosition())
         love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(gfx.logo, math.floor(gsx/2 - gfx.logo:getWidth()/2), 12)
+        local logoFrameIdx = math.floor(menu.logoAnimTimer*12) % #anims.logo.quads + 1
+        local quad = anims.logo.quads[logoFrameIdx]
+        love.graphics.draw(gfx.logoAnim, quad, math.floor(gsx/2 - gfx.logo:getWidth()/2), 12)
         for _, v in pairs(menu.btns[menu.state] or {}) do
             if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
                 love.graphics.setColor(0.3, 0.3, 0.3)
