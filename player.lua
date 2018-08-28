@@ -12,7 +12,10 @@ function player.load()
     player.body = love.physics.newBody(physics.world, 0, 0, 'dynamic')
     player.shape = love.physics.newCircleShape(6)
     player.fixture = love.physics.newFixture(player.body, player.shape, 1)
+    player.fixture:setUserData(player)
+    player.type = 'player'
     player.fixture:setCategory(1)
+    player.body:setFixedRotation(true)
     player.body:setLinearDamping(10)
     player.body:setAngularDamping(10)
 
@@ -27,6 +30,12 @@ function player.swing()
     player.swingTimer = 0
 
     local t = {}
+    t.id = uuid()
+    t.type = 'playerSwing'
+
+    t.timer = 3
+    t.pierce = 2
+
     local px, py = player.body:getPosition()
     t.body = love.physics.newBody(physics.world, px, py - 14, 'dynamic')
     t.polys = {
@@ -46,11 +55,13 @@ function player.swing()
         local shape = love.physics.newPolygonShape(unpack(v))
         table.insert(t.shapes, shape)
         local fixture = love.physics.newFixture(t.body, shape, 1)
-        table.insert(t.fixtures, fixture)
+        fixture:setUserData(t)
         fixture:setCategory(2)
         fixture:setMask(1, 2)
+        fixture:setSensor(true)
+        table.insert(t.fixtures, fixture)
     end
-    table.insert(player.projectiles, t)
+    player.projectiles[t.id] = t
 
     local dx = mx - gsx/2
     local dy = my - gsy/2
@@ -96,6 +107,17 @@ function player.update(dt)
         end
         if player.automaticSwing and love.mouse.isDown(1) and not menu.buttonDown then
             player.swing()
+        end
+    end
+
+    for k, v in pairs(player.projectiles) do
+        v.timer = v.timer - dt
+        if v.timer < 0 then
+            for _, fix in pairs(v.fixtures) do
+                fix:destroy()
+            end
+            v.body:destroy()
+            player.projectiles[k] = nil
         end
     end
 

@@ -9,7 +9,7 @@ menu.logoAnimTimer = 0
 function menu.addBtn(t)
     t.state = t.state or 'main'
     t.text = t.text or 'Button'
-    t.font = t.font or fonts.f12
+    t.font = t.font or fonts.c17
     t.action = t.action or function() end
     t.x = t.x or gsx/2
     t.y = t.y or gsy/2
@@ -63,7 +63,8 @@ function menu.draw()
                 love.graphics.setColor(0.4, 0.4, 0.4)
             end
             love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
-            love.graphics.setColor(0.1, 0.1, 0.1)
+            --love.graphics.setColor(0.1, 0.1, 0.1)
+            love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(v.font)
             love.graphics.setShader(shaders.fontAlias)
             love.graphics.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.y - v.font:getHeight()/2))

@@ -73,7 +73,10 @@ fonts = {
     f10 = love.graphics.newFont(10),
     f12 = love.graphics.newFont(12),
     f18 = love.graphics.newFont(18),
-    f24 = love.graphics.newFont(24)
+    f24 = love.graphics.newFont(24),
+
+    c13 = love.graphics.newImageFont('gfx/fonts/small_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"'),
+    c17 = love.graphics.newImageFont('gfx/fonts/big_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"')
 }
 
 shaders = {

@@ -1,11 +1,23 @@
 
 enemies = {}
 
+function enemies.load()
+    enemies.container = {}
+    for i=1, 8 do
+        local etype = math.random() < 0.5 and 'slime1' or 'slime2'
+        local x, y = (math.random()*2-1)*256, (math.random()*2-1)*256
+        enemies.spawn(etype, x, y)
+    end
+end
+
 function enemies.spawn(etype, x, y)
     local t = {}
-    t.type = etype
+    t.id = uuid()
+    t.type = 'enemy'
+    t.etype = etype
     t.hpMax = 5
     t.hp = math.random(1, t.hpMax)
+    t.hitBy = {}
 
     t.body = love.physics.newBody(physics.world, x, y, 'dynamic')
     t.polys = {
@@ -29,18 +41,35 @@ function enemies.spawn(etype, x, y)
         table.insert(t.shapes, shape)
         local fixture = love.physics.newFixture(t.body, shape, 1)
         table.insert(t.fixtures, fixture)
+        fixture:setUserData(t)
         fixture:setCategory(3)
     end
+    t.body:setFixedRotation(true)
 
-    table.insert(enemies.container, t)
+    enemies.container[t.id] = t
 end
 
-function enemies.load()
-    enemies.container = {}
-    for i=1, 8 do
-        local etype = math.random() < 0.5 and 'slime1' or 'slime2'
-        local x, y = (math.random()*2-1)*256, (math.random()*2-1)*256
-        enemies.spawn(etype, x, y)
+function enemies.damage(id, dmg)
+    local enemy = enemies.container[id]
+    if enemy then
+        enemy.hp = enemy.hp - dmg
+        if enemy.hp <= 0 then
+            -- spawn new
+            for i=1, math.random(1, 2) do
+                local etype = math.random() < 0.5 and 'slime1' or 'slime2'
+                local x, y = enemy.body:getPosition()
+                x = x + (math.random()*2-1)*64
+                y = y + (math.random()*2-1)*64
+                enemies.spawn(etype, x, y)
+            end
+
+            -- destroy
+            for _, fix in pairs(enemy.fixtures) do
+                fix:destroy()
+            end
+            enemy.body:destroy()
+            enemies.container[id] = nil
+        end
     end
 end
 
@@ -56,7 +85,7 @@ function enemies.draw()
     for _, v in pairs(enemies.container) do
         love.graphics.setColor(1, 1, 1)
         love.graphics.setShader(shaders.outline)
-        local img = gfx.enemies[v.type]
+        local img = gfx.enemies[v.etype]
         shaders.outline:send('stepSize', {1/img:getWidth(), 1/img:getHeight()})
         love.graphics.push()
         local vx, vy = v.body:getPosition()
