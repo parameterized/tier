@@ -3,15 +3,24 @@ require 'utils'
 require 'loadassets'
 Camera = require 'camera'
 camera = Camera{ssx=gsx, ssy=gsy}
+nut = require 'love_nut'
+json = require 'json'
+require 'server'
+require 'client'
 require 'menu'
 require 'physics'
 require 'world'
 require 'player'
 require 'enemies'
 require 'hud'
+require 'chat'
 
 function love.load()
     gameState = 'menu'
+    time = 0
+    gameTime = 0
+    drawDebug = false
+    menu.load()
     physics.load()
     player.load()
     enemies.load()
@@ -33,8 +42,16 @@ function screen2game(x, y)
 end
 
 function love.update(dt)
+    time = time + dt
     love.window.setTitle('Tier (' .. love.timer.getFPS() .. ' FPS)')
-    if gameState == 'playing' then
+    if server.running then
+        server.update(dt)
+    end
+    if client.connected then
+        client.update(dt)
+    end
+    if gameState == 'playing' and not (server.running and server.paused) then
+        gameTime = gameTime + dt
         physics.update(dt)
         world.update(dt)
         player.update(dt)
@@ -54,12 +71,38 @@ function love.mousereleased(x, y, btn, isTouch)
     menu.mousereleased(x, y, btn)
 end
 
-drawDebug = false
+function love.textinput(t)
+    if chat.active then
+        chat.textinput(t)
+    else
+        menu.textinput(t)
+    end
+end
+
 function love.keypressed(k, scancode, isrepeat)
-    if k == 'escape' then
-        gameState = 'menu'
-    elseif k == 'f1' then
-        drawDebug = not drawDebug
+    if chat.active then
+        chat.keypressed(k, scancode, isrepeat)
+    else
+        if gameState == 'playing' and k == 'return' and not isrepeat then
+            chat.active = true
+        end
+    end
+    if not chat.active then
+        menu.keypressed(k, scancode, isrepeat)
+        if not isrepeat then
+            if k == 'escape' then
+                gameState = 'menu'
+                menu.state = 'main'
+                if server.running then
+                    server.close()
+                end
+                if client.connected then
+                    client.close()
+                end
+            elseif k == 'f1' then
+                drawDebug = not drawDebug
+            end
+        end
     end
 end
 
@@ -76,6 +119,7 @@ function love.draw()
         camera:reset()
 
         hud.draw()
+        chat.draw()
     end
 
     menu.draw()
@@ -84,4 +128,14 @@ function love.draw()
     love.graphics.clear(0, 0, 0)
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(canvases.game, ssx/2-gameScale*gsx/2, ssy/2-gameScale*gsy/2, 0, gameScale, gameScale)
+end
+
+function love.quit()
+    if server.running then
+        server.close()
+    end
+    if client.connected then
+        client.close()
+    end
+    menu.writeDefaults()
 end

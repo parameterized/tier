@@ -22,6 +22,15 @@ function player.load()
     player.projectiles = {}
 end
 
+function player.destroy()
+    if player.fixture and not player.fixture:isDestroyed() then
+        player.fixture:destroy()
+    end
+    if player.body and not player.body:isDestroyed() then
+        player.body:destroy()
+    end
+end
+
 function player.swing()
     local mx, my = love.mouse.getPosition()
     mx, my = screen2game(mx, my)
@@ -75,15 +84,17 @@ function player.update(dt)
     local mx, my = love.mouse.getPosition()
     mx, my = screen2game(mx, my)
 
-    local dx, dy = 0, 0
-	dx = dx + (love.keyboard.isScancodeDown('d') and 1 or 0)
-	dx = dx + (love.keyboard.isScancodeDown('a') and -1 or 0)
-	dy = dy + (love.keyboard.isScancodeDown('w') and -1 or 0)
-	dy = dy + (love.keyboard.isScancodeDown('s') and 1 or 0)
-    local spd = player.spd*(love.keyboard.isScancodeDown('lshift') and 2.5 or 1)
-    if not (dx == 0 and dy == 0) and not player.swinging then
-        local a = math.atan2(dx, dy) - math.pi/2
-        player.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
+    if not chat.active then
+        local dx, dy = 0, 0
+        dx = dx + (love.keyboard.isScancodeDown('d') and 1 or 0)
+        dx = dx + (love.keyboard.isScancodeDown('a') and -1 or 0)
+        dy = dy + (love.keyboard.isScancodeDown('w') and -1 or 0)
+        dy = dy + (love.keyboard.isScancodeDown('s') and 1 or 0)
+        local spd = player.spd*(love.keyboard.isScancodeDown('lshift') and 2.5 or 1)
+        if not (dx == 0 and dy == 0) and not player.swinging then
+            local a = math.atan2(dx, dy) - math.pi/2
+            player.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
+        end
     end
 
     player.body:applyTorque(-player.body:getAngle()*1e5)
