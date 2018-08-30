@@ -80,14 +80,15 @@ function love.textinput(t)
 end
 
 function love.keypressed(k, scancode, isrepeat)
-    if chat.active then
+    local chatActive = chat.active
+    if chatActive then
         chat.keypressed(k, scancode, isrepeat)
     else
         if gameState == 'playing' and k == 'return' and not isrepeat then
             chat.active = true
         end
     end
-    if not chat.active then
+    if not chatActive then
         menu.keypressed(k, scancode, isrepeat)
         if not isrepeat then
             if k == 'escape' then
@@ -99,6 +100,8 @@ function love.keypressed(k, scancode, isrepeat)
                 if client.connected then
                     client.close()
                 end
+                love.mouse.setVisible(true)
+                love.mouse.setGrabbed(false)
             elseif k == 'f1' then
                 drawDebug = not drawDebug
             end
@@ -107,6 +110,7 @@ function love.keypressed(k, scancode, isrepeat)
 end
 
 function love.draw()
+    local mx, my = screen2game(love.mouse.getPosition())
     love.graphics.setCanvas(canvases.game)
     love.graphics.clear(0.15, 0.15, 0.15)
     if gameState == 'playing' then
@@ -120,6 +124,9 @@ function love.draw()
 
         hud.draw()
         chat.draw()
+
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.draw(gfx.cursors.main, mx, my, 0, 1, 1, 0, 0) -- hotspot 0, 0
     end
 
     menu.draw()

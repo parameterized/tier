@@ -57,6 +57,8 @@ function client.startGame(p)
     player.name = p.name
     player.body:setPosition(p.x, p.y)
     gameState = 'playing'
+    love.mouse.setVisible(false)
+    if menu.cursorLockBtn.active then love.mouse.setGrabbed(true) end
 end
 
 function client.sendMessage(msg)

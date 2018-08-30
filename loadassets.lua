@@ -15,9 +15,21 @@ canvases = {
 }
 
 gfx = {
+    cursors = {
+        main = love.graphics.newImage('gfx/ui/cursor.png')
+    },
     logo = love.graphics.newImage('gfx/logo.png'),
     logoAnim = love.graphics.newImage('gfx/logo_anim.png'),
-    hud = love.graphics.newImage('gfx/hud/hud.png'),
+    hud = {
+        frame = love.graphics.newImage('gfx/ui/hud/hudframe.png'),
+        xpbar = love.graphics.newImage('gfx/ui/hud/xpbar.png'),
+        cog = love.graphics.newImage('gfx/ui/hud/cog.png'),
+        map = love.graphics.newImage('gfx/ui/hud/map.png'),
+        inventory = love.graphics.newImage('gfx/ui/hud/inventoryOpen.png'),
+        dropDown = love.graphics.newImage('gfx/ui/hud/buttonDD.png'),
+        lifemana = love.graphics.newImage('gfx/ui/hud/lifemana.png'),
+        pause = love.graphics.newImage('gfx/ui/hud/pause.png')
+    },
     tiles = {
         tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png')
     },
