@@ -102,9 +102,9 @@ shaders = {
 local tileCanv = love.graphics.newCanvas(15, 15)
 love.graphics.setColor(1, 1, 1)
 local tileImgs = {}
-for _, v in pairs({'grass', 'sand', 'rock', 'water'}) do
+for _, v in pairs{'grass', 'sand', 'rock', 'water'} do
     love.graphics.setCanvas(tileCanv)
-    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.clear()
     love.graphics.draw(tileSheets.ts1.sheet, tileSheets.ts1.quads[v], 0, 0)
     love.graphics.setCanvas()
     table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))

@@ -25,7 +25,7 @@ function physics.postUpdatePush(f)
 end
 
 function physics.beginContact(a, b, coll)
-    for _, v in pairs({{a, b}, {b, a}}) do
+    for _, v in pairs{{a, b}, {b, a}} do
         local fixa = v[1]
         local fixb = v[2]
         local uda = fixa:getUserData() or {}

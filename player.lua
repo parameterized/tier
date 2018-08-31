@@ -31,6 +31,12 @@ function player.destroy()
     end
 end
 
+function player.serialize()
+    return {
+        x = player.body:getX(), y = player.body:getY()
+    }
+end
+
 function player.swing()
     local mx, my = love.mouse.getPosition()
     mx, my = screen2game(mx, my)
@@ -150,6 +156,46 @@ function player.draw()
     local _canvas = love.graphics.getCanvas()
     local _shader = love.graphics.getShader()
 
+    -- other players
+
+    for _, v in pairs(client.currentState.players) do
+        -- or debugger.show
+        if v.id ~= player.id then
+            -- shadow
+            love.graphics.setColor(0, 0, 0, 0.2)
+            local shadowWidth = 5
+            love.graphics.ellipse('fill', math.floor(v.x), math.floor(v.y), shadowWidth, 2)
+
+            -- player
+            love.graphics.setCanvas(canvases.tempGame)
+            love.graphics.setShader()
+            love.graphics.clear()
+            love.graphics.setColor(1, 1, 1)
+            local quad = anims.player.swing.quads[1]
+            local _, _, w, h = quad:getViewport()
+            love.graphics.draw(anims.player.swing.sheet, quad,
+            math.floor(v.x), math.floor(v.y),
+            0, 1, 1,
+            23, h)
+
+            -- outline
+            love.graphics.setCanvas(_canvas)
+            love.graphics.setShader(shaders.outline)
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.push()
+            love.graphics.origin()
+            shaders.outline:send('stepSize', {
+                1/canvases.tempGame:getWidth(),
+                1/canvases.tempGame:getHeight()
+            })
+            love.graphics.draw(canvases.tempGame, 0, 0)
+            love.graphics.pop()
+            love.graphics.setShader(_shader)
+        end
+    end
+
+    -- local player
+
     local px, py = player.body:getPosition()
     local xv, yv = player.body:getLinearVelocity()
     local vd = math.sqrt(xv^2 + yv^2)
@@ -164,17 +210,13 @@ function player.draw()
     -- player
     love.graphics.setCanvas(canvases.tempGame)
     love.graphics.setShader()
-    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.clear()
     love.graphics.setColor(1, 1, 1)
     if player.swinging then
         local frameIdx = math.floor(player.swingTimer*12) + 1
         frameIdx = clamp(frameIdx, 1, 5)
         local quad = anims.player.swing.quads[frameIdx]
         local _, _, w, h = quad:getViewport()
-        shaders.outline:send('stepSize', {
-            1/anims.player.swing.sheet:getWidth(),
-            1/anims.player.swing.sheet:getHeight()
-        });
         love.graphics.draw(anims.player.swing.sheet, quad,
         math.floor(px), math.floor(py),
         0, player.direction, 1,
@@ -183,10 +225,6 @@ function player.draw()
         if vd < 10 then
             local quad = anims.player.swing.quads[1]
             local _, _, w, h = quad:getViewport()
-            shaders.outline:send('stepSize', {
-                1/anims.player.swing.sheet:getWidth(),
-                1/anims.player.swing.sheet:getHeight()
-            });
             love.graphics.draw(anims.player.swing.sheet, quad,
             math.floor(px), math.floor(py),
             0, player.direction, 1,
@@ -194,10 +232,6 @@ function player.draw()
         else
             local quad = anims.player.walk.quads[walkFrameIdx]
             local _, _, w, h = quad:getViewport()
-            shaders.outline:send('stepSize', {
-                1/anims.player.walk.sheet:getWidth(),
-                1/anims.player.walk.sheet:getHeight()
-            });
             love.graphics.draw(anims.player.walk.sheet, quad,
             math.floor(px), math.floor(py),
             0, player.direction, 1,

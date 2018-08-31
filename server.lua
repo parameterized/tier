@@ -26,14 +26,52 @@ function server.start(port, singleplayer)
             or reservedNames[buildName(data, postfix)] do
                 postfix = postfix + 1
             end
-            -- todo: send current state
+            -- send current state to new player
+            local add = server.newState()
+            for _, v in pairs(server.currentState.players) do
+                table.insert(add.players, v)
+            end
+            self:sendRPC('add', json.encode(add), clientId)
             server.addPlayer(buildName(data, postfix), clientId)
         end,
         chatMsg = function(self, data, clientId)
             local pname = server.currentState.players[clientId].name
             self:sendRPC('chatMsg', string.format('%s: %s', pname, data))
+        end,
+        setPlayer = function(self, data, clientId)
+            local ok, data = pcall(json.decode, data)
+            if ok then
+                if not server.currentState.players[clientId] then
+                    print('attempt to setPlayer on non-existent player')
+                    return
+                end
+                for _, v in pairs{'x', 'y'} do
+                    server.currentState.players[clientId][v] = data[v]
+                end
+            else
+                print('error decoding server rpc setPlayer')
+            end
         end
     }
+    server.nutServer:addUpdate(function(self)
+        local addStr = json.encode(server.added)
+        if addStr ~= json.encode(server.newState()) then
+            self:sendRPC('add', addStr)
+        end
+        server.added = server.newState()
+        local removeStr = json.encode(server.removed)
+        if removeStr ~= json.encode(server.newState()) then
+            self:sendRPC('remove', removeStr)
+        end
+        server.removed = server.newState()
+        local stateUpdate = server.newState()
+        stateUpdate.time = gameTime
+        for _, v in pairs(server.currentState.players) do
+            -- don't send clientIds - index by uuid
+            stateUpdate.players[v.id] = v
+        end
+        self:sendRPC('stateUpdate', json.encode(stateUpdate))
+    end)
     server.nutServer:start()
     server.running = true
     if not server.singleplayer then
