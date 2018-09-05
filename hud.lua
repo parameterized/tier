@@ -2,7 +2,6 @@
 hud = {}
 
 function hud.draw()
-    local _shader = love.graphics.getShader()
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(gfx.hud.frame, 0, 0)
     love.graphics.draw(gfx.hud.xpbar, math.floor(gsx/2), gsy - 5, 0, 1, 1,
@@ -19,8 +18,6 @@ function hud.draw()
     love.graphics.draw(gfx.hud.dropDown, 143, 22)
     love.graphics.draw(gfx.hud.pause, 453, 18)
 
-    love.graphics.setShader(shaders.fontAlias)
     love.graphics.setFont(fonts.c17)
-    love.graphics.print(player.name, 44, 5)
-    love.graphics.setShader()
+    text.print(player.name, 44, 5)
 end

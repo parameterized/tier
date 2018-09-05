@@ -68,7 +68,7 @@ function menu.load()
         name = 'Player',
         ip = '127.0.0.1',
         port = '1357',
-        resolution = 3,
+        resolution = 2,
         fullscreen = 1,
         vsync = true,
         cursorLock = true
@@ -165,7 +165,7 @@ function menu.load()
     end}
 
     menu.resolutionBtn = menu.addBtn{state='options', text='Resolution', y=exitY - h*4,
-    type='cycle', items={'480x270', '960x540', '1440x810', '1920x1080'},
+    type='cycle', items={'960x540', '1440x810', '1920x1080'},
     active=menuDefaults.resolution, action=function(v)
         local fullscreen, fstype = love.window.getFullscreen()
         if not (fullscreen and fstype == 'desktop') then
@@ -178,7 +178,6 @@ function menu.load()
             love.resize(w, h)
         end
     end, draw=function(v, mx, my)
-        local _shader = love.graphics.getShader()
         if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
             love.graphics.setColor(0.3, 0.3, 0.3)
         else
@@ -191,16 +190,14 @@ function menu.load()
         love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
         love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.setFont(v.font)
-        love.graphics.setShader(shaders.fontAlias)
-        love.graphics.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
+        text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
         love.graphics.setColor(1, 1, 1)
-        local text = v.items[v.active]
+        local txt = v.items[v.active]
         if fullscreen and fstype == 'desktop' then
             local w, h = love.graphics.getDimensions()
-            text = w .. 'x' .. h
+            txt = w .. 'x' .. h
         end
-        love.graphics.print(text, math.floor(v.x - v.font:getWidth(text)/2), math.floor(v.y - v.font:getHeight()/2))
-        love.graphics.setShader(_shader)
+        text.print(txt, math.floor(v.x - v.font:getWidth(txt)/2), math.floor(v.y - v.font:getHeight()/2))
     end}
     menu.fullscreenBtn = menu.addBtn{state='options', text='Fullscreen', y=exitY - h*3,
     type='cycle', items={'Windowed', 'Borderless Fullscreen Windowed', 'Fullscreen'},
@@ -350,8 +347,6 @@ function menu.keypressed(k, scancode, isrepeat)
 end
 
 function menu.draw()
-    local _shader = love.graphics.getShader()
-
     if gameState == 'menu' then
         local mx, my = screen2game(love.mouse.getPosition())
 
@@ -375,17 +370,15 @@ function menu.draw()
                     end
                 end
                 love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
-                local text = v.text
+                local txt = v.text
                 love.graphics.setFont(v.font)
-                love.graphics.setShader(shaders.fontAlias)
                 if v.type == 'cycle' then
                     love.graphics.setColor(0.8, 0.8, 0.8)
-                    love.graphics.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
-                    text = v.items[v.active]
+                    text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
+                    txt = v.items[v.active]
                 end
                 love.graphics.setColor(1, 1, 1)
-                love.graphics.print(text, math.floor(v.x - v.font:getWidth(text)/2), math.floor(v.y - v.font:getHeight()/2))
-                love.graphics.setShader(_shader)
+                text.print(txt, math.floor(v.x - v.font:getWidth(txt)/2), math.floor(v.y - v.font:getHeight()/2))
             end
         end
         for _, v in pairs(menu.inputs[menu.state] or {}) do
@@ -401,14 +394,12 @@ function menu.draw()
                 love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
                 love.graphics.setColor(0.8, 0.8, 0.8)
                 love.graphics.setFont(v.font)
-                love.graphics.setShader(shaders.fontAlias)
-                love.graphics.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
-                text = v.value
-                if menu.activeInput == v then text = text .. (time % 1 < 0.5 and '' or '|') end
+                text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
+                txt = v.value
+                if menu.activeInput == v then txt = txt .. (time % 1 < 0.5 and '' or '|') end
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.setFont(v.font)
-                love.graphics.print(text, math.floor(v.x - v.font:getWidth(text)/2), math.floor(v.y - v.font:getHeight()/2))
-                love.graphics.setShader(_shader)
+                text.print(txt, math.floor(v.x - v.font:getWidth(txt)/2), math.floor(v.y - v.font:getHeight()/2))
             end
         end
         for _, v in pairs(menu.infos[menu.state] or {}) do
@@ -417,9 +408,7 @@ function menu.draw()
             else
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.setFont(v.font)
-                love.graphics.setShader(shaders.fontAlias)
-                love.graphics.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.y - v.font:getHeight()/2))
-                love.graphics.setShader(_shader)
+                text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.y - v.font:getHeight()/2))
             end
         end
     end

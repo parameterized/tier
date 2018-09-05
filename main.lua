@@ -1,6 +1,7 @@
 
 require 'utils'
 require 'loadassets'
+require 'text'
 Camera = require 'camera'
 camera = Camera{ssx=gsx, ssy=gsy}
 nut = require 'love_nut'
@@ -38,7 +39,19 @@ function screen2game(x, y)
 	x = x / gameScale
 	y = y - (ssy-gameScale*gsy)/2
 	y = y / gameScale
-	return math.floor(x), math.floor(y)
+	return x, y
+end
+
+function setGameCanvas2x()
+    love.graphics.setCanvas(canvases.game2x)
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.push()
+    love.graphics.origin()
+    love.graphics.draw(canvases.game, 0, 0, 0, 2, 2)
+    love.graphics.pop()
+    love.graphics.setCanvas(canvases.game)
+    love.graphics.clear()
+    love.graphics.setCanvas(canvases.game2x)
 end
 
 function love.update(dt)
@@ -111,6 +124,8 @@ end
 
 function love.draw()
     local mx, my = screen2game(love.mouse.getPosition())
+    love.graphics.setCanvas(canvases.game2x)
+    love.graphics.clear()
     love.graphics.setCanvas(canvases.game)
     love.graphics.clear(0.15, 0.15, 0.15)
     if gameState == 'playing' then
@@ -126,15 +141,17 @@ function love.draw()
         chat.draw()
 
         love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(gfx.cursors.main, mx, my, 0, 1, 1, 0, 0) -- hotspot 0, 0
+        love.graphics.draw(gfx.cursors.main, math.floor(mx), math.floor(my), 0, 1, 1, 0, 0) -- hotspot 0, 0
     end
 
     menu.draw()
 
+    -- draw game on game2x
+    setGameCanvas2x()
     love.graphics.setCanvas()
     love.graphics.clear(0, 0, 0)
     love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(canvases.game, ssx/2-gameScale*gsx/2, ssy/2-gameScale*gsy/2, 0, gameScale, gameScale)
+    love.graphics.draw(canvases.game2x, ssx/2-gameScale*gsx/2, ssy/2-gameScale*gsy/2, 0, gameScale/2, gameScale/2)
 end
 
 function love.quit()

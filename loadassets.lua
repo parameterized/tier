@@ -10,6 +10,7 @@ love.graphics.setDefaultFilter('nearest', 'nearest')
 gsx, gsy = 480, 270
 canvases = {
     game = love.graphics.newCanvas(gsx, gsy),
+    game2x = love.graphics.newCanvas(gsx*2, gsy*2),
     tempGame = love.graphics.newCanvas(gsx, gsy),
     hpBar = love.graphics.newCanvas(18, 4)
 }
@@ -91,6 +92,8 @@ fonts = {
     c13 = love.graphics.newImageFont('gfx/fonts/small_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
     c17 = love.graphics.newImageFont('gfx/fonts/big_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>')
 }
+-- todo: test
+-- love.graphics.newFont([filename, ] size, "mono")
 
 shaders = {
     fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),

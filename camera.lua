@@ -4,7 +4,8 @@ camera.__index = camera
 
 local function new(opts)
 	local obj = {
-		x=0, y=0, scale=1, rotation=0
+		x=0, y=0, scale=1, rotation=0,
+		isSet=false
 	}
 	-- screen size x, y
 	obj.ssx, obj.ssy = love.graphics.getDimensions()
@@ -43,7 +44,6 @@ function camera:move(dx, dy)
 	self.y = self.y + dy
 end
 
--- todo: better name
 function camera:scaleBy(x)
 	self.scale = self.scale*x
 end
@@ -58,10 +58,12 @@ function camera:set()
 	love.graphics.scale(self.scale)
 	love.graphics.rotate(self.rotation)
 	love.graphics.translate(-self.x, -self.y)
+	self.isSet = true
 end
 
 function camera:reset()
 	love.graphics.pop()
+	self.isSet = false
 end
 
 function camera:draw(f)

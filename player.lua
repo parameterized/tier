@@ -272,6 +272,11 @@ function player.draw()
     love.graphics.pop()
     love.graphics.setShader(_shader)
 
+    -- names
+    local font = fonts.c17
+    love.graphics.setFont(font)
+    text.printSmall(player.name, math.floor(px) - font:getWidth(player.name)/4, math.floor(py) - 40)
+
     if drawDebug then
         love.graphics.setColor(1, 0, 0, 0.5)
         love.graphics.circle('fill',

@@ -40,7 +40,7 @@ function client.connect(ip, port)
                     client.currentState.players[v.id] = v
                 end
             else
-                debugger.log('error decoding client rpc add')
+                print('error decoding client rpc add')
             end
         end,
         remove = function(self, data)
@@ -55,11 +55,11 @@ function client.connect(ip, port)
                         end
                         client.currentState.players[id] = nil
                     else
-                        debugger.log('server tried to remove local player')
+                        print('server tried to remove local player')
                     end
                 end
             else
-                debugger.log('error decoding client rpc remove')
+                print('error decoding client rpc remove')
             end
         end,
         stateUpdate = function(self, data)
@@ -76,7 +76,7 @@ function client.connect(ip, port)
                 end
                 ]]
             else
-                debugger.log('error decoding client rpc stateUpdate')
+                print('error decoding client rpc stateUpdate')
             end
         end
     }
