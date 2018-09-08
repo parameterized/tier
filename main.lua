@@ -12,7 +12,8 @@ require 'menu'
 require 'physics'
 require 'world'
 require 'player'
-require 'enemies'
+require 'projectiles'
+require 'entities'
 require 'hud'
 require 'chat'
 
@@ -22,9 +23,6 @@ function love.load()
     gameTime = 0
     drawDebug = false
     menu.load()
-    physics.load()
-    player.load()
-    enemies.load()
 end
 
 gameScale = math.min(ssx/gsx, ssy/gsy)
@@ -43,6 +41,9 @@ function screen2game(x, y)
 end
 
 function setGameCanvas2x()
+    local _shader = love.graphics.getShader()
+    local _color = {love.graphics.getColor()}
+    love.graphics.setShader()
     love.graphics.setCanvas(canvases.game2x)
     love.graphics.setColor(1, 1, 1)
     love.graphics.push()
@@ -52,6 +53,8 @@ function setGameCanvas2x()
     love.graphics.setCanvas(canvases.game)
     love.graphics.clear()
     love.graphics.setCanvas(canvases.game2x)
+    love.graphics.setShader(_shader)
+    love.graphics.setColor(_color)
 end
 
 function love.update(dt)
@@ -62,13 +65,6 @@ function love.update(dt)
     end
     if client.connected then
         client.update(dt)
-    end
-    if gameState == 'playing' and not (server.running and server.paused) then
-        gameTime = gameTime + dt
-        physics.update(dt)
-        world.update(dt)
-        player.update(dt)
-        enemies.update(dt)
     end
     menu.update(dt)
 end
@@ -132,8 +128,28 @@ function love.draw()
         camera:set()
 
         world.draw()
-        enemies.draw()
+        entities.client.draw()
+        projectiles.client.draw()
         player.draw()
+
+        if drawDebug then
+            if server.running then
+                local serverBodies = physics.server.world:getBodies()
+                love.graphics.setColor(1, 0, 0, 0.5)
+                for _, v in pairs(serverBodies) do
+                    local x, y = v:getPosition()
+                    love.graphics.circle('fill', x, y, 8)
+                end
+            end
+            if client.connected then
+                local clientBodies = physics.client.world:getBodies()
+                love.graphics.setColor(0, 1, 0, 0.5)
+                for _, v in pairs(clientBodies) do
+                    local x, y = v:getPosition()
+                    love.graphics.circle('fill', x, y, 6)
+                end
+            end
+        end
 
         camera:reset()
 

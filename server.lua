@@ -29,7 +29,19 @@ function server.start(port, singleplayer)
             -- send current state to new player
             local add = server.newState()
             for _, v in pairs(server.currentState.players) do
-                table.insert(add.players, v)
+                if not server.added.players[v.id] then
+                    add.players[v.id] = v
+                end
+            end
+            for _, v in pairs(server.currentState.projectiles) do
+                if not server.added.projectiles[v.id] then
+                    add.projectiles[v.id] = v
+                end
+            end
+            for _, v in pairs(server.currentState.entities) do
+                if not server.added.entities[v.id] then
+                    add.entities[v.id] = v
+                end
             end
             self:sendRPC('add', json.encode(add), clientId)
             server.addPlayer(buildName(data, postfix), clientId)
@@ -51,6 +63,16 @@ function server.start(port, singleplayer)
             else
                 print('error decoding server rpc setPlayer')
             end
+        end,
+        spawnProjectile = function(self, data, clientId)
+            local ok, data = pcall(json.decode, data)
+            if ok then
+                local playerId = server.currentState.players[clientId].id
+                data.playerId = playerId
+                projectiles.server.spawn(data)
+            else
+                print('error decoding server rpc spawnBullet')
+            end
         end
     }
     server.nutServer:addUpdate(function(self)
@@ -70,6 +92,15 @@ function server.start(port, singleplayer)
             -- don't send clientIds - index by uuid
             stateUpdate.players[v.id] = v
         end
+        for _, v in pairs(server.currentState.projectiles) do
+            stateUpdate.projectiles[v.id] = v
+        end
+        for _, v in pairs(server.currentState.entities) do
+            -- don't update static entities
+            if not entities.server.defs[v.type].static then
+                stateUpdate.entities[v.id] = v
+            end
+        end
         self:sendRPC('stateUpdate', json.encode(stateUpdate))
     end)
     server.nutServer:start()
@@ -84,12 +115,19 @@ function server.start(port, singleplayer)
     -- removed[type] = {id1, id2, ...}
     server.added = server.newState()
     server.removed = server.newState()
-    -- todo: cleanup previous game
+    -- cleanup previous game
+    if server.currentState then
+        entities.server.reset()
+        projectiles.server.reset()
+    end
     server.currentState = server.newState()
+
+    physics.server.load()
+    entities.server.load()
 end
 
 function server.newState()
-    return {players={}, bullets={}, entities={}}
+    return {players={}, projectiles={}, entities={}}
 end
 
 function server.addPlayer(name, clientId)
@@ -100,7 +138,7 @@ function server.addPlayer(name, clientId)
     server.currentState.players[clientId] = p
     server.playerNames[name] = true
     server.uuid2clientId[p.id] = clientId
-    table.insert(server.added.players, p)
+    server.added.players[p.id] = p
     server.nutServer:sendRPC('returnPlayer', json.encode(p), clientId)
     if not server.singleplayer then
         server.nutServer:sendRPC('chatMsg', p.name .. ' connected')
@@ -109,7 +147,7 @@ end
 
 function server.removePlayer(clientId)
     local p = server.currentState.players[clientId]
-    table.insert(server.removed.players, p.id)
+    server.removed.players[p.id] = p.id
     server.uuid2clientId[p.id] = nil
     server.playerNames[p.name] = nil
     server.currentState.players[clientId] = nil
@@ -117,6 +155,12 @@ end
 
 function server.update(dt)
     server.nutServer:update(dt)
+
+    if not server.paused then
+        physics.server.update(dt)
+        projectiles.server.update(dt)
+        entities.server.update(dt)
+    end
 end
 
 function server.close()

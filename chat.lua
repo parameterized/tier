@@ -14,6 +14,7 @@ end
 function chat.submit()
     if chat.val ~= '' then
         client.sendMessage(chat.val)
+        chat.lastMsgTime = gameTime
     end
     chat.val = ''
     chat.active = false

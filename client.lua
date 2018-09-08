@@ -1,6 +1,8 @@
 
 client = {}
 
+client.interpolate = true
+
 function client.connect(ip, port)
     port = tonumber(port)
     client.nutClient = nut.client()
@@ -22,12 +24,14 @@ function client.connect(ip, port)
             gameState = 'menu'
             menu.state = 'main'
             client.close()
+            love.mouse.setVisible(true)
+            love.mouse.setGrabbed(false)
         end,
         add = function(self, data)
             local ok, data = pcall(json.decode, data)
             if ok then
                 for _, v in pairs(data.players) do
-                    v.body = love.physics.newBody(physics.world, v.x, v.y, 'dynamic')
+                    v.body = love.physics.newBody(physics.client.world, v.x, v.y, 'dynamic')
                     v.shape = love.physics.newRectangleShape(50, 50)
                     v.fixture = love.physics.newFixture(v.body, v.shape, 1)
                     if v.id == player.id then
@@ -38,6 +42,14 @@ function client.connect(ip, port)
                     v.fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
                     v.body:setFixedRotation(true)
                     client.currentState.players[v.id] = v
+                end
+                for _, v in pairs(data.projectiles) do
+                    v.startedMoving = false
+                    client.currentState.projectiles[v.id] = v
+                end
+                for _, v in pairs(data.entities) do
+                    local ent = entities.client.defs[v.type]:new(v):spawn()
+                    client.currentState.entities[ent.id] = ent
                 end
             else
                 print('error decoding client rpc add')
@@ -57,6 +69,14 @@ function client.connect(ip, port)
                     else
                         print('server tried to remove local player')
                     end
+                end
+                for _, id in pairs(data.projectiles) do
+                    client.currentState.projectiles[id] = nil
+                end
+                for _, id in pairs(data.entities) do
+                    local ent = client.currentState.entities[id]
+                    if ent then ent:destroy() end
+                    client.currentState.entities[id] = nil
                 end
             else
                 print('error decoding client rpc remove')
@@ -95,6 +115,8 @@ function client.connect(ip, port)
     client.stateTime = 0
     -- cleanup previous connection
     if client.currentState then
+        entities.client.reset()
+        projectiles.client.reset()
         player.destroy()
         for _, v in pairs(client.currentState.players) do
             v.fixture:destroy()
@@ -106,11 +128,12 @@ function client.connect(ip, port)
 
     menu.writeDefaults()
 
+    physics.client.load()
     player.load()
 end
 
 function client.newState()
-    return {players={}, bullets={}, entities={}}
+    return {players={}, projectiles={}, entities={}}
 end
 
 function client.startGame(p)
@@ -122,15 +145,11 @@ function client.startGame(p)
     if menu.cursorLockBtn.active then love.mouse.setGrabbed(true) end
 end
 
-function client.sendMessage(msg)
-    if client.connected then
-        client.nutClient:sendRPC('chatMsg', msg)
-    end
-end
-
 function client.update(dt)
     client.nutClient:update(dt)
-    client.serverTime = client.serverTime + dt
+    if not (server.running and server.paused) then
+        client.serverTime = client.serverTime + dt
+    end
     -- interpolate states
     local cs_0 = client.states[#client.states]
     local cs_1 = client.states[#client.states-1]
@@ -179,6 +198,48 @@ function client.update(dt)
                 end
             end
         end
+        for k, v in pairs(csi.projectiles) do
+            local v2 = csi_1.projectiles[k]
+            if v2 then
+                local obj = client.currentState.projectiles[k]
+                if obj then
+                    obj.x = lerp(v.x, v2.x, t)
+                    obj.y = lerp(v.y, v2.y, t)
+                    obj.startedMoving = true
+                end
+            end
+        end
+        for k, v in pairs(csi.entities) do
+            local v2 = csi_1.entities[k]
+            if v2 then
+                local obj = client.currentState.entities[k]
+                if obj then
+                    if not entities.client.defs[obj.type].static then
+                        obj:lerpState(v, v2, t)
+                    end
+                end
+            end
+        end
+    end
+
+    if not (server.running and server.paused) then
+        gameTime = gameTime + dt
+        physics.client.update(dt)
+        world.update(dt)
+        player.update(dt)
+        entities.client.update(dt)
+    end
+end
+
+function client.sendMessage(msg)
+    if client.connected then
+        client.nutClient:sendRPC('chatMsg', msg)
+    end
+end
+
+function client.spawnProjectile(data)
+    if client.connected then
+        client.nutClient:sendRPC('spawnProjectile', json.encode(data))
     end
 end
 

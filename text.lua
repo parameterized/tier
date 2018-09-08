@@ -1,18 +1,18 @@
 
 text = {}
 
-function text.print(txt, x, y)
+function text.print(txt, x, y, fontAlias)
     local _shader = love.graphics.getShader()
-    love.graphics.setShader(shaders.fontAlias)
+    if fontAlias then love.graphics.setShader(shaders.fontAlias) end
     love.graphics.print(txt, math.floor(x), math.floor(y))
     love.graphics.setShader(_shader)
 end
 
-function text.printSmall(txt, x, y)
+function text.printSmall(txt, x, y, fontAlias)
     local _canvas = love.graphics.getCanvas()
     local _shader = love.graphics.getShader()
     setGameCanvas2x()
-    love.graphics.setShader(shaders.fontAlias)
+    if fontAlias then love.graphics.setShader(shaders.fontAlias) end
 
     love.graphics.push()
     -- set camera with 2x screen size
@@ -23,7 +23,7 @@ function text.printSmall(txt, x, y)
         love.graphics.rotate(camera.rotation)
         love.graphics.translate(-camera.x*2, -camera.y*2)
     end
-
+    
     love.graphics.print(txt, math.floor(x*2), math.floor(y*2))
 
     love.graphics.pop()

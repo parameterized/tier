@@ -9,7 +9,7 @@ function player.load()
     player.direction = 1
     player.spd = 6e2
 
-    player.body = love.physics.newBody(physics.world, 0, 0, 'dynamic')
+    player.body = love.physics.newBody(physics.client.world, 0, 0, 'dynamic')
     player.shape = love.physics.newCircleShape(6)
     player.fixture = love.physics.newFixture(player.body, player.shape, 1)
     player.fixture:setUserData(player)
@@ -17,9 +17,6 @@ function player.load()
     player.fixture:setCategory(1)
     player.body:setFixedRotation(true)
     player.body:setLinearDamping(10)
-    player.body:setAngularDamping(10)
-
-    player.projectiles = {}
 end
 
 function player.destroy()
@@ -43,47 +40,17 @@ function player.swing()
     player.direction = mx < gsx/2 and -1 or 1
     player.swinging = true
     player.swingTimer = 0
-
-    local t = {}
-    t.id = uuid()
-    t.type = 'playerSwing'
-
-    t.timer = 3
-    t.pierce = 2
-
-    local px, py = player.body:getPosition()
-    t.body = love.physics.newBody(physics.world, px, py - 14, 'dynamic')
-    t.polys = {
-        {-0.2, 0.6, 0, 0.3, -0.1, 0.2},
-        {0, 0.3, 0.1, 0, 0, -0.3, -0.1, -0.2, -0.1, 0.2},
-        {-0.1, -0.2, 0, -0.3, -0.2, -0.6}
-    }
-    -- scale - todo: load from file already scaled
-    for _, v in pairs(t.polys) do
-        for i2, v2 in pairs(v) do
-            v[i2] = v2*16
-        end
-    end
-    t.shapes = {}
-    t.fixtures = {}
-    for _, v in pairs(t.polys) do
-        local shape = love.physics.newPolygonShape(unpack(v))
-        table.insert(t.shapes, shape)
-        local fixture = love.physics.newFixture(t.body, shape, 1)
-        fixture:setUserData(t)
-        fixture:setCategory(2)
-        fixture:setMask(1, 2)
-        fixture:setSensor(true)
-        table.insert(t.fixtures, fixture)
-    end
-    player.projectiles[t.id] = t
-
     local dx = mx - gsx/2
     local dy = my - gsy/2
     local a = math.atan2(dx, dy) - math.pi/2
-    t.body:setAngle(-a)
-    t.body:setFixedRotation(true)
-    t.body:setLinearVelocity(math.cos(a)*2e2, -math.sin(a)*2e2)
+    local px, py = player.body:getPosition()
+    client.spawnProjectile{
+        x = px, y = py - 14,
+        angle = a,
+        speed = 2e2,
+        life = 3,
+        pierce = 2
+    }
 end
 
 function player.update(dt)
@@ -124,17 +91,6 @@ function player.update(dt)
         end
         if player.automaticSwing and love.mouse.isDown(1) and not menu.buttonDown then
             player.swing()
-        end
-    end
-
-    for k, v in pairs(player.projectiles) do
-        v.timer = v.timer - dt
-        if v.timer < 0 then
-            for _, fix in pairs(v.fixtures) do
-                fix:destroy()
-            end
-            v.body:destroy()
-            player.projectiles[k] = nil
         end
     end
 
@@ -191,6 +147,11 @@ function player.draw()
             love.graphics.draw(canvases.tempGame, 0, 0)
             love.graphics.pop()
             love.graphics.setShader(_shader)
+
+            -- name
+            local font = fonts.c17
+            love.graphics.setFont(font)
+            text.printSmall(v.name, math.floor(v.x) - font:getWidth(v.name)/4, math.floor(v.y) - 40)
         end
     end
 
@@ -239,25 +200,6 @@ function player.draw()
         end
     end
 
-    -- projectiles
-    for _, v in pairs(player.projectiles) do
-        love.graphics.setColor(192/255, 192/255, 192/255)
-        --[[
-        for _, shape in pairs(v.shapes) do
-            love.graphics.polygon('fill', v.body:getWorldPoints(shape:getPoints()))
-        end
-        ]]
-        -- fix pixel jitter
-        love.graphics.push()
-        local vx, vy = v.body:getPosition()
-        love.graphics.translate(math.floor(vx), math.floor(vy))
-        love.graphics.rotate(v.body:getAngle())
-        for _, shape in pairs(v.shapes) do
-            love.graphics.polygon('fill', shape:getPoints())
-        end
-        love.graphics.pop()
-    end
-
     -- outline
     love.graphics.setCanvas(_canvas)
     love.graphics.setShader(shaders.outline)
@@ -272,7 +214,7 @@ function player.draw()
     love.graphics.pop()
     love.graphics.setShader(_shader)
 
-    -- names
+    -- name
     local font = fonts.c17
     love.graphics.setFont(font)
     text.printSmall(player.name, math.floor(px) - font:getWidth(player.name)/4, math.floor(py) - 40)
