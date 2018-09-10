@@ -60,6 +60,13 @@ end
 
 function entities.client.draw()
     for _, v in pairs(client.currentState.entities) do
-        if not v.destroyed then v:draw() end
+        if not v.destroyed and v.drawBody then
+            v:drawBody()
+        end
+    end
+    for _, v in pairs(client.currentState.entities) do
+        if not v.destroyed and v.drawHP then
+            v:drawHP()
+        end
     end
 end

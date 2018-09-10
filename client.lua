@@ -51,6 +51,9 @@ function client.connect(ip, port)
                     local ent = entities.client.defs[v.type]:new(v):spawn()
                     client.currentState.entities[ent.id] = ent
                 end
+                for _, v in pairs(data.lootBags) do
+                    client.currentState.lootBags[v.id] = v
+                end
             else
                 print('error decoding client rpc add')
             end
@@ -77,6 +80,9 @@ function client.connect(ip, port)
                     local ent = client.currentState.entities[id]
                     if ent then ent:destroy() end
                     client.currentState.entities[id] = nil
+                end
+                for _, id in pairs(data.lootBags) do
+                    client.currentState.lootBags[id] = nil
                 end
             else
                 print('error decoding client rpc remove')
@@ -116,7 +122,6 @@ function client.connect(ip, port)
     -- cleanup previous connection
     if client.currentState then
         entities.client.reset()
-        projectiles.client.reset()
         player.destroy()
         for _, v in pairs(client.currentState.players) do
             v.fixture:destroy()
@@ -133,7 +138,7 @@ function client.connect(ip, port)
 end
 
 function client.newState()
-    return {players={}, projectiles={}, entities={}}
+    return {players={}, projectiles={}, entities={}, lootBags={}}
 end
 
 function client.startGame(p)

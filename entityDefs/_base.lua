@@ -136,7 +136,7 @@ function base.client:update(dt)
     -- update self.x, self.y etc here if controlled by physics
 end
 
-function base.client:draw()
+function base.client:drawBody()
     love.graphics.setColor(0.5, 0.5, 0.5)
     love.graphics.circle('fill', v.x, v.y, 10)
 end

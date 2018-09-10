@@ -64,13 +64,12 @@ function player.update(dt)
         dy = dy + (love.keyboard.isScancodeDown('w') and -1 or 0)
         dy = dy + (love.keyboard.isScancodeDown('s') and 1 or 0)
         local spd = player.spd*(love.keyboard.isScancodeDown('lshift') and 2.5 or 1)
-        if not (dx == 0 and dy == 0) and not player.swinging then
+        if not (dx == 0 and dy == 0)
+        and not (player.swinging or player.automaticSwing and love.mouse.isDown(1)) then
             local a = math.atan2(dx, dy) - math.pi/2
             player.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
         end
     end
-
-    player.body:applyTorque(-player.body:getAngle()*1e5)
 
     local xv, yv = player.body:getLinearVelocity()
     local vd = math.sqrt(xv^2 + yv^2)

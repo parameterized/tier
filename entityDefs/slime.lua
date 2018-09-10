@@ -86,6 +86,16 @@ function slime.server:damage(d, clientId)
             local y = self.y + (math.random()*2-1)*64
             self:new{x=x, y=y}:spawn()
         end
+        if math.random() < 0.5 then
+            local i = math.min(math.floor(math.random()*3), 2) + 1
+            local type = ({'lootBag', 'lootBag1', 'lootBagFuse'})[i]
+            lootBags.server.spawn{
+                x = self.x, y = self.y,
+                items = {'apl', 'banan'},
+                life = 10,
+                type = type
+            }
+        end
         self:destroy()
     end
 end
@@ -159,6 +169,7 @@ function slime.client:spawn()
         table.insert(self.fixtures, fixture)
         fixture:setUserData(self)
         fixture:setCategory(3)
+        fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
     end
     self.body:setFixedRotation(true)
     self.body:setLinearDamping(10)
@@ -191,11 +202,8 @@ function slime.client:update(dt)
     base.client.update(self, dt)
 end
 
-function slime.client:draw()
-    local _canvas = love.graphics.getCanvas()
+function slime.client:drawBody()
     local _shader = love.graphics.getShader()
-
-    -- body
     love.graphics.setColor(1, 1, 1)
     love.graphics.setShader(shaders.outline)
     -- gfx.enemies.slime1
@@ -209,8 +217,12 @@ function slime.client:draw()
         0, 1, 1,
         math.floor(img:getWidth()/2), math.floor(img:getHeight()/2))
     love.graphics.pop()
+    love.graphics.setShader(_shader)
+end
 
-    -- hp bar
+function slime.client:drawHP()
+    local _canvas = love.graphics.getCanvas()
+    local _shader = love.graphics.getShader()
     love.graphics.setColor(1, 1, 1)
     love.graphics.setCanvas(canvases.hpBar)
     love.graphics.setShader(shaders.hpBar)
@@ -224,7 +236,7 @@ function slime.client:draw()
     love.graphics.push()
     local vx, vy = self.body:getPosition()
     love.graphics.translate(math.floor(vx), math.floor(vy))
-    love.graphics.draw(canvases.hpBar, math.floor(-canvases.hpBar:getWidth()/2), -15)
+    love.graphics.draw(canvases.hpBar, math.floor(-canvases.hpBar:getWidth()/2), 10)
     love.graphics.pop()
 end
 

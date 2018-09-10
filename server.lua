@@ -28,19 +28,11 @@ function server.start(port, singleplayer)
             end
             -- send current state to new player
             local add = server.newState()
-            for _, v in pairs(server.currentState.players) do
-                if not server.added.players[v.id] then
-                    add.players[v.id] = v
-                end
-            end
-            for _, v in pairs(server.currentState.projectiles) do
-                if not server.added.projectiles[v.id] then
-                    add.projectiles[v.id] = v
-                end
-            end
-            for _, v in pairs(server.currentState.entities) do
-                if not server.added.entities[v.id] then
-                    add.entities[v.id] = v
+            for k, t in pairs(server.currentState) do -- 'players', 'projectiles'
+                for _, v in pairs(t) do
+                    if not server.added[k][v.id] then
+                        add[k][v.id] = v
+                    end
                 end
             end
             self:sendRPC('add', json.encode(add), clientId)
@@ -101,6 +93,7 @@ function server.start(port, singleplayer)
                 stateUpdate.entities[v.id] = v
             end
         end
+        -- no lootBags updates
         self:sendRPC('stateUpdate', json.encode(stateUpdate))
     end)
     server.nutServer:start()
@@ -127,7 +120,7 @@ function server.start(port, singleplayer)
 end
 
 function server.newState()
-    return {players={}, projectiles={}, entities={}}
+    return {players={}, projectiles={}, entities={}, lootBags={}}
 end
 
 function server.addPlayer(name, clientId)
@@ -160,6 +153,7 @@ function server.update(dt)
         physics.server.update(dt)
         projectiles.server.update(dt)
         entities.server.update(dt)
+        lootBags.server.update(dt)
     end
 end
 

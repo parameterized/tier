@@ -41,6 +41,11 @@ gfx = {
     enemies = {
         slime1 = love.graphics.newImage('gfx/enemies/slime1.png'),
         slime2 = love.graphics.newImage('gfx/enemies/slime2.png')
+    },
+    items = {
+        lootBag = love.graphics.newImage('gfx/items/loot.png'),
+        lootBag1 = love.graphics.newImage('gfx/items/loot1.png'),
+        lootBagFuse = love.graphics.newImage('gfx/items/loot-fuse.png')
     }
 }
 

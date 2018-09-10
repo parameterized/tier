@@ -14,6 +14,7 @@ require 'world'
 require 'player'
 require 'projectiles'
 require 'entities'
+require 'lootBags'
 require 'hud'
 require 'chat'
 
@@ -129,6 +130,7 @@ function love.draw()
 
         world.draw()
         entities.client.draw()
+        lootBags.client.draw()
         projectiles.client.draw()
         player.draw()
 

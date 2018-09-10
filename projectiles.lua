@@ -6,13 +6,6 @@ projectiles = {
     client = {}
 }
 
-function projectiles.server.reset()
-    for i, v in pairs(projectiles.server.container) do
-        projectiles.server.destroy(i)
-    end
-    projectiles.server.container = {}
-end
-
 function projectiles.server.spawn(data)
     -- todo: more validation (type)
     local defaults = {
@@ -56,6 +49,7 @@ function projectiles.server.spawn(data)
     data.body:setAngle(-data.angle)
     data.body:setFixedRotation(true)
     data.body:setLinearVelocity(math.cos(data.angle)*data.speed, -math.sin(data.angle)*data.speed)
+
     projectiles.server.container[data.id] = data
     local state = {
         id = data.id,
@@ -67,36 +61,38 @@ function projectiles.server.spawn(data)
     server.added.projectiles[data.id] = state
 end
 
-function projectiles.server.destroy(i)
-    local v = projectiles.server.container[i]
+function projectiles.server.destroy(id)
+    local v = projectiles.server.container[id]
     if v then
         for _, fix in pairs(v.fixtures) do
             if not fix:isDestroyed() then fix:destroy() end
         end
         if not v.body:isDestroyed() then v.body:destroy() end
-        projectiles.server.container[i] = nil
-        server.currentState.projectiles[v.id] = nil
-        server.removed.projectiles[v.id] = v.id
+        projectiles.server.container[id] = nil
+        server.currentState.projectiles[id] = nil
+        server.removed.projectiles[id] = id
+    end
+end
+
+function projectiles.server.reset()
+    for k, v in pairs(projectiles.server.container) do
+        projectiles.server.destroy(k)
     end
 end
 
 function projectiles.server.update(dt)
-    for i, v in pairs(projectiles.server.container) do
+    for k, v in pairs(projectiles.server.container) do
         local sv = server.currentState.projectiles[v.id]
         if sv then
             sv.x, sv.y = v.body:getPosition()
         end
         if gameTime - v.spawnTime > v.life then
-            projectiles.server.destroy(i)
+            projectiles.server.destroy(k)
         end
     end
 end
 
 
-
-function projectiles.client.reset()
-
-end
 
 function projectiles.client.draw()
     local _canvas = love.graphics.getCanvas()
