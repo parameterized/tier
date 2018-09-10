@@ -9,13 +9,13 @@ json = require 'json'
 require 'server'
 require 'client'
 require 'menu'
+require 'hud'
 require 'physics'
 require 'world'
 require 'player'
 require 'projectiles'
 require 'entities'
 require 'lootBags'
-require 'hud'
 require 'chat'
 
 function love.load()
@@ -24,6 +24,7 @@ function love.load()
     gameTime = 0
     drawDebug = false
     menu.load()
+    hud.load()
 end
 
 gameScale = math.min(ssx/gsx, ssy/gsy)
@@ -73,11 +74,16 @@ end
 function love.mousepressed(x, y, btn, isTouch)
     if gameState == 'playing' then
         player.mousepressed(x, y, btn)
+        hud.mousepressed(x, y, btn)
     end
     menu.mousepressed(x, y, btn)
 end
 
 function love.mousereleased(x, y, btn, isTouch)
+    if gameState == 'playing' then
+        player.mousereleased(x, y, btn)
+        hud.mousereleased(x, y, btn)
+    end
     menu.mousereleased(x, y, btn)
 end
 
@@ -91,14 +97,18 @@ end
 
 function love.keypressed(k, scancode, isrepeat)
     local chatActive = chat.active
-    if chatActive then
+    local chatPanelOpen = hud.chatPanel.open
+    if chatActive or chatPanelOpen then
         chat.keypressed(k, scancode, isrepeat)
-    else
-        if gameState == 'playing' and k == 'return' and not isrepeat then
-            chat.active = true
-        end
     end
     if not chatActive then
+        if gameState == 'playing' and k == 'return' and not isrepeat then
+            chat.active = true
+            hud.chatPanel.open = true
+        end
+    end
+    -- if chat open, esc pressed, chat.active=false & chatActive=true
+    if not (chatActive or chat.active or chatPanelOpen) then
         menu.keypressed(k, scancode, isrepeat)
         if not isrepeat then
             if k == 'escape' then

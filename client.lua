@@ -229,6 +229,7 @@ function client.update(dt)
 
     if not (server.running and server.paused) then
         gameTime = gameTime + dt
+        hud.update(dt)
         physics.client.update(dt)
         world.update(dt)
         player.update(dt)

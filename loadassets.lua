@@ -17,26 +17,40 @@ canvases = {
 
 gfx = {
     cursors = {
-        main = love.graphics.newImage('gfx/ui/cursor.png')
+        main = love.graphics.newImage('gfx/ui/cursors/cursor.png')
     },
     logo = love.graphics.newImage('gfx/logo.png'),
     logoAnim = love.graphics.newImage('gfx/logo_anim.png'),
+    ui = {
+        buttons = {
+            up = love.graphics.newImage('gfx/ui/buttons/up.png'),
+            down = love.graphics.newImage('gfx/ui/buttons/down.png'),
+            left = love.graphics.newImage('gfx/ui/buttons/left.png'),
+            right = love.graphics.newImage('gfx/ui/buttons/right.png')
+        }
+    },
     hud = {
-        frame = love.graphics.newImage('gfx/ui/hud/hudframe.png'),
-        xpbar = love.graphics.newImage('gfx/ui/hud/xpbar.png'),
-        cog = love.graphics.newImage('gfx/ui/hud/cog.png'),
-        map = love.graphics.newImage('gfx/ui/hud/map.png'),
-        inventory = love.graphics.newImage('gfx/ui/hud/inventoryOpen.png'),
-        dropDown = love.graphics.newImage('gfx/ui/hud/buttonDD.png'),
+        frame = love.graphics.newImage('gfx/ui/hud/frame.png'),
         lifemana = love.graphics.newImage('gfx/ui/hud/lifemana.png'),
-        pause = love.graphics.newImage('gfx/ui/hud/pause.png')
+        panels = {
+            map = love.graphics.newImage('gfx/ui/hud/panels/map.png'),
+            chat = love.graphics.newImage('gfx/ui/hud/panels/chat.png'),
+            stats = love.graphics.newImage('gfx/ui/hud/panels/stats.png'),
+            inventory = love.graphics.newImage('gfx/ui/hud/panels/inventory.png')
+        },
+        buttons = {
+            chat = love.graphics.newImage('gfx/ui/hud/buttons/chat.png'),
+            chatField = love.graphics.newImage('gfx/ui/hud/buttons/chatField.png'),
+            stats = love.graphics.newImage('gfx/ui/hud/buttons/stats.png'),
+            backpack = love.graphics.newImage('gfx/ui/hud/buttons/backpack.png')
+        }
     },
     tiles = {
         tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png')
     },
     player = {
-        walkSheet = love.graphics.newImage('gfx/char/player_walk.png'),
-        swingSheet = love.graphics.newImage('gfx/char/player_swing.png')
+        walkSheet = love.graphics.newImage('gfx/player/player_walk.png'),
+        swingSheet = love.graphics.newImage('gfx/player/player_swing.png')
     },
     enemies = {
         slime1 = love.graphics.newImage('gfx/enemies/slime1.png'),

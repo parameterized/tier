@@ -35,8 +35,7 @@ function player.serialize()
 end
 
 function player.swing()
-    local mx, my = love.mouse.getPosition()
-    mx, my = screen2game(mx, my)
+    local mx, my = screen2game(love.mouse.getPosition())
     player.direction = mx < gsx/2 and -1 or 1
     player.swinging = true
     player.swingTimer = 0
@@ -54,8 +53,7 @@ function player.swing()
 end
 
 function player.update(dt)
-    local mx, my = love.mouse.getPosition()
-    mx, my = screen2game(mx, my)
+    local mx, my = screen2game(love.mouse.getPosition())
 
     if not chat.active then
         local dx, dy = 0, 0
@@ -88,7 +86,8 @@ function player.update(dt)
                 if xv > 0 then player.direction = 1 end
             end
         end
-        if player.automaticSwing and love.mouse.isDown(1) and not menu.buttonDown then
+        if player.automaticSwing and love.mouse.isDown(1)
+        and not menu.buttonDown and not hud.buttonDown then
             player.swing()
         end
     end
@@ -101,10 +100,15 @@ function player.update(dt)
     camera.y = math.floor(player.body:getY() - 14) + math.floor(-math.sin(a)*d/6)
 end
 
-function player.mousepressed(mx, my, btn)
-    if not player.automaticSwing and not player.swinging then
+function player.mousepressed(x, y, btn)
+    if not player.automaticSwing and not player.swinging
+    and not menu.buttonDown and not hud.buttonDown then
         player.swing()
     end
+end
+
+function player.mousereleased(x, y, btn)
+
 end
 
 function player.draw()

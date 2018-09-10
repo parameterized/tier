@@ -2,21 +2,26 @@
 menu = {}
 
 menu.state = 'main'
-menu.btns = {}
+menu.buttons = {}
 menu.inputs = {}
 menu.infos = {}
 menu.activeInput = nil
 menu.buttonDown = false
 menu.logoAnimTimer = 0
 
-function menu.addBtn(t)
-    t.state = t.state or 'main'
-    t.text = t.text or 'Button'
-    t.font = t.font or fonts.c17
-    t.type = t.type or 'default'
-    t.action = t.action or function() end
-    t.x = t.x or 240
-    t.y = t.y or 135
+function menu.addButton(t)
+    local defaults = {
+        state = 'main',
+        text = 'Button',
+        font = fonts.c17,
+        type = 'default',
+        x = 480/2,
+        y = 270/2
+        -- action nil
+    }
+    for k, v in pairs(defaults) do
+        if t[k] == nil then t[k] = v end
+    end
     if t.type == 'cycle' then
         t.bw, t.bh = 0, 0
         t.items = t.items or {'<item>'}
@@ -30,18 +35,23 @@ function menu.addBtn(t)
     end
     t.bx = math.floor(t.x - t.bw/2)
     t.by = math.floor(t.y - t.bh/2)
-    if not menu.btns[t.state] then menu.btns[t.state] = {} end
-    table.insert(menu.btns[t.state], t)
+    if not menu.buttons[t.state] then menu.buttons[t.state] = {} end
+    table.insert(menu.buttons[t.state], t)
     return t
 end
 
 function menu.addInput(t)
-    t.state = t.state or 'main'
-    t.text = t.text or 'Input'
-    t.font = t.font or fonts.c17
-    t.value = t.value or ''
-    t.x = t.x or 240
-    t.y = t.y or 135
+    local defaults = {
+        state = 'main',
+        text = 'Input',
+        font = fonts.c17,
+        value = '',
+        x = 480/2,
+        y = 270/2,
+    }
+    for k, v in pairs(defaults) do
+        if t[k] == nil then t[k] = v end
+    end
     t.w = math.floor(t.w or 80)
     t.bw = t.w
     t.bh = math.floor(t.font:getHeight() + 4)
@@ -53,11 +63,16 @@ function menu.addInput(t)
 end
 
 function menu.addInfo(t)
-    t.state = t.state or 'main'
-    t.text = t.text or 'Info'
-    t.font = t.font or fonts.c17
-    t.x = t.x or 240
-    t.y = t.y or 135
+    local defaults = {
+        state = 'main',
+        text = 'Info',
+        font = fonts.c17,
+        x = 480/2,
+        y = 270/2
+    }
+    for k, v in pairs(defaults) do
+        if t[k] == nil then t[k] = v end
+    end
     if not menu.infos[t.state] then menu.infos[t.state] = {} end
     table.insert(menu.infos[t.state], t)
     return t
@@ -109,18 +124,18 @@ function menu.load()
 
     local exitY = 220
     local h = 40
-    menu.addBtn{text='Play', y=exitY - h*2.5, action = function()
+    menu.addButton{text='Play', y=exitY - h*2.5, action = function()
         menu.state = 'play'
     end}
-    menu.addBtn{text='Options', y=exitY - h*1.5, action=function()
+    menu.addButton{text='Options', y=exitY - h*1.5, action=function()
         menu.state = 'options'
     end}
-    menu.addBtn{text='Exit', y=exitY, action = function()
+    menu.addButton{text='Exit', y=exitY, action = function()
         love.event.quit()
     end}
 
     menu.nameInput = menu.addInput{state='play', text='Player Name', value=menuDefaults.name, x=gsx/2 - 70, y=exitY - h*2}
-    menu.addBtn{state='play', text='Singleplayer', x=gsx/2 - 70, y=exitY - h*1, action=function()
+    menu.addButton{state='play', text='Singleplayer', x=gsx/2 - 70, y=exitY - h*1, action=function()
         chat.log = {}
         -- todo: choose open port
         -- remove whitespace
@@ -132,7 +147,7 @@ function menu.load()
     end}
     menu.ipInput = menu.addInput{state='play', text='IP', value=menuDefaults.ip, x=gsx/2 + 70, y=exitY - h*3}
     menu.portInput = menu.addInput{state='play', text='Port', value=menuDefaults.port, x=gsx/2 + 70, y=exitY - h*2}
-    menu.addBtn{state='play', text='Host', x=gsx/2 + 70 - 25, y=exitY - h*1, action=function()
+    menu.addButton{state='play', text='Host', x=gsx/2 + 70 - 25, y=exitY - h*1, action=function()
         chat.log = {}
         -- todo: notify if not open or other err
         local port = menu.portInput.value:gsub("%s+", "")
@@ -141,7 +156,7 @@ function menu.load()
         menu.state = 'connect'
         menu.connectInfo.text = 'Starting Game'
     end}
-    menu.addBtn{state='play', text='Join', x=gsx/2 + 70 + 25, y=exitY - h*1, action=function()
+    menu.addButton{state='play', text='Join', x=gsx/2 + 70 + 25, y=exitY - h*1, action=function()
         chat.log = {}
         local ip = menu.ipInput.value:gsub("%s+", "")
         local port = menu.portInput.value:gsub("%s+", "")
@@ -149,12 +164,12 @@ function menu.load()
         menu.state = 'connect'
         menu.connectInfo.text = 'Starting Game'
     end}
-    menu.addBtn{state='play', text='Back', y=exitY, action=function()
+    menu.addButton{state='play', text='Back', y=exitY, action=function()
         menu.state = 'main'
     end}
 
     menu.connectInfo = menu.addInfo{state='connect', text='[connection info]', y=gsy/2}
-    menu.addBtn{state='connect', text='Cancel', y=exitY, action=function()
+    menu.addButton{state='connect', text='Cancel', y=exitY, action=function()
         menu.state = 'play'
         if server.running then
             server.close()
@@ -164,7 +179,7 @@ function menu.load()
         end
     end}
 
-    menu.resolutionBtn = menu.addBtn{state='options', text='Resolution', y=exitY - h*4,
+    menu.resolutionBtn = menu.addButton{state='options', text='Resolution', y=exitY - h*4,
     type='cycle', items={'960x540', '1440x810', '1920x1080'},
     active=menuDefaults.resolution, action=function(v)
         local fullscreen, fstype = love.window.getFullscreen()
@@ -199,7 +214,7 @@ function menu.load()
         end
         text.print(txt, math.floor(v.x - v.font:getWidth(txt)/2), math.floor(v.y - v.font:getHeight()/2))
     end}
-    menu.fullscreenBtn = menu.addBtn{state='options', text='Fullscreen', y=exitY - h*3,
+    menu.fullscreenBtn = menu.addButton{state='options', text='Fullscreen', y=exitY - h*3,
     type='cycle', items={'Windowed', 'Borderless Fullscreen Windowed', 'Fullscreen'},
     active=menuDefaults.fullscreen, action=function(v)
         if v == 'Windowed' then
@@ -216,14 +231,14 @@ function menu.load()
             love.resize(w, h)
         end
     end}
-    menu.vsyncBtn = menu.addBtn{state='options', text='Vsync', y=exitY - h*2.2, type='toggle',
+    menu.vsyncBtn = menu.addButton{state='options', text='Vsync', y=exitY - h*2.2, type='toggle',
     active=menuDefaults.vsync, action=function(v)
         local w, h, flags = love.window.getMode()
         flags.vsync = v
         love.window.setMode(w, h, flags)
     end}
-    menu.cursorLockBtn = menu.addBtn{state='options', text='Cursor Lock', y=exitY - h*1.4, type='toggle', active=menuDefaults.cursorLock}
-    menu.addBtn{state='options', text='Back', y=exitY, action=function()
+    menu.cursorLockBtn = menu.addButton{state='options', text='Cursor Lock', y=exitY - h*1.4, type='toggle', active=menuDefaults.cursorLock}
+    menu.addButton{state='options', text='Back', y=exitY, action=function()
         menu.state = 'main'
     end}
 
@@ -276,16 +291,16 @@ function menu.mousepressed(mx, my, btn)
     mx, my = screen2game(mx, my)
     if gameState == 'menu' then
         menu.activeInput = nil
-        for _, v in pairs(menu.btns[menu.state] or {}) do
+        for _, v in pairs(menu.buttons[menu.state] or {}) do
             if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
                 if v.type == 'toggle' then
                     v.active = not v.active
-                    v.action(v.active)
+                    if v.action then v.action(v.active) end
                 elseif v.type == 'cycle' then
                     v.active = ((v.active - 1 + (btn == 2 and -1 or 1)) % #v.items) + 1
-                    v.action(v.items[v.active])
+                    if v.action then v.action(v.items[v.active]) end
                 else
-                    v.action()
+                    if v.action then v.action() end
                 end
                 menu.buttonDown = true
                 return
@@ -356,7 +371,7 @@ function menu.draw()
             local quad = anims.logo.quads[logoFrameIdx]
             love.graphics.draw(gfx.logoAnim, quad, math.floor(gsx/2 - gfx.logo:getWidth()/2), 12)
         end
-        for _, v in pairs(menu.btns[menu.state] or {}) do
+        for _, v in pairs(menu.buttons[menu.state] or {}) do
             if v.draw then
                 v.draw(v, mx, my)
             else
@@ -395,7 +410,7 @@ function menu.draw()
                 love.graphics.setColor(0.8, 0.8, 0.8)
                 love.graphics.setFont(v.font)
                 text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
-                txt = v.value
+                local txt = v.value
                 if menu.activeInput == v then txt = txt .. (time % 1 < 0.5 and '' or '|') end
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.setFont(v.font)
