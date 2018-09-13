@@ -109,7 +109,8 @@ fonts = {
     f24 = love.graphics.newFont(24),
 
     c13 = love.graphics.newImageFont('gfx/fonts/small_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
-    c17 = love.graphics.newImageFont('gfx/fonts/big_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>')
+    c17 = love.graphics.newImageFont('gfx/fonts/big_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
+    stats = love.graphics.newImageFont('gfx/fonts/stat_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 }
 -- todo: test
 -- love.graphics.newFont([filename, ] size, "mono")

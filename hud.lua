@@ -196,17 +196,40 @@ function hud.draw()
         end
     end
 
+    local l = player.xp2level(player.xp)
     x, y = hud.statsPanel.x, hud.statsPanel.y
     love.graphics.setColor(221/255, 217/255, 0)
-    local t = gameTime/8 - math.floor(gameTime/8)
+    local t = l - math.floor(l)
     love.graphics.rectangle('fill', 191, math.floor(y + 20), t*99, 3)
 
     love.graphics.setColor(1, 1, 1)
     local font = fonts.c17
     love.graphics.setFont(font)
-
-    local level = tostring(math.floor(gameTime/8))
+    local level = tostring(math.floor(l))
     love.graphics.print(level, math.floor(240 - font:getWidth(level)/2), math.floor(y))
 
+    font = fonts.stats
+    love.graphics.setFont(font)
+    local stats_x, stats_y = 202, 227
+    local stats_dx, stats_dy = 20, 11
+    for j, row in pairs{'base', 'arm', 'total'} do
+        local c = ({
+            {255/255, 175/255, 48/255},
+            {255/255, 84/255, 252/255},
+            {48/255, 255/255, 241/255}
+        })[j]
+        love.graphics.setColor(c)
+        for i, col in pairs{'vit', 'atk', 'spd', 'wis', 'def', 'reg'} do
+            local sx = stats_x + stats_dx*(i-1)
+            local sy = stats_y + stats_dy*(j-1)
+            sx = x + (sx - hud.statsPanel.openPos.x)
+            sy = y + (sy - hud.statsPanel.openPos.y)
+            local txt = tostring(player.stats[col][row])
+            love.graphics.print(txt, math.floor(sx - font:getWidth(txt)/2), math.floor(sy - font:getHeight()/2))
+        end
+    end
+
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.setFont(fonts.c17)
     text.print(player.name, 44, 5)
 end

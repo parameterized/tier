@@ -82,6 +82,7 @@ function server.start(port, singleplayer)
         stateUpdate.time = gameTime
         for _, v in pairs(server.currentState.players) do
             -- don't send clientIds - index by uuid
+            -- todo: don't send xp/stats in update
             stateUpdate.players[v.id] = v
         end
         for _, v in pairs(server.currentState.projectiles) do
@@ -127,6 +128,7 @@ function server.addPlayer(name, clientId)
     local p = {
         id = uuid(), name = name,
         x = (math.random()*2-1)*128, y = (math.random()*2-1)*128,
+        xp = 0, stats = player.newStats()
     }
     server.currentState.players[clientId] = p
     server.playerNames[name] = true
@@ -144,6 +146,33 @@ function server.removePlayer(clientId)
     server.uuid2clientId[p.id] = nil
     server.playerNames[p.name] = nil
     server.currentState.players[clientId] = nil
+end
+
+function server.addXP(playerId, xp)
+    local clientId = server.uuid2clientId[playerId]
+    if clientId then
+        local p = server.currentState.players[clientId]
+        if p then
+            local _l = player.xp2level(p.xp)
+            p.xp = p.xp + xp
+            local l = player.xp2level(p.xp)
+            if math.floor(_l) ~= math.floor(l) then -- level increased
+                p.stats.vit.base = math.floor(l*10 + 100)
+                p.stats.atk.base = math.floor(l*8 + 80)
+                p.stats.spd.base = math.floor(l*5 + 50)
+                p.stats.wis.base = math.floor(l*8 + 100)
+                p.stats.def.base = math.floor(l*4 + 20)
+                p.stats.reg.base = math.floor(l*6 + 50)
+                for _, v in pairs(p.stats) do
+                    v.total = v.base + v.arm
+                end
+            end
+        else
+            print('player not found in server.addXP()')
+        end
+    else
+        print('clientId not found in server.addXP()')
+    end
 end
 
 function server.update(dt)

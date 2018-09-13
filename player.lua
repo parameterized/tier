@@ -9,6 +9,10 @@ function player.load()
     player.direction = 1
     player.spd = 6e2
 
+    player.xp = 0
+    player.level = 0
+    player.stats = player.newStats()
+
     player.body = love.physics.newBody(physics.client.world, 0, 0, 'dynamic')
     player.shape = love.physics.newCircleShape(6)
     player.fixture = love.physics.newFixture(player.body, player.shape, 1)
@@ -17,6 +21,43 @@ function player.load()
     player.fixture:setCategory(1)
     player.body:setFixedRotation(true)
     player.body:setLinearDamping(10)
+end
+
+function player.xp2level(x)
+    return math.sqrt(x)/2
+end
+
+function player.newStats()
+    local t = {
+        vit = {
+            base = 100,
+            arm = 14,
+        },
+        atk = {
+            base = 80,
+            arm = 25,
+        },
+        spd = {
+            base = 50,
+            arm = 9,
+        },
+        wis = {
+            base = 100,
+            arm = 8,
+        },
+        def = {
+            base = 20,
+            arm = 25,
+        },
+        reg = {
+            base = 50,
+            arm = 10,
+        }
+    }
+    for _, v in pairs(t) do
+        v.total = v.base + v.arm
+    end
+    return t
 end
 
 function player.destroy()

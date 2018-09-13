@@ -80,7 +80,7 @@ end
 function slime.server:damage(d, clientId)
     self.hp = self.hp - d
     if self.hp <= 0 and not self.destroyed then
-        --server.addPoints(clientId, 1)
+        server.addXP(clientId, math.random(3, 5))
         for i=1, math.random(1, 2) do
             local x = self.x + (math.random()*2-1)*64
             local y = self.y + (math.random()*2-1)*64

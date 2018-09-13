@@ -200,6 +200,14 @@ function client.update(dt)
                     obj.y = lerp(v.y, v2.y, t)
 
                     obj.body:setPosition(obj.x, obj.y)
+
+                    obj.xp = v2.xp
+                    obj.stats = v2.stats
+
+                    if k == player.id then
+                        player.xp = obj.xp
+                        player.stats = obj.stats
+                    end
                 end
             end
         end
