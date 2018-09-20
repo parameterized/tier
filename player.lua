@@ -29,30 +29,12 @@ end
 
 function player.newStats()
     local t = {
-        vit = {
-            base = 100,
-            arm = 14,
-        },
-        atk = {
-            base = 80,
-            arm = 25,
-        },
-        spd = {
-            base = 50,
-            arm = 9,
-        },
-        wis = {
-            base = 100,
-            arm = 8,
-        },
-        def = {
-            base = 20,
-            arm = 25,
-        },
-        reg = {
-            base = 50,
-            arm = 10,
-        }
+        vit = {base = 100, arm = 14},
+        atk = {base = 80, arm = 25},
+        spd = {base = 50, arm = 9},
+        wis = {base = 100, arm = 8},
+        def = {base = 20, arm = 25},
+        reg = {base = 50, arm = 10}
     }
     for _, v in pairs(t) do
         v.total = v.base + v.arm
@@ -76,7 +58,7 @@ function player.serialize()
 end
 
 function player.swing()
-    local mx, my = screen2game(love.mouse.getPosition())
+    local mx, my = window2game(love.mouse.getPosition())
     player.direction = mx < gsx/2 and -1 or 1
     player.swinging = true
     player.swingTimer = 0
@@ -94,7 +76,7 @@ function player.swing()
 end
 
 function player.update(dt)
-    local mx, my = screen2game(love.mouse.getPosition())
+    local mx, my = window2game(love.mouse.getPosition())
 
     if not chat.active then
         local dx, dy = 0, 0
@@ -104,7 +86,7 @@ function player.update(dt)
         dy = dy + (love.keyboard.isScancodeDown('s') and 1 or 0)
         local spd = player.spd*(love.keyboard.isScancodeDown('lshift') and 2.5 or 1)
         if not (dx == 0 and dy == 0)
-        and not (player.swinging or player.automaticSwing and love.mouse.isDown(1)) then
+        and not (player.swinging or player.automaticSwing and love.mouse.isDown(1) and not uiMouseDown) then
             local a = math.atan2(dx, dy) - math.pi/2
             player.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
         end
@@ -127,8 +109,7 @@ function player.update(dt)
                 if xv > 0 then player.direction = 1 end
             end
         end
-        if player.automaticSwing and love.mouse.isDown(1)
-        and not menu.buttonDown and not hud.buttonDown then
+        if player.automaticSwing and love.mouse.isDown(1) and not uiMouseDown then
             player.swing()
         end
     end
@@ -137,13 +118,12 @@ function player.update(dt)
     local dy = my - gsy/2
     local a = math.atan2(dx, dy) - math.pi/2
     local d = math.min(math.sqrt(dx^2 + dy^2), gsy/2)
-    camera.x = math.floor(player.body:getX()) + math.floor(math.cos(a)*d/6)
-    camera.y = math.floor(player.body:getY() - 14) + math.floor(-math.sin(a)*d/6)
+    camera.x = lume.round(player.body:getX()) + lume.round(math.cos(a)*d/6)
+    camera.y = lume.round(player.body:getY() - 14) + lume.round(-math.sin(a)*d/6)
 end
 
 function player.mousepressed(x, y, btn)
-    if not player.automaticSwing and not player.swinging
-    and not menu.buttonDown and not hud.buttonDown then
+    if not player.automaticSwing and not player.swinging and not uiMouseDown then
         player.swing()
     end
 end
@@ -164,7 +144,7 @@ function player.draw()
             -- shadow
             love.graphics.setColor(0, 0, 0, 0.2)
             local shadowWidth = 5
-            love.graphics.ellipse('fill', math.floor(v.x), math.floor(v.y), shadowWidth, 2)
+            love.graphics.ellipse('fill', lume.round(v.x), lume.round(v.y), shadowWidth, 2)
 
             -- player
             love.graphics.setCanvas(canvases.tempGame)
@@ -174,9 +154,9 @@ function player.draw()
             local quad = anims.player.swing.quads[1]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.swing.sheet, quad,
-            math.floor(v.x), math.floor(v.y),
-            0, 1, 1,
-            23, h)
+                lume.round(v.x), lume.round(v.y),
+                0, 1, 1,
+                23, h)
 
             -- outline
             love.graphics.setCanvas(_canvas)
@@ -195,7 +175,7 @@ function player.draw()
             -- name
             local font = fonts.c17
             love.graphics.setFont(font)
-            text.printSmall(v.name, math.floor(v.x) - font:getWidth(v.name)/4, math.floor(v.y) - 40)
+            text.printSmall(v.name, lume.round(v.x) - font:getWidth(v.name)/4, lume.round(v.y) - 40)
         end
     end
 
@@ -210,7 +190,7 @@ function player.draw()
     local walkFrameIdx = math.floor(player.walkTimer*12) % #anims.player.walk.quads + 1
     local shadowWidth = ({6, 5, 4, 5, 5})[walkFrameIdx]
     if player.swinging or vd < 10 then shadowWidth = 6 end
-    love.graphics.ellipse('fill', math.floor(px), math.floor(py), shadowWidth, 2)
+    love.graphics.ellipse('fill', lume.round(px), lume.round(py), shadowWidth, 2)
 
     -- player
     love.graphics.setCanvas(canvases.tempGame)
@@ -219,28 +199,28 @@ function player.draw()
     love.graphics.setColor(1, 1, 1)
     if player.swinging then
         local frameIdx = math.floor(player.swingTimer*12) + 1
-        frameIdx = clamp(frameIdx, 1, 5)
+        frameIdx = lume.clamp(frameIdx, 1, 5)
         local quad = anims.player.swing.quads[frameIdx]
         local _, _, w, h = quad:getViewport()
         love.graphics.draw(anims.player.swing.sheet, quad,
-        math.floor(px), math.floor(py),
-        0, player.direction, 1,
-        23, h)
+            lume.round(px), lume.round(py),
+            0, player.direction, 1,
+            23, h)
     else
         if vd < 10 then
             local quad = anims.player.swing.quads[1]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.swing.sheet, quad,
-            math.floor(px), math.floor(py),
-            0, player.direction, 1,
-            23, h)
+                lume.round(px), lume.round(py),
+                0, player.direction, 1,
+                23, h)
         else
             local quad = anims.player.walk.quads[walkFrameIdx]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.walk.sheet, quad,
-            math.floor(px), math.floor(py),
-            0, player.direction, 1,
-            8, h)
+                lume.round(px), lume.round(py),
+                0, player.direction, 1,
+                8, h)
         end
     end
 
@@ -261,11 +241,11 @@ function player.draw()
     -- name
     local font = fonts.c17
     love.graphics.setFont(font)
-    text.printSmall(player.name, math.floor(px) - font:getWidth(player.name)/4, math.floor(py) - 40)
+    text.printSmall(player.name, lume.round(px) - font:getWidth(player.name)/4, lume.round(py) - 40)
 
     if drawDebug then
         love.graphics.setColor(1, 0, 0, 0.5)
         love.graphics.circle('fill',
-            math.floor(px), math.floor(py), player.shape:getRadius())
+            lume.round(px), lume.round(py), player.shape:getRadius())
     end
 end

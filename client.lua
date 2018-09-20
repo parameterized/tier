@@ -170,13 +170,13 @@ function client.update(dt)
             print('clamp up ' .. math.abs(client.stateTime - cs_3.time))
         end
         ]]
-        client.stateTime = clamp(client.stateTime + dt, cs_3.time, cs_0.time)
+        client.stateTime = lume.clamp(client.stateTime + dt, cs_3.time, cs_0.time)
         if client.stateTime > cs_1.time then
             --print('lerp down')
-            client.stateTime = lerp(client.stateTime, cs_1.time, clamp(dt, 0, 1))
+            client.stateTime = lume.lerp(client.stateTime, cs_1.time, lume.clamp(dt, 0, 1))
         elseif client.stateTime < cs_2.time then
             --print('lerp up')
-            client.stateTime = lerp(client.stateTime, cs_2.time, clamp(dt, 0, 1))
+            client.stateTime = lume.lerp(client.stateTime, cs_2.time, lume.clamp(dt, 0, 1))
         end
         --debugger.logVal('interpolation delay', client.serverTime - client.stateTime)
         while client.states[client.stateIdx+1] and client.states[client.stateIdx+2]
@@ -185,7 +185,7 @@ function client.update(dt)
         end
         local t = (client.stateTime - client.states[client.stateIdx].time)
             / (client.states[client.stateIdx+1].time - client.states[client.stateIdx].time)
-        --t = clamp(t, 0, 1) -- t>1 = prediction
+        --t = lume.clamp(t, 0, 1) -- t>1 = prediction
         if not client.interpolate then
             t = 1
         end
@@ -196,8 +196,8 @@ function client.update(dt)
             if v2 then
                 local obj = client.currentState.players[k]
                 if obj then
-                    obj.x = lerp(v.x, v2.x, t)
-                    obj.y = lerp(v.y, v2.y, t)
+                    obj.x = lume.lerp(v.x, v2.x, t)
+                    obj.y = lume.lerp(v.y, v2.y, t)
 
                     obj.body:setPosition(obj.x, obj.y)
 
@@ -216,8 +216,8 @@ function client.update(dt)
             if v2 then
                 local obj = client.currentState.projectiles[k]
                 if obj then
-                    obj.x = lerp(v.x, v2.x, t)
-                    obj.y = lerp(v.y, v2.y, t)
+                    obj.x = lume.lerp(v.x, v2.x, t)
+                    obj.y = lume.lerp(v.y, v2.y, t)
                     obj.startedMoving = true
                 end
             end
@@ -238,6 +238,7 @@ function client.update(dt)
     if not (server.running and server.paused) then
         gameTime = gameTime + dt
         hud.update(dt)
+        lootBags.client.update(dt)
         physics.client.update(dt)
         world.update(dt)
         player.update(dt)

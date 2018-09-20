@@ -19,7 +19,7 @@ function projectiles.server.spawn(data)
         if data[k] == nil then data[k] = v end
     end
 
-    data.id = uuid()
+    data.id = lume.uuid()
     data.type = 'playerSwing'
     data.spawnTime = gameTime
     data.body = love.physics.newBody(physics.server.world, data.x, data.y, 'dynamic')
@@ -104,7 +104,7 @@ function projectiles.client.draw()
             love.graphics.clear()
             love.graphics.setColor(192/255, 192/255, 192/255)
             love.graphics.push()
-            love.graphics.translate(math.floor(v.x), math.floor(v.y))
+            love.graphics.translate(lume.round(v.x), lume.round(v.y))
             love.graphics.rotate(-v.angle)
             for _, poly in pairs(v.polys) do
                 love.graphics.polygon('fill', poly)

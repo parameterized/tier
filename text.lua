@@ -4,7 +4,7 @@ text = {}
 function text.print(txt, x, y, fontAlias)
     local _shader = love.graphics.getShader()
     if fontAlias then love.graphics.setShader(shaders.fontAlias) end
-    love.graphics.print(txt, math.floor(x), math.floor(y))
+    love.graphics.print(txt, lume.round(x), lume.round(y))
     love.graphics.setShader(_shader)
 end
 
@@ -23,8 +23,8 @@ function text.printSmall(txt, x, y, fontAlias)
         love.graphics.rotate(camera.rotation)
         love.graphics.translate(-camera.x*2, -camera.y*2)
     end
-    
-    love.graphics.print(txt, math.floor(x*2), math.floor(y*2))
+
+    love.graphics.print(txt, lume.round(x*2), lume.round(y*2))
 
     love.graphics.pop()
     love.graphics.setCanvas(_canvas)

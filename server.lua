@@ -126,7 +126,7 @@ end
 
 function server.addPlayer(name, clientId)
     local p = {
-        id = uuid(), name = name,
+        id = lume.uuid(), name = name,
         x = (math.random()*2-1)*128, y = (math.random()*2-1)*128,
         xp = 0, stats = player.newStats()
     }

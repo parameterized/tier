@@ -1,11 +1,12 @@
 
+lume = require 'lib.lume'
+nut = require 'lib.love_nut'
+json = require 'lib.json'
+Camera = require 'lib.camera'
+
 require 'utils'
 require 'loadassets'
 require 'text'
-Camera = require 'camera'
-camera = Camera{ssx=gsx, ssy=gsy}
-nut = require 'love_nut'
-json = require 'json'
 require 'server'
 require 'client'
 require 'menu'
@@ -19,9 +20,12 @@ require 'lootBags'
 require 'chat'
 
 function love.load()
+    camera = Camera{ssx=gsx, ssy=gsy}
     gameState = 'menu'
     time = 0
     gameTime = 0
+    -- don't shoot if pressing ui
+    uiMouseDown = false
     drawDebug = false
     menu.load()
     hud.load()
@@ -34,7 +38,8 @@ function love.resize(w, h)
 	gameScale = math.min(ssx/gsx, ssy/gsy)
 end
 
-function screen2game(x, y)
+-- window to game canvas
+function window2game(x, y)
 	x = x - (ssx-gameScale*gsx)/2
 	x = x / gameScale
 	y = y - (ssy-gameScale*gsy)/2
@@ -75,6 +80,7 @@ function love.mousepressed(x, y, btn, isTouch)
     if gameState == 'playing' then
         player.mousepressed(x, y, btn)
         hud.mousepressed(x, y, btn)
+        lootBags.client.mousepressed(x, y, btn)
     end
     menu.mousepressed(x, y, btn)
 end
@@ -83,8 +89,10 @@ function love.mousereleased(x, y, btn, isTouch)
     if gameState == 'playing' then
         player.mousereleased(x, y, btn)
         hud.mousereleased(x, y, btn)
+        lootBags.client.mousereleased(x, y, btn)
     end
     menu.mousereleased(x, y, btn)
+    uiMouseDown = false
 end
 
 function love.textinput(t)
@@ -130,7 +138,7 @@ function love.keypressed(k, scancode, isrepeat)
 end
 
 function love.draw()
-    local mx, my = screen2game(love.mouse.getPosition())
+    local mx, my = window2game(love.mouse.getPosition())
     love.graphics.setCanvas(canvases.game2x)
     love.graphics.clear()
     love.graphics.setCanvas(canvases.game)
@@ -169,7 +177,7 @@ function love.draw()
         chat.draw()
 
         love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(gfx.cursors.main, math.floor(mx), math.floor(my), 0, 1, 1, 0, 0) -- hotspot 0, 0
+        love.graphics.draw(gfx.cursors.main, lume.round(mx), lume.round(my), 0, 1, 1, 0, 0) -- hotspot 0, 0
     end
 
     menu.draw()

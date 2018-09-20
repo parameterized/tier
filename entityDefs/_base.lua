@@ -13,7 +13,7 @@ end
 function base.server:new(o)
     o = o or {}
     local defaults = {
-        id = uuid(),
+        id = lume.uuid(),
         x = 0, y = 0
     }
     for k, v in pairs(defaults) do
@@ -104,7 +104,7 @@ end
 function base.client:new(o)
     o = o or {}
     local defaults = {
-        id = uuid(),
+        id = lume.uuid(),
         x = 0, y = 0
     }
     for k, v in pairs(defaults) do
@@ -128,7 +128,7 @@ end
 
 function base.client:lerpState(a, b, t)
     for _, v in pairs{'x', 'y'} do
-        self[v] = lerp(a[v], b[v], t)
+        self[v] = lume.lerp(a[v], b[v], t)
     end
 end
 

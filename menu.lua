@@ -6,7 +6,6 @@ menu.buttons = {}
 menu.inputs = {}
 menu.infos = {}
 menu.activeInput = nil
-menu.buttonDown = false
 menu.logoAnimTimer = 0
 
 function menu.addButton(t)
@@ -26,15 +25,15 @@ function menu.addButton(t)
         t.bw, t.bh = 0, 0
         t.items = t.items or {'<item>'}
         for _, v in pairs(t.items) do
-            t.bw = math.max(math.floor(t.font:getWidth(v) + 8), t.bw)
-            t.bh = math.max(math.floor(t.font:getHeight() + 4), t.bh)
+            t.bw = math.max(lume.round(t.font:getWidth(v) + 8), t.bw)
+            t.bh = math.max(lume.round(t.font:getHeight() + 4), t.bh)
         end
     else
-        t.bw = math.floor(t.font:getWidth(t.text) + 8)
-        t.bh = math.floor(t.font:getHeight() + 4)
+        t.bw = lume.round(t.font:getWidth(t.text) + 8)
+        t.bh = lume.round(t.font:getHeight() + 4)
     end
-    t.bx = math.floor(t.x - t.bw/2)
-    t.by = math.floor(t.y - t.bh/2)
+    t.bx = lume.round(t.x - t.bw/2)
+    t.by = lume.round(t.y - t.bh/2)
     if not menu.buttons[t.state] then menu.buttons[t.state] = {} end
     table.insert(menu.buttons[t.state], t)
     return t
@@ -52,11 +51,11 @@ function menu.addInput(t)
     for k, v in pairs(defaults) do
         if t[k] == nil then t[k] = v end
     end
-    t.w = math.floor(t.w or 80)
+    t.w = lume.round(t.w or 80)
     t.bw = t.w
-    t.bh = math.floor(t.font:getHeight() + 4)
-    t.bx = math.floor(t.x - t.bw/2)
-    t.by = math.floor(t.y - t.bh/2)
+    t.bh = lume.round(t.font:getHeight() + 4)
+    t.bx = lume.round(t.x - t.bw/2)
+    t.by = lume.round(t.y - t.bh/2)
     if not menu.inputs[t.state] then menu.inputs[t.state] = {} end
     table.insert(menu.inputs[t.state], t)
     return t
@@ -205,14 +204,14 @@ function menu.load()
         love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
         love.graphics.setColor(0.8, 0.8, 0.8)
         love.graphics.setFont(v.font)
-        text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
+        text.print(v.text, lume.round(v.x - v.font:getWidth(v.text)/2), lume.round(v.by - v.font:getHeight()))
         love.graphics.setColor(1, 1, 1)
         local txt = v.items[v.active]
         if fullscreen and fstype == 'desktop' then
             local w, h = love.graphics.getDimensions()
             txt = w .. 'x' .. h
         end
-        text.print(txt, math.floor(v.x - v.font:getWidth(txt)/2), math.floor(v.y - v.font:getHeight()/2))
+        text.print(txt, lume.round(v.x - v.font:getWidth(txt)/2), lume.round(v.y - v.font:getHeight()/2))
     end}
     menu.fullscreenBtn = menu.addButton{state='options', text='Fullscreen', y=exitY - h*3,
     type='cycle', items={'Windowed', 'Borderless Fullscreen Windowed', 'Fullscreen'},
@@ -288,7 +287,7 @@ function menu.update(dt)
 end
 
 function menu.mousepressed(mx, my, btn)
-    mx, my = screen2game(mx, my)
+    mx, my = window2game(mx, my)
     if gameState == 'menu' then
         menu.activeInput = nil
         for _, v in pairs(menu.buttons[menu.state] or {}) do
@@ -302,7 +301,7 @@ function menu.mousepressed(mx, my, btn)
                 else
                     if v.action then v.action() end
                 end
-                menu.buttonDown = true
+                uiMouseDown = true
                 return
             end
         end
@@ -316,7 +315,7 @@ function menu.mousepressed(mx, my, btn)
 end
 
 function menu.mousereleased(mx, my, btn)
-    menu.buttonDown = false
+
 end
 
 function menu.textinput(t)
@@ -363,13 +362,13 @@ end
 
 function menu.draw()
     if gameState == 'menu' then
-        local mx, my = screen2game(love.mouse.getPosition())
+        local mx, my = window2game(love.mouse.getPosition())
 
         if menu.state == 'main' then
             love.graphics.setColor(1, 1, 1)
             local logoFrameIdx = math.floor(menu.logoAnimTimer*12) % #anims.logo.quads + 1
             local quad = anims.logo.quads[logoFrameIdx]
-            love.graphics.draw(gfx.logoAnim, quad, math.floor(gsx/2 - gfx.logo:getWidth()/2), 12)
+            love.graphics.draw(gfx.logoAnim, quad, lume.round(gsx/2 - gfx.logo:getWidth()/2), 12)
         end
         for _, v in pairs(menu.buttons[menu.state] or {}) do
             if v.draw then
@@ -389,11 +388,11 @@ function menu.draw()
                 love.graphics.setFont(v.font)
                 if v.type == 'cycle' then
                     love.graphics.setColor(0.8, 0.8, 0.8)
-                    text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
+                    text.print(v.text, lume.round(v.x - v.font:getWidth(v.text)/2), lume.round(v.by - v.font:getHeight()))
                     txt = v.items[v.active]
                 end
                 love.graphics.setColor(1, 1, 1)
-                text.print(txt, math.floor(v.x - v.font:getWidth(txt)/2), math.floor(v.y - v.font:getHeight()/2))
+                text.print(txt, lume.round(v.x - v.font:getWidth(txt)/2), lume.round(v.y - v.font:getHeight()/2))
             end
         end
         for _, v in pairs(menu.inputs[menu.state] or {}) do
@@ -409,12 +408,12 @@ function menu.draw()
                 love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
                 love.graphics.setColor(0.8, 0.8, 0.8)
                 love.graphics.setFont(v.font)
-                text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.by - v.font:getHeight()))
+                text.print(v.text, lume.round(v.x - v.font:getWidth(v.text)/2), lume.round(v.by - v.font:getHeight()))
                 local txt = v.value
                 if menu.activeInput == v then txt = txt .. (time % 1 < 0.5 and '' or '|') end
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.setFont(v.font)
-                text.print(txt, math.floor(v.x - v.font:getWidth(txt)/2), math.floor(v.y - v.font:getHeight()/2))
+                text.print(txt, lume.round(v.x - v.font:getWidth(txt)/2), lume.round(v.y - v.font:getHeight()/2))
             end
         end
         for _, v in pairs(menu.infos[menu.state] or {}) do
@@ -423,7 +422,7 @@ function menu.draw()
             else
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.setFont(v.font)
-                text.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.y - v.font:getHeight()/2))
+                text.print(v.text, lume.round(v.x - v.font:getWidth(v.text)/2), lume.round(v.y - v.font:getHeight()/2))
             end
         end
     end

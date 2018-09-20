@@ -3,7 +3,7 @@ chat = {
     log = {},
     active = false,
     val = '',
-    lastMsgTime = 0
+    lastMsgTime = -1
 }
 
 function chat.addMsg(v)

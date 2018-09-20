@@ -3,7 +3,6 @@ hud = {}
 
 hud.panels = {}
 hud.buttons = {}
-hud.buttonDown = false
 
 function hud.addPanel(t)
     local defaults = {
@@ -26,13 +25,13 @@ function hud.addPanel(t)
     if not t.update then
         t.update = function(self, dt)
             if self.open then
-                self.timer = clamp(self.timer - 3*dt, 0, 1)
+                self.timer = lume.clamp(self.timer - 3*dt, 0, 1)
             else
-                self.timer = clamp(self.timer + 3*dt, 0, 1)
+                self.timer = lume.clamp(self.timer + 3*dt, 0, 1)
             end
             local t = ease.inOutCubic(self.timer)
-            self.x = lerp(self.openPos.x, self.closedPos.x, t)
-            self.y = lerp(self.openPos.y, self.closedPos.y, t)
+            self.x = lume.lerp(self.openPos.x, self.closedPos.x, t)
+            self.y = lume.lerp(self.openPos.y, self.closedPos.y, t)
         end
     end
     table.insert(hud.panels, t)
@@ -83,7 +82,7 @@ function hud.load()
         img=gfx.hud.buttons.chat, x=16, y=235,
         update = function(self, dt)
             local t = ease.inOutCubic(hud.chatPanel.timer)
-            self.y = lerp(132, 235, t)
+            self.y = lume.lerp(132, 235, t)
         end,
         action = function(self)
             hud.chatPanel.open = not hud.chatPanel.open
@@ -102,7 +101,7 @@ function hud.load()
                 local r, g, b = love.graphics.getColor()
                 love.graphics.setColor(r*0.8, g*0.8, b*0.8)
             end
-            love.graphics.draw(self.img, math.floor(self.x), math.floor(self.y))
+            love.graphics.draw(self.img, lume.round(self.x), lume.round(self.y))
         end
     }
     hud.addButton{
@@ -149,12 +148,12 @@ function hud.update(dt)
 end
 
 function hud.mousepressed(mx, my, btn)
-    mx, my = screen2game(mx, my)
+    mx, my = window2game(mx, my)
     local chatFieldPressed = false
     for _, v in pairs(hud.buttons) do
         if mx > v.x and mx < v.x + v.img:getWidth() and my > v.y and my < v.y + v.img:getHeight() then
             if v.action then v.action(v) end
-            hud.buttonDown = true
+            uiMouseDown = true
             if v.id == 'chatField' then chatFieldPressed = true end
         end
     end
@@ -164,12 +163,11 @@ function hud.mousepressed(mx, my, btn)
 end
 
 function hud.mousereleased(mx, my, btn)
-    mx, my = screen2game(mx, my)
-    hud.buttonDown = false
+
 end
 
 function hud.draw()
-    local mx, my = screen2game(love.mouse.getPosition())
+    local mx, my = window2game(love.mouse.getPosition())
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(gfx.hud.frame, 0, 0)
@@ -182,7 +180,7 @@ function hud.draw()
 
     love.graphics.setColor(1, 1, 1)
     for _, v in pairs(hud.panels) do
-        love.graphics.draw(v.img, math.floor(v.x), math.floor(v.y))
+        love.graphics.draw(v.img, lume.round(v.x), lume.round(v.y))
     end
     for _, v in pairs(hud.buttons) do
         if v.draw then
@@ -192,7 +190,7 @@ function hud.draw()
             if mx > v.x and mx < v.x + v.img:getWidth() and my > v.y and my < v.y + v.img:getHeight() then
                 love.graphics.setColor(0.8, 0.8, 0.8)
             end
-            love.graphics.draw(v.img, math.floor(v.x), math.floor(v.y))
+            love.graphics.draw(v.img, lume.round(v.x), lume.round(v.y))
         end
     end
 
@@ -200,13 +198,13 @@ function hud.draw()
     x, y = hud.statsPanel.x, hud.statsPanel.y
     love.graphics.setColor(221/255, 217/255, 0)
     local t = l - math.floor(l)
-    love.graphics.rectangle('fill', 191, math.floor(y + 20), t*99, 3)
+    love.graphics.rectangle('fill', 191, lume.round(y + 20), t*99, 3)
 
     love.graphics.setColor(1, 1, 1)
     local font = fonts.c17
     love.graphics.setFont(font)
     local level = tostring(math.floor(l))
-    love.graphics.print(level, math.floor(240 - font:getWidth(level)/2), math.floor(y))
+    love.graphics.print(level, lume.round(240 - font:getWidth(level)/2), lume.round(y))
 
     font = fonts.stats
     love.graphics.setFont(font)
@@ -225,7 +223,7 @@ function hud.draw()
             sx = x + (sx - hud.statsPanel.openPos.x)
             sy = y + (sy - hud.statsPanel.openPos.y)
             local txt = tostring(player.stats[col][row])
-            love.graphics.print(txt, math.floor(sx - font:getWidth(txt)/2), math.floor(sy - font:getHeight()/2))
+            love.graphics.print(txt, lume.round(sx - font:getWidth(txt)/2), lume.round(sy - font:getHeight()/2))
         end
     end
 

@@ -14,7 +14,7 @@ end
 function slime.server:new(o)
     o = o or {}
     local defaults = {
-        id = uuid(),
+        id = lume.uuid(),
         x = 0, y = 0,
         xv = 0, yv = 0,
         slimeType = math.random() < 0.5 and 'slime1' or 'slime2',
@@ -92,7 +92,7 @@ function slime.server:damage(d, clientId)
             lootBags.server.spawn{
                 x = self.x, y = self.y,
                 items = {'apl', 'banan'},
-                life = 10,
+                life = 30,
                 type = type
             }
         end
@@ -129,7 +129,7 @@ end
 function slime.client:new(o)
     o = o or {}
     local defaults = {
-        id = uuid(),
+        id = lume.uuid(),
         x = 0, y = 0,
         hpMax = 5,
         hp = math.random(1, 5),
@@ -189,7 +189,7 @@ end
 function slime.client:lerpState(a, b, t)
     local state = {}
     for _, v in pairs{'x', 'y', 'xv', 'yv'} do
-        state[v] = lerp(a[v], b[v], t)
+        state[v] = lume.lerp(a[v], b[v], t)
     end
     for _, v in pairs{'slimeType', 'hpMax', 'hp'} do
         state[v] = b[v]
@@ -211,11 +211,11 @@ function slime.client:drawBody()
     shaders.outline:send('stepSize', {1/img:getWidth(), 1/img:getHeight()})
     love.graphics.push()
     local vx, vy = self.body:getPosition()
-    love.graphics.translate(math.floor(vx), math.floor(vy))
+    love.graphics.translate(lume.round(vx), lume.round(vy))
     love.graphics.draw(img,
         0, 0,
         0, 1, 1,
-        math.floor(img:getWidth()/2), math.floor(img:getHeight()/2))
+        lume.round(img:getWidth()/2), lume.round(img:getHeight()/2))
     love.graphics.pop()
     love.graphics.setShader(_shader)
 end
@@ -235,8 +235,8 @@ function slime.client:drawHP()
     love.graphics.setShader(_shader)
     love.graphics.push()
     local vx, vy = self.body:getPosition()
-    love.graphics.translate(math.floor(vx), math.floor(vy))
-    love.graphics.draw(canvases.hpBar, math.floor(-canvases.hpBar:getWidth()/2), 10)
+    love.graphics.translate(lume.round(vx), lume.round(vy))
+    love.graphics.draw(canvases.hpBar, lume.round(-canvases.hpBar:getWidth()/2), 10)
     love.graphics.pop()
 end
 

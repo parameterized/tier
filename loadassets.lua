@@ -27,7 +27,8 @@ gfx = {
             down = love.graphics.newImage('gfx/ui/buttons/down.png'),
             left = love.graphics.newImage('gfx/ui/buttons/left.png'),
             right = love.graphics.newImage('gfx/ui/buttons/right.png')
-        }
+        },
+        bag = love.graphics.newImage('gfx/ui/bagui.png')
     },
     hud = {
         frame = love.graphics.newImage('gfx/ui/hud/frame.png'),
