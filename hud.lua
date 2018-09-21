@@ -149,6 +149,7 @@ end
 
 function hud.mousepressed(mx, my, btn)
     mx, my = window2game(mx, my)
+    mx, my = lume.round(mx), lume.round(my)
     local chatFieldPressed = false
     for _, v in pairs(hud.buttons) do
         if mx > v.x and mx < v.x + v.img:getWidth() and my > v.y and my < v.y + v.img:getHeight() then
@@ -168,6 +169,7 @@ end
 
 function hud.draw()
     local mx, my = window2game(love.mouse.getPosition())
+    mx, my = lume.round(mx), lume.round(my)
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(gfx.hud.frame, 0, 0)
@@ -230,4 +232,11 @@ function hud.draw()
     love.graphics.setColor(1, 1, 1)
     love.graphics.setFont(fonts.c17)
     text.print(player.name, 44, 5)
+
+    -- draggables
+    local heldItem = lootBags.client.heldItem
+    if heldItem.bagId then
+        love.graphics.setColor(1, 1, 1, 0.8)
+        love.graphics.rectangle('fill', mx + heldItem.offset.x, my + heldItem.offset.y, 15, 15)
+    end
 end

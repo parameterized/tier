@@ -6,6 +6,7 @@ math.randomseed(love.timer.getTime())
 
 love.keyboard.setKeyRepeat(true)
 love.graphics.setDefaultFilter('nearest', 'nearest')
+love.graphics.setLineStyle('rough')
 
 gsx, gsy = 480, 270
 canvases = {

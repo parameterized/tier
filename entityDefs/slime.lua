@@ -41,7 +41,7 @@ function slime.server:spawn()
             if (i2-1) % 2 == 0 then -- x
                 v[i2] = v2*img:getWidth() - img:getWidth()/2
             else
-                v[i2] = v2*img:getWidth()*-1 + img:getHeight()/2
+                v[i2] = v2*img:getWidth()*-1
             end
         end
     end
@@ -156,7 +156,7 @@ function slime.client:spawn()
             if (i2-1) % 2 == 0 then -- x
                 v[i2] = v2*img:getWidth() - img:getWidth()/2
             else
-                v[i2] = v2*img:getWidth()*-1 + img:getHeight()/2
+                v[i2] = v2*img:getWidth()*-1
             end
         end
     end
@@ -215,7 +215,7 @@ function slime.client:drawBody()
     love.graphics.draw(img,
         0, 0,
         0, 1, 1,
-        lume.round(img:getWidth()/2), lume.round(img:getHeight()/2))
+        lume.round(img:getWidth()/2), img:getHeight())
     love.graphics.pop()
     love.graphics.setShader(_shader)
 end
@@ -236,7 +236,7 @@ function slime.client:drawHP()
     love.graphics.push()
     local vx, vy = self.body:getPosition()
     love.graphics.translate(lume.round(vx), lume.round(vy))
-    love.graphics.draw(canvases.hpBar, lume.round(-canvases.hpBar:getWidth()/2), 10)
+    love.graphics.draw(canvases.hpBar, lume.round(-canvases.hpBar:getWidth()/2), 2)
     love.graphics.pop()
 end
 

@@ -12,6 +12,7 @@ require 'client'
 require 'menu'
 require 'hud'
 require 'physics'
+require 'scene'
 require 'world'
 require 'player'
 require 'projectiles'
@@ -24,6 +25,7 @@ function love.load()
     gameState = 'menu'
     time = 0
     gameTime = 0
+    gcTimer = 10
     -- don't shoot if pressing ui
     uiMouseDown = false
     drawDebug = false
@@ -52,12 +54,14 @@ function setGameCanvas2x()
     local _color = {love.graphics.getColor()}
     love.graphics.setShader()
     love.graphics.setCanvas(canvases.game2x)
+    love.graphics.setBlendMode('alpha', 'premultiplied')
     love.graphics.setColor(1, 1, 1)
     love.graphics.push()
     love.graphics.origin()
     love.graphics.draw(canvases.game, 0, 0, 0, 2, 2)
     love.graphics.pop()
     love.graphics.setCanvas(canvases.game)
+    love.graphics.setBlendMode('alpha')
     love.graphics.clear()
     love.graphics.setCanvas(canvases.game2x)
     love.graphics.setShader(_shader)
@@ -74,6 +78,11 @@ function love.update(dt)
         client.update(dt)
     end
     menu.update(dt)
+    gcTimer = gcTimer - dt
+    if gcTimer < 0 then
+        collectgarbage()
+        gcTimer = 10
+    end
 end
 
 function love.mousepressed(x, y, btn, isTouch)
@@ -139,6 +148,8 @@ end
 
 function love.draw()
     local mx, my = window2game(love.mouse.getPosition())
+    mx, my = lume.round(mx), lume.round(my)
+    love.graphics.setBlendMode('alpha')
     love.graphics.setCanvas(canvases.game2x)
     love.graphics.clear()
     love.graphics.setCanvas(canvases.game)
@@ -151,6 +162,9 @@ function love.draw()
         lootBags.client.draw()
         projectiles.client.draw()
         player.draw()
+
+        scene.draw()
+        scene.reset()
 
         if drawDebug then
             if server.running then
@@ -177,7 +191,7 @@ function love.draw()
         chat.draw()
 
         love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(gfx.cursors.main, lume.round(mx), lume.round(my), 0, 1, 1, 0, 0) -- hotspot 0, 0
+        love.graphics.draw(gfx.cursors.main, mx, my, 0, 1, 1, 0, 0) -- hotspot 0, 0
     end
 
     menu.draw()
@@ -185,6 +199,7 @@ function love.draw()
     -- draw game on game2x
     setGameCanvas2x()
     love.graphics.setCanvas()
+    love.graphics.setBlendMode('alpha', 'premultiplied')
     love.graphics.clear(0, 0, 0)
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(canvases.game2x, ssx/2-gameScale*gsx/2, ssy/2-gameScale*gsy/2, 0, gameScale/2, gameScale/2)

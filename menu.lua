@@ -288,6 +288,7 @@ end
 
 function menu.mousepressed(mx, my, btn)
     mx, my = window2game(mx, my)
+    mx, my = lume.round(mx), lume.round(my)
     if gameState == 'menu' then
         menu.activeInput = nil
         for _, v in pairs(menu.buttons[menu.state] or {}) do
@@ -363,7 +364,7 @@ end
 function menu.draw()
     if gameState == 'menu' then
         local mx, my = window2game(love.mouse.getPosition())
-
+        mx, my = lume.round(mx), lume.round(my)
         if menu.state == 'main' then
             love.graphics.setColor(1, 1, 1)
             local logoFrameIdx = math.floor(menu.logoAnimTimer*12) % #anims.logo.quads + 1

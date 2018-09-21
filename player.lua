@@ -59,6 +59,7 @@ end
 
 function player.swing()
     local mx, my = window2game(love.mouse.getPosition())
+    mx, my = lume.round(mx), lume.round(my)
     player.direction = mx < gsx/2 and -1 or 1
     player.swinging = true
     player.swingTimer = 0
@@ -77,6 +78,7 @@ end
 
 function player.update(dt)
     local mx, my = window2game(love.mouse.getPosition())
+    mx, my = lume.round(mx), lume.round(my)
 
     if not chat.active then
         local dx, dy = 0, 0
@@ -133,30 +135,105 @@ function player.mousereleased(x, y, btn)
 end
 
 function player.draw()
-    local _canvas = love.graphics.getCanvas()
-    local _shader = love.graphics.getShader()
 
     -- other players
 
     for _, v in pairs(client.currentState.players) do
         -- or debugger.show
         if v.id ~= player.id then
+            scene.add{
+                draw = function()
+                    local _canvas = love.graphics.getCanvas()
+                    local _shader = love.graphics.getShader()
+                    -- shadow
+                    love.graphics.setColor(0, 0, 0, 0.2)
+                    local shadowWidth = 5
+                    love.graphics.ellipse('fill', lume.round(v.x), lume.round(v.y), shadowWidth, 2)
+
+                    -- player
+                    love.graphics.setCanvas(canvases.tempGame)
+                    love.graphics.setShader()
+                    love.graphics.clear()
+                    love.graphics.setColor(1, 1, 1)
+                    local quad = anims.player.swing.quads[1]
+                    local _, _, w, h = quad:getViewport()
+                    love.graphics.draw(anims.player.swing.sheet, quad,
+                        lume.round(v.x), lume.round(v.y),
+                        0, 1, 1,
+                        23, h)
+
+                    -- outline
+                    love.graphics.setCanvas(_canvas)
+                    love.graphics.setShader(shaders.outline)
+                    love.graphics.setColor(1, 1, 1)
+                    love.graphics.push()
+                    love.graphics.origin()
+                    shaders.outline:send('stepSize', {
+                        1/canvases.tempGame:getWidth(),
+                        1/canvases.tempGame:getHeight()
+                    })
+                    love.graphics.draw(canvases.tempGame, 0, 0)
+                    love.graphics.pop()
+                    love.graphics.setShader(_shader)
+
+                    -- name
+                    local font = fonts.c17
+                    love.graphics.setFont(font)
+                    text.printSmall(v.name, lume.round(v.x) - font:getWidth(v.name)/4, lume.round(v.y) - 40)
+                end,
+                y = v.y
+            }
+        end
+    end
+
+    -- local player
+
+    local px, py = player.body:getPosition()
+    local xv, yv = player.body:getLinearVelocity()
+    local vd = math.sqrt(xv^2 + yv^2)
+
+    scene.add{
+        draw = function()
+            local _canvas = love.graphics.getCanvas()
+            local _shader = love.graphics.getShader()
             -- shadow
             love.graphics.setColor(0, 0, 0, 0.2)
-            local shadowWidth = 5
-            love.graphics.ellipse('fill', lume.round(v.x), lume.round(v.y), shadowWidth, 2)
+            local walkFrameIdx = math.floor(player.walkTimer*12) % #anims.player.walk.quads + 1
+            local shadowWidth = ({6, 5, 4, 5, 5})[walkFrameIdx]
+            if player.swinging or vd < 10 then shadowWidth = 6 end
+            love.graphics.ellipse('fill', lume.round(px), lume.round(py), shadowWidth, 2)
 
             -- player
             love.graphics.setCanvas(canvases.tempGame)
             love.graphics.setShader()
             love.graphics.clear()
             love.graphics.setColor(1, 1, 1)
-            local quad = anims.player.swing.quads[1]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.swing.sheet, quad,
-                lume.round(v.x), lume.round(v.y),
-                0, 1, 1,
-                23, h)
+            if player.swinging then
+                local frameIdx = math.floor(player.swingTimer*12) + 1
+                frameIdx = lume.clamp(frameIdx, 1, 5)
+                local quad = anims.player.swing.quads[frameIdx]
+                local _, _, w, h = quad:getViewport()
+                love.graphics.draw(anims.player.swing.sheet, quad,
+                    lume.round(px), lume.round(py),
+                    0, player.direction, 1,
+                    23, h)
+            else
+                if vd < 10 then
+                    local quad = anims.player.swing.quads[1]
+                    local _, _, w, h = quad:getViewport()
+                    love.graphics.draw(anims.player.swing.sheet, quad,
+                        lume.round(px), lume.round(py),
+                        0, player.direction, 1,
+                        23, h)
+                else
+                    local quad = anims.player.walk.quads[walkFrameIdx]
+                    local _, _, w, h = quad:getViewport()
+                    love.graphics.draw(anims.player.walk.sheet, quad,
+                        lume.round(px), lume.round(py),
+                        0, player.direction, 1,
+                        8, h)
+                end
+            end
 
             -- outline
             love.graphics.setCanvas(_canvas)
@@ -175,77 +252,14 @@ function player.draw()
             -- name
             local font = fonts.c17
             love.graphics.setFont(font)
-            text.printSmall(v.name, lume.round(v.x) - font:getWidth(v.name)/4, lume.round(v.y) - 40)
-        end
-    end
+            text.printSmall(player.name, lume.round(px) - font:getWidth(player.name)/4, lume.round(py) - 40)
 
-    -- local player
-
-    local px, py = player.body:getPosition()
-    local xv, yv = player.body:getLinearVelocity()
-    local vd = math.sqrt(xv^2 + yv^2)
-
-    -- shadow
-    love.graphics.setColor(0, 0, 0, 0.2)
-    local walkFrameIdx = math.floor(player.walkTimer*12) % #anims.player.walk.quads + 1
-    local shadowWidth = ({6, 5, 4, 5, 5})[walkFrameIdx]
-    if player.swinging or vd < 10 then shadowWidth = 6 end
-    love.graphics.ellipse('fill', lume.round(px), lume.round(py), shadowWidth, 2)
-
-    -- player
-    love.graphics.setCanvas(canvases.tempGame)
-    love.graphics.setShader()
-    love.graphics.clear()
-    love.graphics.setColor(1, 1, 1)
-    if player.swinging then
-        local frameIdx = math.floor(player.swingTimer*12) + 1
-        frameIdx = lume.clamp(frameIdx, 1, 5)
-        local quad = anims.player.swing.quads[frameIdx]
-        local _, _, w, h = quad:getViewport()
-        love.graphics.draw(anims.player.swing.sheet, quad,
-            lume.round(px), lume.round(py),
-            0, player.direction, 1,
-            23, h)
-    else
-        if vd < 10 then
-            local quad = anims.player.swing.quads[1]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.swing.sheet, quad,
-                lume.round(px), lume.round(py),
-                0, player.direction, 1,
-                23, h)
-        else
-            local quad = anims.player.walk.quads[walkFrameIdx]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.walk.sheet, quad,
-                lume.round(px), lume.round(py),
-                0, player.direction, 1,
-                8, h)
-        end
-    end
-
-    -- outline
-    love.graphics.setCanvas(_canvas)
-    love.graphics.setShader(shaders.outline)
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.push()
-    love.graphics.origin()
-    shaders.outline:send('stepSize', {
-        1/canvases.tempGame:getWidth(),
-        1/canvases.tempGame:getHeight()
-    })
-    love.graphics.draw(canvases.tempGame, 0, 0)
-    love.graphics.pop()
-    love.graphics.setShader(_shader)
-
-    -- name
-    local font = fonts.c17
-    love.graphics.setFont(font)
-    text.printSmall(player.name, lume.round(px) - font:getWidth(player.name)/4, lume.round(py) - 40)
-
-    if drawDebug then
-        love.graphics.setColor(1, 0, 0, 0.5)
-        love.graphics.circle('fill',
-            lume.round(px), lume.round(py), player.shape:getRadius())
-    end
+            if drawDebug then
+                love.graphics.setColor(1, 0, 0, 0.5)
+                love.graphics.circle('fill',
+                    lume.round(px), lume.round(py), player.shape:getRadius())
+            end
+        end,
+        y = py
+    }
 end

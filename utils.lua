@@ -45,3 +45,27 @@ ease = {
 function buildName(name, postfix)
 	return name .. (postfix ~= 0 and '(' .. postfix .. ')' or '')
 end
+
+function isort(_t, comp, rev)
+	if comp == nil then
+		comp = function(a, b) return a < b end
+	elseif type(comp) ~= 'function' then
+		local k = comp
+		comp = function(a, b) return a[k] < b[k] end
+	end
+	if rev then
+		_comp = comp
+		comp = function(a, b) return not _comp(a, b) end
+	end
+	local t = {}
+	for i=1, #_t do
+		local v = _t[i]
+		local j = i - 1
+		while j > 0 and not comp(t[j], v) do
+			t[j+1] = t[j]
+			j = j - 1
+		end
+		t[j+1] = v
+	end
+	return t
+end

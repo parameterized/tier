@@ -135,41 +135,41 @@ function lootBags.client.draw()
     mx, my = lume.round(mx), lume.round(my)
     mx, my = camera:screen2world(mx, my)
     for _, bag in pairs(client.currentState.lootBags) do
-        local a = 1
-        if bag.life and client.serverTime - bag.spawnTime > bag.life - 3 then
-            local t = (client.serverTime - bag.spawnTime - bag.life + 3)/3
-            a = math.cos(t*5*math.pi)/4 + 1/4 + (1-t)/2
-        end
-        love.graphics.setColor(1, 1, 1, a)
-        love.graphics.push()
-        love.graphics.translate(lume.round(bag.x), lume.round(bag.y))
-        local img = gfx.items[bag.type]
-        love.graphics.draw(img, 0, 0, 0, 1, 1, lume.round(img:getWidth()/2), img:getHeight())
-        if bag.id == lootBags.client.closest.id and lootBags.client.closest.dist < 30 then
-            local img = gfx.ui.bag
-            love.graphics.push()
-            love.graphics.translate(-lume.round(img:getWidth()/2), -img:getHeight() - 20)
-            love.graphics.draw(img, 0, 0)
-            local bmx = mx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
-            local bmy = my - (lume.round(bag.y) - img:getHeight() - 20)
-            for _, slot in ipairs(lootBags.client.slots) do
-                if bmx >= slot.x and bmx <= slot.x + slot.w
-                and bmy >= slot.y and bmy <= slot.y + slot.h then
-                    love.graphics.setColor(1, 1, 1, 0.8)
-                else
-                    love.graphics.setColor(1, 1, 1, 0.2)
+        scene.add{
+            draw = function()
+                local a = 1
+                if bag.life and client.serverTime - bag.spawnTime > bag.life - 3 then
+                    local t = (client.serverTime - bag.spawnTime - bag.life + 3)/3
+                    a = math.cos(t*5*math.pi)/4 + 1/4 + (1-t)/2
                 end
-                love.graphics.rectangle('fill', slot.x, slot.y, slot.w, slot.h)
-            end
-            love.graphics.setColor(1, 0, 0, 0.4)
-            love.graphics.rectangle('fill', bmx, bmy, 2, 2)
-            love.graphics.pop()
-        end
-        love.graphics.pop()
-    end
-    local heldItem = lootBags.client.heldItem
-    if heldItem.bagId then
-        love.graphics.setColor(1, 1, 1, 0.8)
-        love.graphics.rectangle('fill', mx + heldItem.offset.x, my + heldItem.offset.y, 15, 15)
+                love.graphics.setColor(1, 1, 1, a)
+                love.graphics.push()
+                love.graphics.translate(lume.round(bag.x), lume.round(bag.y))
+                local img = gfx.items[bag.type]
+                love.graphics.draw(img, 0, 0, 0, 1, 1, lume.round(img:getWidth()/2), img:getHeight())
+                if bag.id == lootBags.client.closest.id and lootBags.client.closest.dist < 30 then
+                    local img = gfx.ui.bag
+                    love.graphics.push()
+                    love.graphics.translate(-lume.round(img:getWidth()/2), -img:getHeight() - 20)
+                    love.graphics.draw(img, 0, 0)
+                    local bmx = mx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
+                    local bmy = my - (lume.round(bag.y) - img:getHeight() - 20)
+                    for _, slot in ipairs(lootBags.client.slots) do
+                        if bmx >= slot.x and bmx <= slot.x + slot.w
+                        and bmy >= slot.y and bmy <= slot.y + slot.h then
+                            love.graphics.setColor(1, 1, 1, 0.8)
+                        else
+                            love.graphics.setColor(1, 1, 1, 0.2)
+                        end
+                        love.graphics.rectangle('fill', slot.x, slot.y, slot.w, slot.h)
+                    end
+                    love.graphics.setColor(1, 0, 0, 0.4)
+                    love.graphics.rectangle('fill', bmx, bmy, 2, 2)
+                    love.graphics.pop()
+                end
+                love.graphics.pop()
+            end,
+            y = bag.y
+        }
     end
 end

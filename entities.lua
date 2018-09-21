@@ -61,12 +61,22 @@ end
 function entities.client.draw()
     for _, v in pairs(client.currentState.entities) do
         if not v.destroyed and v.drawBody then
-            v:drawBody()
-        end
-    end
-    for _, v in pairs(client.currentState.entities) do
-        if not v.destroyed and v.drawHP then
-            v:drawHP()
+            scene.add{
+                draw = function()
+                    v:drawBody()
+                end,
+                y = v.y,
+                type = 'entityBody'
+            }
+            if v.drawHP then
+                scene.add{
+                    draw = function()
+                        v:drawHP()
+                    end,
+                    y = v.y,
+                    type = 'entityHP'
+                }
+            end
         end
     end
 end
