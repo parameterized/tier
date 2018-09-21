@@ -86,14 +86,24 @@ function slime.server:damage(d, clientId)
             local y = self.y + (math.random()*2-1)*64
             self:new{x=x, y=y}:spawn()
         end
-        if math.random() < 0.5 then
-            local i = math.min(math.floor(math.random()*3), 2) + 1
-            local type = ({'lootBag', 'lootBag1', 'lootBagFuse'})[i]
+        local items = {}
+        local choices = {none=50, sword=25, shield=25}
+        for i=1, 3 do
+            choice = lume.weightedchoice(choices)
+            if choice ~= 'none' then table.insert(items, choice) end
+        end
+        -- todo: sparse arrays not encodable with json - temp solution before move to bitser
+        local numItems = #items
+        for i=1, 8 do
+            items[i] = items[i] or 'none'
+        end
+        if numItems ~= 0 then
+            local type = lume.randomchoice{'lootBag', 'lootBag1', 'lootBagFuse'}
             lootBags.server.spawn{
                 x = self.x, y = self.y,
-                items = {'apl', 'banan'},
-                life = 30,
-                type = type
+                items = items,
+                type = type,
+                life = 30
             }
         end
         self:destroy()
@@ -209,6 +219,7 @@ function slime.client:drawBody()
     -- gfx.enemies.slime1
     local img = gfx.enemies[self.slimeType]
     shaders.outline:send('stepSize', {1/img:getWidth(), 1/img:getHeight()})
+    shaders.outline:send('outlineColor', {0, 0, 0, 1})
     love.graphics.push()
     local vx, vy = self.body:getPosition()
     love.graphics.translate(lume.round(vx), lume.round(vy))

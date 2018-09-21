@@ -236,7 +236,13 @@ function hud.draw()
     -- draggables
     local heldItem = lootBags.client.heldItem
     if heldItem.bagId then
-        love.graphics.setColor(1, 1, 1, 0.8)
-        love.graphics.rectangle('fill', mx + heldItem.offset.x, my + heldItem.offset.y, 15, 15)
+        local bag = client.currentState.lootBags[heldItem.bagId]
+        if bag then
+            local item = bag.items[heldItem.slotId]
+            if item and item ~= 'none' then
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.draw(gfx.items[item], mx + heldItem.offset.x, my + heldItem.offset.y)
+            end
+        end
     end
 end

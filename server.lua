@@ -65,6 +65,24 @@ function server.start(port, singleplayer)
             else
                 print('error decoding server rpc spawnBullet')
             end
+        end,
+        -- bag to same bag
+        moveItem = function(self, data, clientId)
+            local ok, data = pcall(json.decode, data)
+            if ok then
+                -- todo: validation
+                local bag = server.currentState.lootBags[data.bagId]
+                if bag then
+                    if bag.items[data.from] then
+                        local temp = bag.items[data.to]
+                        bag.items[data.to] = bag.items[data.from]
+                        bag.items[data.from] = temp
+                        server.nutServer:sendRPC('bagUpdate', json.encode(bag))
+                    end
+                end
+            else
+                print('error decoding server rpc moveItem')
+            end
         end
     }
     server.nutServer:addUpdate(function(self)

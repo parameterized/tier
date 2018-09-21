@@ -123,6 +123,7 @@ function projectiles.client.draw()
                         1/canvases.tempGame:getWidth(),
                         1/canvases.tempGame:getHeight()
                     })
+                    shaders.outline:send('outlineColor', {0, 0, 0, 1})
                     love.graphics.draw(canvases.tempGame, 0, 0)
                     love.graphics.pop()
                     love.graphics.setShader(_shader)

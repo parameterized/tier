@@ -104,6 +104,14 @@ function client.connect(ip, port)
             else
                 print('error decoding client rpc stateUpdate')
             end
+        end,
+        bagUpdate = function(self, data)
+            local ok, data = pcall(json.decode, data)
+            if ok then
+                client.currentState.lootBags[data.id] = data
+            else
+                print('error decoding cient rpc bagUpdate')
+            end
         end
     }
     client.nutClient:addUpdate(function(self)
@@ -255,6 +263,24 @@ end
 function client.spawnProjectile(data)
     if client.connected then
         client.nutClient:sendRPC('spawnProjectile', json.encode(data))
+    end
+end
+
+function client.moveItem(data)
+    if client.connected then
+        client.nutClient:sendRPC('moveItem', json.encode(data))
+    end
+end
+
+function client.takeItem(data)
+    if client.connected then
+        client.nutClient:sendRPC('takeItem', json.encode(data))
+    end
+end
+
+function client.dropItem(data)
+    if client.connected then
+        client.nutClient:sendRPC('dropItem', json.encode(data))
     end
 end
 

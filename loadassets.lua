@@ -61,7 +61,9 @@ gfx = {
     items = {
         lootBag = love.graphics.newImage('gfx/items/loot.png'),
         lootBag1 = love.graphics.newImage('gfx/items/loot1.png'),
-        lootBagFuse = love.graphics.newImage('gfx/items/loot-fuse.png')
+        lootBagFuse = love.graphics.newImage('gfx/items/loot-fuse.png'),
+        sword = love.graphics.newImage('gfx/items/sword.png'),
+        shield = love.graphics.newImage('gfx/items/shield.png')
     }
 }
 

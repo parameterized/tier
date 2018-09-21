@@ -1,5 +1,6 @@
 
 extern vec2 stepSize;
+extern vec4 outlineColor;
 
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
 {
@@ -11,7 +12,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
         vec2 coord_down = texture_coords + vec2(0.0, -1.0)*stepSize;
         if (Texel(texture, coord_left).a > 0.5 || Texel(texture, coord_right).a > 0.5
         || Texel(texture, coord_up).a > 0.5 || Texel(texture, coord_down).a > 0.5) {
-            pixel = vec4(vec3(0.0), 1.0);
+            pixel = outlineColor;
         }
     }
 	return pixel*color;

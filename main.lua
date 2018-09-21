@@ -126,7 +126,11 @@ function love.keypressed(k, scancode, isrepeat)
     end
     -- if chat open, esc pressed, chat.active=false & chatActive=true
     if not (chatActive or chat.active or chatPanelOpen) then
-        menu.keypressed(k, scancode, isrepeat)
+        if gameState == 'menu' then
+            menu.keypressed(k, scancode, isrepeat)
+        elseif gameState == 'playing' then
+            lootBags.client.keypressed(k, scancode, isrepeat)
+        end
         if not isrepeat then
             if k == 'escape' then
                 gameState = 'menu'

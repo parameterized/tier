@@ -328,34 +328,32 @@ function menu.textinput(t)
 end
 
 function menu.keypressed(k, scancode, isrepeat)
-    if gameState == 'menu' then
-        if menu.state == 'play' then
-            if k == 'escape' and not isrepeat then
-                menu.state = 'main'
-                menu.activeInput = nil
-            end
-        elseif menu.state == 'connect' then
-            if k == 'escape' and not isrepeat then
-                menu.state = 'play'
-                menu.activeInput = nil
-            end
-        elseif menu.state == 'options' then
-            if k == 'escape' and not isrepeat then
-                menu.state = 'main'
-                menu.activeInput = nil
-            end
+    if menu.state == 'play' then
+        if k == 'escape' and not isrepeat then
+            menu.state = 'main'
+            menu.activeInput = nil
         end
-        if menu.activeInput then
-            if k == 'return' and not isrepeat then
-                menu.activeInput = nil
-            elseif k == 'backspace' then
-                menu.activeInput.value = menu.activeInput.value:sub(0, math.max(menu.activeInput.value:len()-1, 0))
-            elseif k == 'v' and (love.keyboard.isScancodeDown('lctrl') or love.keyboard.isScancodeDown('rctrl')) then
-                local paste = love.system.getClipboardText()
-                for v in paste:gmatch('.') do
-                    -- todo: filter for input type (numerical ports etc)
-                    menu.activeInput.value = menu.activeInput.value .. v
-                end
+    elseif menu.state == 'connect' then
+        if k == 'escape' and not isrepeat then
+            menu.state = 'play'
+            menu.activeInput = nil
+        end
+    elseif menu.state == 'options' then
+        if k == 'escape' and not isrepeat then
+            menu.state = 'main'
+            menu.activeInput = nil
+        end
+    end
+    if menu.activeInput then
+        if k == 'return' and not isrepeat then
+            menu.activeInput = nil
+        elseif k == 'backspace' then
+            menu.activeInput.value = menu.activeInput.value:sub(0, math.max(menu.activeInput.value:len()-1, 0))
+        elseif k == 'v' and (love.keyboard.isScancodeDown('lctrl') or love.keyboard.isScancodeDown('rctrl')) then
+            local paste = love.system.getClipboardText()
+            for v in paste:gmatch('.') do
+                -- todo: filter for input type (numerical ports etc)
+                menu.activeInput.value = menu.activeInput.value .. v
             end
         end
     end
