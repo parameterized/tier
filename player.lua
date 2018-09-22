@@ -13,6 +13,15 @@ function player.load()
     player.level = 0
     player.stats = player.newStats()
 
+    player.inventory = {
+        id = 'inventory',
+        items = {}
+    }
+    for i=1, 15 do
+        player.inventory.items[i] = 'none'
+    end
+    player.inventory.items[2] = 'sword'
+
     player.body = love.physics.newBody(physics.client.world, 0, 0, 'dynamic')
     player.shape = love.physics.newCircleShape(6)
     player.fixture = love.physics.newFixture(player.body, player.shape, 1)

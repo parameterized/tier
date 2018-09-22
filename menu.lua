@@ -136,11 +136,8 @@ function menu.load()
     menu.nameInput = menu.addInput{state='play', text='Player Name', value=menuDefaults.name, x=gsx/2 - 70, y=exitY - h*2}
     menu.addButton{state='play', text='Singleplayer', x=gsx/2 - 70, y=exitY - h*1, action=function()
         chat.log = {}
-        -- todo: choose open port
-        -- remove whitespace
-        local port = menu.portInput.value:gsub("%s+", "")
-        server.start(port, true)
-        client.connect('127.0.0.1', port)
+        server.start(nil, true)
+        client.connect('127.0.0.1', server.nutServer.port)
         menu.state = 'connect'
         menu.connectInfo.text = 'Starting Game'
     end}
@@ -149,6 +146,7 @@ function menu.load()
     menu.addButton{state='play', text='Host', x=gsx/2 + 70 - 25, y=exitY - h*1, action=function()
         chat.log = {}
         -- todo: notify if not open or other err
+        -- remove whitespace
         local port = menu.portInput.value:gsub("%s+", "")
         server.start(port)
         client.connect('127.0.0.1', port)

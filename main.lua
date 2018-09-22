@@ -101,7 +101,11 @@ function love.mousereleased(x, y, btn, isTouch)
         lootBags.client.mousereleased(x, y, btn)
     end
     menu.mousereleased(x, y, btn)
+
     uiMouseDown = false
+    local heldItem = lootBags.client.heldItem
+    heldItem.bagId = nil
+    heldItem.slotId = nil
 end
 
 function love.textinput(t)
@@ -129,6 +133,7 @@ function love.keypressed(k, scancode, isrepeat)
         if gameState == 'menu' then
             menu.keypressed(k, scancode, isrepeat)
         elseif gameState == 'playing' then
+            hud.keypressed(k, scancode, isrepeat)
             lootBags.client.keypressed(k, scancode, isrepeat)
         end
         if not isrepeat then

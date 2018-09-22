@@ -4,6 +4,25 @@ hud = {}
 hud.panels = {}
 hud.buttons = {}
 
+hud.inventorySlots = {}
+table.insert(hud.inventorySlots, {type = 'head',      x = 34, y = 10, w = 15, h = 15})
+table.insert(hud.inventorySlots, {type = 'weapon',    x = 12, y = 32, w = 15, h = 15})
+table.insert(hud.inventorySlots, {type = 'chest',     x = 34, y = 32, w = 15, h = 15})
+table.insert(hud.inventorySlots, {type = 'secondary', x = 56, y = 32, w = 15, h = 15})
+table.insert(hud.inventorySlots, {type = 'accessory', x = 12, y = 53, w = 15, h = 15})
+table.insert(hud.inventorySlots, {type = 'legs',      x = 34, y = 53, w = 15, h = 15})
+table.insert(hud.inventorySlots, {type = 'accessory', x = 56, y = 53, w = 15, h = 15})
+for j=1, 2 do
+    for i=1, 4 do
+        table.insert(hud.inventorySlots, {
+            x = 7 + (i-1)*18,
+            y = 79 + (j-1)*18,
+            w = 15,
+            h = 15
+        })
+    end
+end
+
 function hud.addPanel(t)
     local defaults = {
         openPos = {x=0, y=0},
@@ -126,11 +145,11 @@ function hud.load()
         img=gfx.hud.buttons.backpack, x=287, y=236, panel=hud.statsPanel
     }
 
-    hud.invPanel = hud.addPanel{
-        img=gfx.hud.panels.inventory, openPos={x=378, y=144}, closedPos={x=470, y=144}
+    hud.inventoryPanel = hud.addPanel{
+        img=gfx.hud.panels.inventory, openPos={x=378, y=144}, closedPos={x=473, y=144}
     }
     hud.addButton{
-        img=gfx.ui.buttons.right, x=373, y=178, panel=hud.invPanel,
+        img=gfx.ui.buttons.right, x=374, y=178, panel=hud.inventoryPanel,
         action = function(self)
             self.panel.open = not self.panel.open
             self.img = self.panel.open and gfx.ui.buttons.right or gfx.ui.buttons.left
@@ -147,9 +166,11 @@ function hud.update(dt)
     end
 end
 
-function hud.mousepressed(mx, my, btn)
-    mx, my = window2game(mx, my)
+function hud.mousepressed(x, y, btn)
+    mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
+
+    -- deactivate chat if click outside field
     local chatFieldPressed = false
     for _, v in pairs(hud.buttons) do
         if mx > v.x and mx < v.x + v.img:getWidth() and my > v.y and my < v.y + v.img:getHeight() then
@@ -161,10 +182,71 @@ function hud.mousepressed(mx, my, btn)
     if chat.active and not chatFieldPressed then
         chat.active = false
     end
+
+    -- inventory management
+    local bag = player.inventory
+    local panel = hud.inventoryPanel
+    local pmx = mx - lume.round(panel.x)
+    local pmy = my - lume.round(panel.y)
+    for slotId, slot in ipairs(hud.inventorySlots) do
+        if pmx >= slot.x and pmx <= slot.x + slot.w
+        and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
+            uiMouseDown = true
+            if bag.items[slotId] and bag.items[slotId] ~= 'none' then
+                local heldItem = lootBags.client.heldItem
+                heldItem.bagId = bag.id
+                heldItem.slotId = slotId
+                heldItem.offset.x = slot.x - pmx
+                heldItem.offset.y = slot.y - pmy
+            end
+        end
+    end
 end
 
-function hud.mousereleased(mx, my, btn)
+function hud.mousereleased(x, y, btn)
+    local mx, my = window2game(x, y)
+    mx, my = lume.round(mx), lume.round(my)
+    local heldItem = lootBags.client.heldItem
+    if heldItem.bagId then
+        local bagFrom = client.currentState.lootBags[heldItem.bagId]
+        if heldItem.bagId == 'inventory' then
+            bagFrom = player.inventory
+        end
+        local bagTo = player.inventory
+        local panel = hud.inventoryPanel
+        local pmx = mx - lume.round(panel.x)
+        local pmy = my - lume.round(panel.y)
+        for slotId, slot in ipairs(hud.inventorySlots) do
+            if pmx >= slot.x and pmx <= slot.x + slot.w
+            and pmy >= slot.y and pmy <= slot.y + slot.h then
+                client.moveItem{
+                    from = {
+                        bagId = bagFrom.id,
+                        slotId = heldItem.slotId
+                    },
+                    to = {
+                        bagId = bagTo.id,
+                        slotId = slotId
+                    }
+                }
+                -- move clientside before response (will be corrected/affirmed)
+                local temp = bagTo.items[slotId]
+                bagTo.items[slotId] = bagFrom.items[heldItem.slotId]
+                bagFrom.items[heldItem.slotId] = temp
+                break
+            end
+        end
+    end
+end
 
+function hud.keypressed(k, scancode, isrepeat)
+    if k == 'tab' then
+        hud.inventoryPanel.open = not hud.inventoryPanel.open
+    elseif k == 'm' then
+        hud.mapPanel.open = not hud.mapPanel.open
+    elseif k == 'l' then
+        hud.statsPanel.open = not hud.statsPanel.open
+    end
 end
 
 function hud.draw()
@@ -180,6 +262,7 @@ function hud.draw()
     local y = hud.mapPanel.y + 8
     love.graphics.rectangle('fill', x, y, 60, 62)
 
+    -- panels/buttons
     love.graphics.setColor(1, 1, 1)
     for _, v in pairs(hud.panels) do
         love.graphics.draw(v.img, lume.round(v.x), lume.round(v.y))
@@ -196,8 +279,9 @@ function hud.draw()
         end
     end
 
+    -- level bar
     local l = player.xp2level(player.xp)
-    x, y = hud.statsPanel.x, hud.statsPanel.y
+    local x, y = hud.statsPanel.x, hud.statsPanel.y
     love.graphics.setColor(221/255, 217/255, 0)
     local t = l - math.floor(l)
     love.graphics.rectangle('fill', 191, lume.round(y + 20), t*99, 3)
@@ -208,6 +292,7 @@ function hud.draw()
     local level = tostring(math.floor(l))
     text.print(level, lume.round(240 - font:getWidth(level)/2), lume.round(y))
 
+    -- stats
     font = fonts.stats
     love.graphics.setFont(font)
     local stats_x, stats_y = 202, 227
@@ -233,10 +318,37 @@ function hud.draw()
     love.graphics.setFont(fonts.c17)
     text.print(player.name, 44, 5)
 
-    -- draggables
+
+    -- inventory items
+    love.graphics.push()
+    local panel = hud.inventoryPanel
+    love.graphics.translate(panel.x, panel.y)
+    local pmx = mx - lume.round(panel.x)
+    local pmy = my - lume.round(panel.y)
+    for slotId, slot in ipairs(hud.inventorySlots) do
+        if pmx >= slot.x and pmx <= slot.x + slot.w
+        and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
+            love.graphics.setColor(1, 1, 1, 0.4)
+            love.graphics.rectangle('fill', slot.x, slot.y, slot.w, slot.h)
+        end
+        local heldItem = lootBags.client.heldItem
+        if not (heldItem.bagId == 'inventory' and heldItem.slotId == slotId) then
+            local item = player.inventory.items[slotId]
+            if item and item ~= 'none' then
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.draw(gfx.items[item], slot.x, slot.y)
+            end
+        end
+    end
+    love.graphics.pop()
+
+    -- held item
     local heldItem = lootBags.client.heldItem
     if heldItem.bagId then
         local bag = client.currentState.lootBags[heldItem.bagId]
+        if heldItem.bagId == 'inventory' then
+            bag = player.inventory
+        end
         if bag then
             local item = bag.items[heldItem.slotId]
             if item and item ~= 'none' then

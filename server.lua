@@ -2,7 +2,7 @@
 server = {}
 
 function server.start(port, singleplayer)
-    port = tonumber(port)
+    if type(port) == 'string' then port = tonumber(port) end
     server.singleplayer = singleplayer
     server.paused = false
     local connectionLimit = server.singleplayer and 1 or nil
@@ -66,18 +66,31 @@ function server.start(port, singleplayer)
                 print('error decoding server rpc spawnBullet')
             end
         end,
-        -- bag to same bag
         moveItem = function(self, data, clientId)
             local ok, data = pcall(json.decode, data)
             if ok then
                 -- todo: validation
-                local bag = server.currentState.lootBags[data.bagId]
-                if bag then
-                    if bag.items[data.from] then
-                        local temp = bag.items[data.to]
-                        bag.items[data.to] = bag.items[data.from]
-                        bag.items[data.from] = temp
-                        server.nutServer:sendRPC('bagUpdate', json.encode(bag))
+                local p = server.currentState.players[clientId]
+                local bagFrom = server.currentState.lootBags[data.from.bagId]
+                if data.from.bagId == 'inventory' then
+                    bagFrom = p.inventory
+                end
+                local bagTo = server.currentState.lootBags[data.to.bagId]
+                if data.to.bagId == 'inventory' then
+                    bagTo = p.inventory
+                end
+                if bagFrom and bagTo then
+                    if bagFrom.items[data.from.slotId] then
+                        local temp = bagTo.items[data.to.slotId]
+                        bagTo.items[data.to.slotId] = bagFrom.items[data.from.slotId]
+                        bagFrom.items[data.from.slotId] = temp
+                        -- inventory sent in player update
+                        if data.from.bagId ~= 'inventory' then
+                            server.nutServer:sendRPC('bagUpdate', json.encode(bagFrom))
+                        end
+                        if data.to.bagId ~= 'inventory' then
+                            server.nutServer:sendRPC('bagUpdate', json.encode(bagTo))
+                        end
                     end
                 end
             else
@@ -100,7 +113,7 @@ function server.start(port, singleplayer)
         stateUpdate.time = gameTime
         for _, v in pairs(server.currentState.players) do
             -- don't send clientIds - index by uuid
-            -- todo: don't send xp/stats in update
+            -- todo: don't send xp/stats/inventory in update
             stateUpdate.players[v.id] = v
         end
         for _, v in pairs(server.currentState.projectiles) do
@@ -146,8 +159,15 @@ function server.addPlayer(name, clientId)
     local p = {
         id = lume.uuid(), name = name,
         x = (math.random()*2-1)*128, y = (math.random()*2-1)*128,
-        xp = 0, stats = player.newStats()
+        xp = 0, stats = player.newStats(),
+        inventory = {
+            id = 'inventory', items = {}
+        }
     }
+    for i=1, 15 do
+        p.inventory.items[i] = 'none'
+    end
+    p.inventory.items[2] = 'sword'
     server.currentState.players[clientId] = p
     server.playerNames[name] = true
     server.uuid2clientId[p.id] = clientId

@@ -60,8 +60,8 @@ end
 
 
 lootBags.client.slots = {}
-for i=1, 4 do
-    for j=1, 2 do
+for j=1, 2 do
+    for i=1, 4 do
         table.insert(lootBags.client.slots, {
             x = 7 + (i-1)*18,
             y = 22 + (j-1)*18,
@@ -89,7 +89,8 @@ function lootBags.client.update(dt)
         closestBag.open = false
     end
     local heldItem = lootBags.client.heldItem
-    if not closestBag.id or closestBag.id ~= heldItem.bagId or closestBag.dist > lootBags.client.openRange then
+    if heldItem.bagId ~= 'inventory' and (not closestBag.id
+    or closestBag.id ~= heldItem.bagId or closestBag.dist > lootBags.client.openRange) then
         heldItem.bagId = nil
         heldItem.slotId = nil
     end
@@ -129,28 +130,35 @@ function lootBags.client.mousereleased(x, y, btn)
     local closestBag = lootBags.client.closest
     local heldItem = lootBags.client.heldItem
     if closestBag.id and closestBag.open and heldItem.bagId then
-        local bag = client.currentState.lootBags[closestBag.id]
+        local bagFrom = client.currentState.lootBags[heldItem.bagId]
+        if heldItem.bagId == 'inventory' then
+            bagFrom = player.inventory
+        end
+        local bagTo = client.currentState.lootBags[closestBag.id]
         local img = gfx.ui.bag
-        local bmx = mx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
-        local bmy = my - (lume.round(bag.y) - img:getHeight() - 20)
+        local bmx = mx - (lume.round(bagTo.x) - lume.round(img:getWidth()/2))
+        local bmy = my - (lume.round(bagTo.y) - img:getHeight() - 20)
         for slotId, slot in ipairs(lootBags.client.slots) do
             if bmx >= slot.x and bmx <= slot.x + slot.w
             and bmy >= slot.y and bmy <= slot.y + slot.h then
                 client.moveItem{
-                    bagId = heldItem.bagId,
-                    from = heldItem.slotId,
-                    to = slotId
+                    from = {
+                        bagId = bagFrom.id,
+                        slotId = heldItem.slotId
+                    },
+                    to = {
+                        bagId = bagTo.id,
+                        slotId = slotId
+                    }
                 }
                 -- move clientside before response (will be corrected/affirmed)
-                local temp = bag.items[slotId]
-                bag.items[slotId] = bag.items[heldItem.slotId]
-                bag.items[heldItem.slotId] = temp
+                local temp = bagTo.items[slotId]
+                bagTo.items[slotId] = bagFrom.items[heldItem.slotId]
+                bagFrom.items[heldItem.slotId] = temp
                 break
             end
         end
     end
-    heldItem.bagId = nil
-    heldItem.slotId = nil
 end
 
 function lootBags.client.keypressed(k, scancode, isrepeat)

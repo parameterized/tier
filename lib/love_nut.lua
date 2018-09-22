@@ -4,7 +4,7 @@ local socket = require 'socket'
 local nut = {
     logMessages = false,
     logErrors = true,
-    _VERSION = 'LoveNUT 0.1.1'
+    _VERSION = 'LoveNUT 0.1.1-dev'
 }
 
 function nut.log(msg)
@@ -139,7 +139,7 @@ function server:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
-    local defaults = {port=1357, updateRate=1/20, connectionLimit=nil}
+    local defaults = {port=nil, updateRate=1/20, connectionLimit=nil}
     defaults.rpcs = {
         connect = function(self, data, clientId)
             nut.log(clientId .. ' connected')
@@ -159,6 +159,11 @@ function server:new(o)
 end
 
 function server:start()
+    if self.port == nil then
+        local tcp = socket.bind('0.0.0.0', 0)
+        _, self.port = tcp:getsockname()
+        tcp:close()
+    end
     self.udp = socket.udp()
     self.udp:settimeout(0)
     self.udp:setsockname('0.0.0.0', self.port)

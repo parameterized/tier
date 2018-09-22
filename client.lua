@@ -211,10 +211,12 @@ function client.update(dt)
 
                     obj.xp = v2.xp
                     obj.stats = v2.stats
+                    obj.inventory = v2.inventory
 
                     if k == player.id then
                         player.xp = obj.xp
                         player.stats = obj.stats
+                        player.inventory = obj.inventory
                     end
                 end
             end
@@ -269,18 +271,6 @@ end
 function client.moveItem(data)
     if client.connected then
         client.nutClient:sendRPC('moveItem', json.encode(data))
-    end
-end
-
-function client.takeItem(data)
-    if client.connected then
-        client.nutClient:sendRPC('takeItem', json.encode(data))
-    end
-end
-
-function client.dropItem(data)
-    if client.connected then
-        client.nutClient:sendRPC('dropItem', json.encode(data))
     end
 end
 
