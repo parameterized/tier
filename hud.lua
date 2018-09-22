@@ -206,7 +206,7 @@ function hud.draw()
     local font = fonts.c17
     love.graphics.setFont(font)
     local level = tostring(math.floor(l))
-    love.graphics.print(level, lume.round(240 - font:getWidth(level)/2), lume.round(y))
+    text.print(level, lume.round(240 - font:getWidth(level)/2), lume.round(y))
 
     font = fonts.stats
     love.graphics.setFont(font)
@@ -225,7 +225,7 @@ function hud.draw()
             sx = x + (sx - hud.statsPanel.openPos.x)
             sy = y + (sy - hud.statsPanel.openPos.y)
             local txt = tostring(player.stats[col][row])
-            love.graphics.print(txt, lume.round(sx - font:getWidth(txt)/2), lume.round(sy - font:getHeight()/2))
+            text.print(txt, lume.round(sx - font:getWidth(txt)/2), lume.round(sy - font:getHeight()/2))
         end
     end
 

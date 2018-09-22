@@ -65,16 +65,14 @@ function entities.client.draw()
                 draw = function()
                     v:drawBody()
                 end,
-                y = v.y,
-                type = 'entityBody'
+                y = v.y
             }
             if v.drawHP then
                 scene.add{
                     draw = function()
                         v:drawHP()
                     end,
-                    y = v.y,
-                    type = 'entityHP'
+                    y = v.y
                 }
             end
         end
