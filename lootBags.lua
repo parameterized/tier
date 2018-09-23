@@ -110,7 +110,7 @@ function lootBags.client.mousepressed(x, y, btn)
             if bmx >= slot.x and bmx <= slot.x + slot.w
             and bmy >= slot.y and bmy <= slot.y + slot.h then
                 uiMouseDown = true
-                if bag.items[slotId] and bag.items[slotId] ~= 'none' then
+                if bag.items[slotId] then
                     local heldItem = lootBags.client.heldItem
                     heldItem.bagId = bag.id
                     heldItem.slotId = slotId
@@ -216,7 +216,7 @@ function lootBags.client.draw()
                         local heldItem = lootBags.client.heldItem
                         if not (heldItem.bagId == bag.id and heldItem.slotId == slotId) then
                             local item = bag.items[slotId]
-                            if item and item ~= 'none' then
+                            if item then
                                 love.graphics.setColor(1, 1, 1)
                                 love.graphics.draw(gfx.items[item], slot.x, slot.y)
                             end

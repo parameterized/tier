@@ -35,7 +35,7 @@ function server.start(port, singleplayer)
                     end
                 end
             end
-            self:sendRPC('add', json.encode(add), clientId)
+            self:sendRPC('add', bitser.dumps(add), clientId)
             server.addPlayer(buildName(data, postfix), clientId)
         end,
         chatMsg = function(self, data, clientId)
@@ -43,7 +43,7 @@ function server.start(port, singleplayer)
             self:sendRPC('chatMsg', string.format('%s: %s', pname, data))
         end,
         setPlayer = function(self, data, clientId)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 if not server.currentState.players[clientId] then
                     print('attempt to setPlayer on non-existent player')
@@ -57,7 +57,7 @@ function server.start(port, singleplayer)
             end
         end,
         spawnProjectile = function(self, data, clientId)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 local playerId = server.currentState.players[clientId].id
                 data.playerId = playerId
@@ -67,7 +67,7 @@ function server.start(port, singleplayer)
             end
         end,
         moveItem = function(self, data, clientId)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 -- todo: validation
                 local p = server.currentState.players[clientId]
@@ -86,10 +86,10 @@ function server.start(port, singleplayer)
                         bagFrom.items[data.from.slotId] = temp
                         -- inventory sent in player update
                         if data.from.bagId ~= 'inventory' then
-                            server.nutServer:sendRPC('bagUpdate', json.encode(bagFrom))
+                            server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagFrom))
                         end
                         if data.to.bagId ~= 'inventory' then
-                            server.nutServer:sendRPC('bagUpdate', json.encode(bagTo))
+                            server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagTo))
                         end
                     end
                 end
@@ -99,13 +99,13 @@ function server.start(port, singleplayer)
         end
     }
     server.nutServer:addUpdate(function(self)
-        local addStr = json.encode(server.added)
-        if addStr ~= json.encode(server.newState()) then
+        local addStr = bitser.dumps(server.added)
+        if addStr ~= bitser.dumps(server.newState()) then
             self:sendRPC('add', addStr)
         end
         server.added = server.newState()
-        local removeStr = json.encode(server.removed)
-        if removeStr ~= json.encode(server.newState()) then
+        local removeStr = bitser.dumps(server.removed)
+        if removeStr ~= bitser.dumps(server.newState()) then
             self:sendRPC('remove', removeStr)
         end
         server.removed = server.newState()
@@ -126,7 +126,7 @@ function server.start(port, singleplayer)
             end
         end
         -- no lootBags updates
-        self:sendRPC('stateUpdate', json.encode(stateUpdate))
+        self:sendRPC('stateUpdate', bitser.dumps(stateUpdate))
     end)
     server.nutServer:start()
     server.running = true
@@ -164,15 +164,12 @@ function server.addPlayer(name, clientId)
             id = 'inventory', items = {}
         }
     }
-    for i=1, 15 do
-        p.inventory.items[i] = 'none'
-    end
     p.inventory.items[2] = 'sword'
     server.currentState.players[clientId] = p
     server.playerNames[name] = true
     server.uuid2clientId[p.id] = clientId
     server.added.players[p.id] = p
-    server.nutServer:sendRPC('returnPlayer', json.encode(p), clientId)
+    server.nutServer:sendRPC('returnPlayer', bitser.dumps(p), clientId)
     if not server.singleplayer then
         server.nutServer:sendRPC('chatMsg', p.name .. ' connected')
     end

@@ -2,6 +2,7 @@
 lume = require 'lib.lume'
 nut = require 'lib.love_nut'
 json = require 'lib.json'
+bitser = require 'lib.bitser'
 Camera = require 'lib.camera'
 
 require 'utils'

@@ -8,7 +8,7 @@ function client.connect(ip, port)
     client.nutClient = nut.client()
     client.nutClient:addRPCs{
         returnPlayer = function(self, data)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 client.startGame(data)
             else
@@ -28,7 +28,7 @@ function client.connect(ip, port)
             love.mouse.setGrabbed(false)
         end,
         add = function(self, data)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 for _, v in pairs(data.players) do
                     v.body = love.physics.newBody(physics.client.world, v.x, v.y, 'dynamic')
@@ -59,7 +59,7 @@ function client.connect(ip, port)
             end
         end,
         remove = function(self, data)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 for _, id in pairs(data.players) do
                     if id ~= player.id then
@@ -89,7 +89,7 @@ function client.connect(ip, port)
             end
         end,
         stateUpdate = function(self, data)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 client.serverTime = data.time
                 -- todo: delete old states (or make replay feature)
@@ -106,7 +106,7 @@ function client.connect(ip, port)
             end
         end,
         bagUpdate = function(self, data)
-            local ok, data = pcall(json.decode, data)
+            local ok, data = pcall(bitser.loads, data)
             if ok then
                 client.currentState.lootBags[data.id] = data
             else
@@ -116,7 +116,7 @@ function client.connect(ip, port)
     }
     client.nutClient:addUpdate(function(self)
         if gameState == 'playing' then
-            self:sendRPC('setPlayer', json.encode(player.serialize()))
+            self:sendRPC('setPlayer', bitser.dumps(player.serialize()))
         end
     end)
     client.nutClient:connect(ip, port)
@@ -264,13 +264,13 @@ end
 
 function client.spawnProjectile(data)
     if client.connected then
-        client.nutClient:sendRPC('spawnProjectile', json.encode(data))
+        client.nutClient:sendRPC('spawnProjectile', bitser.dumps(data))
     end
 end
 
 function client.moveItem(data)
     if client.connected then
-        client.nutClient:sendRPC('moveItem', json.encode(data))
+        client.nutClient:sendRPC('moveItem', bitser.dumps(data))
     end
 end
 

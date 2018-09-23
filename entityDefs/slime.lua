@@ -92,11 +92,7 @@ function slime.server:damage(d, clientId)
             choice = lume.weightedchoice(choices)
             if choice ~= 'none' then table.insert(items, choice) end
         end
-        -- todo: sparse arrays not encodable with json - temp solution before move to bitser
         local numItems = #items
-        for i=1, 8 do
-            items[i] = items[i] or 'none'
-        end
         if numItems ~= 0 then
             local type = lume.randomchoice{'lootBag', 'lootBag1', 'lootBagFuse'}
             lootBags.server.spawn{

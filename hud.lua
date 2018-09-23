@@ -192,7 +192,7 @@ function hud.mousepressed(x, y, btn)
         if pmx >= slot.x and pmx <= slot.x + slot.w
         and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
             uiMouseDown = true
-            if bag.items[slotId] and bag.items[slotId] ~= 'none' then
+            if bag.items[slotId] then
                 local heldItem = lootBags.client.heldItem
                 heldItem.bagId = bag.id
                 heldItem.slotId = slotId
@@ -334,7 +334,7 @@ function hud.draw()
         local heldItem = lootBags.client.heldItem
         if not (heldItem.bagId == 'inventory' and heldItem.slotId == slotId) then
             local item = player.inventory.items[slotId]
-            if item and item ~= 'none' then
+            if item then
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.draw(gfx.items[item], slot.x, slot.y)
             end
@@ -351,7 +351,7 @@ function hud.draw()
         end
         if bag then
             local item = bag.items[heldItem.slotId]
-            if item and item ~= 'none' then
+            if item then
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.draw(gfx.items[item], mx + heldItem.offset.x, my + heldItem.offset.y)
             end

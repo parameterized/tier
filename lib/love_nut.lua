@@ -24,6 +24,30 @@ function nut.getIP()
 end
 
 
+-- self.tcp, self.tcpBuffer
+function receiveTCP(self)
+    local data, _, partial = self.tcp:receive(8192)
+	while data do
+		self.tcpBuffer = self.tcpBuffer .. data
+		data, _, partial = self.tcp:receive(8192)
+	end
+	if not data and partial then
+		self.tcpBuffer = self.tcpBuffer .. partial
+	end
+	if self.tcpBuffer:len() >= 2 then
+        local cl = self.tcpBuffer:sub(1, 2)
+        cl = love.data.unpack('>I2', cl)
+        if self.tcpBuffer:len() >= 2 + cl then
+            local _buf = self.tcpBuffer
+            local msg = self.tcpBuffer:sub(3, 3 + cl - 1)
+            self.tcpBuffer = self.tcpBuffer:sub(3 + cl, self.tcpBuffer:len())
+            return msg
+        end
+	end
+	return nil, 'timeout'
+end
+
+
 local client = {}
 
 function client:new(o)
@@ -61,6 +85,7 @@ function client:connect(ip, port)
         nut.logError('client connect err: ' .. tostring(msg))
     end
     self.tcp:settimeout(0)
+    self.tcpBuffer = ''
 end
 
 function client:addRPCs(t)
@@ -81,16 +106,14 @@ function client:update(dt)
             repeat
                 local data, msg = self.udp:receive()
                 if data then
-                    nut.log('client received udp: ' .. data)
                     -- todo: handle
                 elseif msg ~= 'timeout' then
                     nut.logError('client udp recv err: ' .. tostring(msg))
                 end
             until not data
             repeat
-                local data, msg = self.tcp:receive()
+                local data, msg = receiveTCP(self)
                 if data then
-                    nut.log('client received tcp: ' .. data)
                     local rpcName, rpcData = data:match('^(%S*) (.*)$')
                     self:callRPC(rpcName, rpcData)
                 elseif msg ~= 'timeout' then
@@ -105,11 +128,12 @@ function client:update(dt)
 end
 
 function client:sendRPC(name, data)
-    if not data or data == '' then data = '$' end
+    if data == nil or data == '' then data = '$' end
     local dg = name .. ' ' .. data
-    dg = dg:gsub('\r', ''):gsub('\n', '')
-    dg = dg .. '\r\n'
-    nut.log('client tcp send: ' .. dg)
+    local cl = dg:len()
+    assert(cl <= 65535, 'love_nut rpc data too long')
+    cl = love.data.pack('string', '>I2', cl)
+    dg = cl .. dg
     return self.tcp:send(dg)
 end
 
@@ -199,7 +223,7 @@ function server:accept()
             nut.logError(clientid .. ' already connected')
             return nil
         else
-            self.clients[clientId] = {tcp=sock}
+            self.clients[clientId] = {tcp=sock, tcpBuffer=''}
         end
         local rpc = self.rpcs.connect
         if rpc then
@@ -231,7 +255,6 @@ function server:update(dt)
             local data, msg_or_ip, port_or_nil = self.udp:receivefrom()
             if data then
                 local ip, port = msg_or_ip, port_or_nil
-                nut.log('server received udp: ' .. data)
                 local clientid = ip .. ':' .. tostring(port)
             elseif msg_or_ip ~= 'timeout' then
                 nut.logError('server udp recv err: ' .. tostring(msg_or_ip))
@@ -239,9 +262,8 @@ function server:update(dt)
         until not data
         for clientId, v in pairs(self.clients) do
             repeat
-                local data, msg = v.tcp:receive()
+                local data, msg = receiveTCP(v)
                 if data then
-                    nut.log('server received tcp: ' .. data)
                     local rpcName, rpcData = data:match('^(%S*) (.*)$')
                     self:callRPC(rpcName, rpcData, clientId)
                 elseif msg ~= 'timeout' then
@@ -256,10 +278,12 @@ function server:update(dt)
 end
 
 function server:sendRPC(name, data, clientId)
-    if not data or data == '' then data = '$' end
+    if data == nil or data == '' then data = '$' end
     local dg = name .. ' ' .. data
-    dg = dg:gsub('\r', ''):gsub('\n', '')
-    dg = dg .. '\r\n'
+    local cl = dg:len()
+    assert(cl <= 65535, 'love_nut rpc data too long')
+    cl = love.data.pack('string', '>I2', cl)
+    dg = cl .. dg
     if clientId then
         if self.clients[clientId] then
             --local ip, port = clientId:match("^(.-):(%d+)$")

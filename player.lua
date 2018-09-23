@@ -17,9 +17,6 @@ function player.load()
         id = 'inventory',
         items = {}
     }
-    for i=1, 15 do
-        player.inventory.items[i] = 'none'
-    end
     player.inventory.items[2] = 'sword'
 
     player.body = love.physics.newBody(physics.client.world, 0, 0, 'dynamic')
