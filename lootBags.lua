@@ -73,7 +73,7 @@ end
 
 function lootBags.client.update(dt)
     local closestBag = lootBags.client.closest
-    local px, py = player.body:getPosition()
+    local px, py = playerController.player.body:getPosition()
     local lastId = closestBag.id
     closestBag.id = nil
     closestBag.dist = nil
@@ -99,13 +99,13 @@ end
 function lootBags.client.mousepressed(x, y, btn)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
-    mx, my = camera:screen2world(mx, my)
+    wmx, wmy = camera:screen2world(mx, my)
     local closestBag = lootBags.client.closest
     if closestBag.id and closestBag.open then
         local bag = client.currentState.lootBags[closestBag.id]
         local img = gfx.ui.bag
-        local bmx = mx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
-        local bmy = my - (lume.round(bag.y) - img:getHeight() - 20)
+        local bmx = wmx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
+        local bmy = wmy - (lume.round(bag.y) - img:getHeight() - 20)
         for slotId, slot in ipairs(lootBags.client.slots) do
             if bmx >= slot.x and bmx <= slot.x + slot.w
             and bmy >= slot.y and bmy <= slot.y + slot.h then
@@ -126,18 +126,18 @@ end
 function lootBags.client.mousereleased(x, y, btn)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
-    mx, my = camera:screen2world(mx, my)
+    wmx, wmy = camera:screen2world(mx, my)
     local closestBag = lootBags.client.closest
     local heldItem = lootBags.client.heldItem
     if closestBag.id and closestBag.open and heldItem.bagId then
         local bagFrom = client.currentState.lootBags[heldItem.bagId]
         if heldItem.bagId == 'inventory' then
-            bagFrom = player.inventory
+            bagFrom = playerController.player.inventory
         end
         local bagTo = client.currentState.lootBags[closestBag.id]
         local img = gfx.ui.bag
-        local bmx = mx - (lume.round(bagTo.x) - lume.round(img:getWidth()/2))
-        local bmy = my - (lume.round(bagTo.y) - img:getHeight() - 20)
+        local bmx = wmx - (lume.round(bagTo.x) - lume.round(img:getWidth()/2))
+        local bmy = wmy - (lume.round(bagTo.y) - img:getHeight() - 20)
         for slotId, slot in ipairs(lootBags.client.slots) do
             if bmx >= slot.x and bmx <= slot.x + slot.w
             and bmy >= slot.y and bmy <= slot.y + slot.h then
@@ -162,7 +162,7 @@ function lootBags.client.mousereleased(x, y, btn)
 end
 
 function lootBags.client.keypressed(k, scancode, isrepeat)
-    if k == 'e' then
+    if scancode == 'e' and not isrepeat then
         local closestBag = lootBags.client.closest
         if closestBag.id and closestBag.dist < lootBags.client.openRange then
             closestBag.open = not closestBag.open
@@ -173,7 +173,7 @@ end
 function lootBags.client.draw()
     local mx, my = window2game(love.mouse.getPosition())
     mx, my = lume.round(mx), lume.round(my)
-    mx, my = camera:screen2world(mx, my)
+    wmx, wmy = camera:screen2world(mx, my)
     for _, bag in pairs(client.currentState.lootBags) do
         scene.add{
             draw = function()
@@ -205,8 +205,8 @@ function lootBags.client.draw()
                     love.graphics.translate(-lume.round(img:getWidth()/2), -img:getHeight() - 20)
                     love.graphics.setColor(1, 1, 1)
                     love.graphics.draw(img, 0, 0)
-                    local bmx = mx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
-                    local bmy = my - (lume.round(bag.y) - img:getHeight() - 20)
+                    local bmx = wmx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
+                    local bmy = wmy - (lume.round(bag.y) - img:getHeight() - 20)
                     for slotId, slot in ipairs(lootBags.client.slots) do
                         if bmx >= slot.x and bmx <= slot.x + slot.w
                         and bmy >= slot.y and bmy <= slot.y + slot.h then

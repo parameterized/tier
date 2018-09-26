@@ -5,6 +5,13 @@ local base = {
 }
 
 for _, sc in pairs{'server', 'client'} do
+    base[sc].newDefaults = function()
+        return {
+            id = lume.uuid(),
+            x = 0, y
+        }
+    end
+
     -- entities.server.defs[type]
     base[sc].type = 'base'
     base[sc].static = true
@@ -12,11 +19,7 @@ end
 
 function base.server:new(o)
     o = o or {}
-    local defaults = {
-        id = lume.uuid(),
-        x = 0, y = 0
-    }
-    for k, v in pairs(defaults) do
+    for k, v in pairs(self.newDefaults()) do
         if o[k] == nil then o[k] = v end
     end
     setmetatable(o, self)
@@ -103,11 +106,7 @@ end
 
 function base.client:new(o)
     o = o or {}
-    local defaults = {
-        id = lume.uuid(),
-        x = 0, y = 0
-    }
-    for k, v in pairs(defaults) do
+    for k, v in pairs(self.newDefaults()) do
         if o[k] == nil then o[k] = v end
     end
     setmetatable(o, self)
@@ -117,6 +116,7 @@ end
 
 function base.client:spawn()
     self.destroyed = false
+    client.currentState.entities[self.id] = self
     return self
 end
 

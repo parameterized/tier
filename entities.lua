@@ -10,6 +10,7 @@ entities = {
 }
 
 local entityDefs = {
+    require 'entityDefs.player',
     require 'entityDefs.slime'
 }
 
@@ -40,7 +41,7 @@ function entities.server.update(dt)
     -- todo: load chunks, cull/uncull
 
     for etype, _ in pairs(entities.server.defs) do
-        for _, v in pairs(entities.server.container[etype]) do
+        for _, v in pairs(entities.server.container[etype] or {}) do
             v:update(dt)
         end
     end
@@ -56,11 +57,14 @@ end
 
 function entities.client.update(dt)
     -- todo: local cull
+    for _, v in pairs(client.currentState.entities) do
+        v:update(dt)
+    end
 end
 
 function entities.client.draw()
     for _, v in pairs(client.currentState.entities) do
-        if not v.destroyed and v.drawBody then
+        if not v.destroyed and v.drawBody and v.id ~= playerController.serverId then
             scene.add{
                 draw = function()
                     v:drawBody()

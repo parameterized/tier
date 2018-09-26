@@ -184,7 +184,7 @@ function hud.mousepressed(x, y, btn)
     end
 
     -- inventory management
-    local bag = player.inventory
+    local bag = playerController.player.inventory
     local panel = hud.inventoryPanel
     local pmx = mx - lume.round(panel.x)
     local pmy = my - lume.round(panel.y)
@@ -210,9 +210,9 @@ function hud.mousereleased(x, y, btn)
     if heldItem.bagId then
         local bagFrom = client.currentState.lootBags[heldItem.bagId]
         if heldItem.bagId == 'inventory' then
-            bagFrom = player.inventory
+            bagFrom = playerController.player.inventory
         end
-        local bagTo = player.inventory
+        local bagTo = playerController.player.inventory
         local panel = hud.inventoryPanel
         local pmx = mx - lume.round(panel.x)
         local pmy = my - lume.round(panel.y)
@@ -240,9 +240,10 @@ function hud.mousereleased(x, y, btn)
 end
 
 function hud.keypressed(k, scancode, isrepeat)
-    if k == 'tab' then
+    if scancode == 'tab' then
         hud.inventoryPanel.open = not hud.inventoryPanel.open
-    elseif k == 'm' then
+    end
+    if k == 'm' then
         hud.mapPanel.open = not hud.mapPanel.open
     elseif k == 'l' then
         hud.statsPanel.open = not hud.statsPanel.open
@@ -280,7 +281,7 @@ function hud.draw()
     end
 
     -- level bar
-    local l = player.xp2level(player.xp)
+    local l = playerController.player.xp2level(playerController.player.xp)
     local x, y = hud.statsPanel.x, hud.statsPanel.y
     love.graphics.setColor(221/255, 217/255, 0)
     local t = l - math.floor(l)
@@ -309,14 +310,14 @@ function hud.draw()
             local sy = stats_y + stats_dy*(j-1)
             sx = x + (sx - hud.statsPanel.openPos.x)
             sy = y + (sy - hud.statsPanel.openPos.y)
-            local txt = tostring(player.stats[col][row])
+            local txt = tostring(playerController.player.stats[col][row])
             text.print(txt, lume.round(sx - font:getWidth(txt)/2), lume.round(sy - font:getHeight()/2))
         end
     end
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.setFont(fonts.c17)
-    text.print(player.name, 44, 5)
+    text.print(playerController.player.name, 44, 5)
 
 
     -- inventory items
@@ -333,7 +334,7 @@ function hud.draw()
         end
         local heldItem = lootBags.client.heldItem
         if not (heldItem.bagId == 'inventory' and heldItem.slotId == slotId) then
-            local item = player.inventory.items[slotId]
+            local item = playerController.player.inventory.items[slotId]
             if item then
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.draw(gfx.items[item], slot.x, slot.y)
@@ -347,7 +348,7 @@ function hud.draw()
     if heldItem.bagId then
         local bag = client.currentState.lootBags[heldItem.bagId]
         if heldItem.bagId == 'inventory' then
-            bag = player.inventory
+            bag = playerController.player.inventory
         end
         if bag then
             local item = bag.items[heldItem.slotId]

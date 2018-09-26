@@ -30,26 +30,12 @@ function client.connect(ip, port)
         add = function(self, data)
             local ok, data = pcall(bitser.loads, data)
             if ok then
-                for _, v in pairs(data.players) do
-                    v.body = love.physics.newBody(physics.client.world, v.x, v.y, 'dynamic')
-                    v.shape = love.physics.newRectangleShape(50, 50)
-                    v.fixture = love.physics.newFixture(v.body, v.shape, 1)
-                    if v.id == player.id then
-                        v.fixture:setUserData{type='serverPlayer'}
-                    else
-                        v.fixture:setUserData{type='otherPlayer'}
-                    end
-                    v.fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-                    v.body:setFixedRotation(true)
-                    client.currentState.players[v.id] = v
-                end
                 for _, v in pairs(data.projectiles) do
                     v.startedMoving = false
                     client.currentState.projectiles[v.id] = v
                 end
                 for _, v in pairs(data.entities) do
                     local ent = entities.client.defs[v.type]:new(v):spawn()
-                    client.currentState.entities[ent.id] = ent
                 end
                 for _, v in pairs(data.lootBags) do
                     client.currentState.lootBags[v.id] = v
@@ -61,18 +47,6 @@ function client.connect(ip, port)
         remove = function(self, data)
             local ok, data = pcall(bitser.loads, data)
             if ok then
-                for _, id in pairs(data.players) do
-                    if id ~= player.id then
-                        local p = client.currentState.players[id]
-                        if p then
-                            p.fixture:destroy()
-                            p.body:destroy()
-                        end
-                        client.currentState.players[id] = nil
-                    else
-                        print('server tried to remove local player')
-                    end
-                end
                 for _, id in pairs(data.projectiles) do
                     client.currentState.projectiles[id] = nil
                 end
@@ -116,7 +90,7 @@ function client.connect(ip, port)
     }
     client.nutClient:addUpdate(function(self)
         if gameState == 'playing' then
-            self:sendRPC('setPlayer', bitser.dumps(player.serialize()))
+            self:sendRPC('setPlayer', bitser.dumps(playerController.player:serialize()))
         end
     end)
     client.nutClient:connect(ip, port)
@@ -130,11 +104,6 @@ function client.connect(ip, port)
     -- cleanup previous connection
     if client.currentState then
         entities.client.reset()
-        player.destroy()
-        for _, v in pairs(client.currentState.players) do
-            v.fixture:destroy()
-            v.body:destroy()
-        end
         collectgarbage()
     end
     client.currentState = client.newState()
@@ -142,17 +111,18 @@ function client.connect(ip, port)
     menu.writeDefaults()
 
     physics.client.load()
-    player.load()
+    playerController.load()
 end
 
 function client.newState()
-    return {players={}, projectiles={}, entities={}, lootBags={}}
+    return {entities={}, projectiles={}, lootBags={}}
 end
 
-function client.startGame(p)
-    player.id = p.id
-    player.name = p.name
-    player.body:setPosition(p.x, p.y)
+function client.startGame(data)
+    playerController.serverId = data.id
+    local p = playerController.player
+    p.name = data.name
+    p:setState(data)
     gameState = 'playing'
     love.mouse.setVisible(false)
     if menu.cursorLockBtn.active then love.mouse.setGrabbed(true) end
@@ -199,28 +169,6 @@ function client.update(dt)
         end
         local csi = client.states[client.stateIdx]
         local csi_1 = client.states[client.stateIdx+1]
-        for k, v in pairs(csi.players) do
-            local v2 = csi_1.players[k]
-            if v2 then
-                local obj = client.currentState.players[k]
-                if obj then
-                    obj.x = lume.lerp(v.x, v2.x, t)
-                    obj.y = lume.lerp(v.y, v2.y, t)
-
-                    obj.body:setPosition(obj.x, obj.y)
-
-                    obj.xp = v2.xp
-                    obj.stats = v2.stats
-                    obj.inventory = v2.inventory
-
-                    if k == player.id then
-                        player.xp = obj.xp
-                        player.stats = obj.stats
-                        player.inventory = obj.inventory
-                    end
-                end
-            end
-        end
         for k, v in pairs(csi.projectiles) do
             local v2 = csi_1.projectiles[k]
             if v2 then
@@ -240,6 +188,13 @@ function client.update(dt)
                     if not entities.client.defs[obj.type].static then
                         obj:lerpState(v, v2, t)
                     end
+
+                    if k == playerController.serverId then
+                        local p = playerController.player
+                        p.xp = obj.xp
+                        p.stats = obj.stats
+                        p.inventory = obj.inventory
+                    end
                 end
             end
         end
@@ -251,7 +206,7 @@ function client.update(dt)
         lootBags.client.update(dt)
         physics.client.update(dt)
         world.update(dt)
-        player.update(dt)
+        playerController.update(dt)
         entities.client.update(dt)
     end
 end

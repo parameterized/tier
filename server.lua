@@ -28,10 +28,12 @@ function server.start(port, singleplayer)
             end
             -- send current state to new player
             local add = server.newState()
-            for k, t in pairs(server.currentState) do -- 'players', 'projectiles'
-                for _, v in pairs(t) do
-                    if not server.added[k][v.id] then
-                        add[k][v.id] = v
+            for k, t in pairs(server.currentState) do
+                if k ~= 'players' then
+                    for _, v in pairs(t) do
+                        if not server.added[k][v.id] then
+                            add[k][v.id] = v
+                        end
                     end
                 end
             end
@@ -49,9 +51,7 @@ function server.start(port, singleplayer)
                     print('attempt to setPlayer on non-existent player')
                     return
                 end
-                for _, v in pairs{'x', 'y'} do
-                    server.currentState.players[clientId][v] = data[v]
-                end
+                server.currentState.players[clientId]:setState(data)
             else
                 print('error decoding server rpc setPlayer')
             end
@@ -114,7 +114,7 @@ function server.start(port, singleplayer)
         for _, v in pairs(server.currentState.players) do
             -- don't send clientIds - index by uuid
             -- todo: don't send xp/stats/inventory in update
-            stateUpdate.players[v.id] = v
+            --stateUpdate.players[v.id] = v -- sent in entities now
         end
         for _, v in pairs(server.currentState.projectiles) do
             stateUpdate.projectiles[v.id] = v
@@ -152,24 +152,20 @@ function server.start(port, singleplayer)
 end
 
 function server.newState()
-    return {players={}, projectiles={}, entities={}, lootBags={}}
+    return {players={}, entities={}, projectiles={}, lootBags={}}
 end
 
 function server.addPlayer(name, clientId)
-    local p = {
-        id = lume.uuid(), name = name,
-        x = (math.random()*2-1)*128, y = (math.random()*2-1)*128,
-        xp = 0, stats = player.newStats(),
-        inventory = {
-            id = 'inventory', items = {}
-        }
-    }
-    p.inventory.items[2] = 'sword'
+    local p = entities.server.defs.player:new{
+        name = name,
+        x = (math.random()*2-1)*128,
+        y = (math.random()*2-1)*128,
+    }:spawn()
     server.currentState.players[clientId] = p
     server.playerNames[name] = true
     server.uuid2clientId[p.id] = clientId
-    server.added.players[p.id] = p
-    server.nutServer:sendRPC('returnPlayer', bitser.dumps(p), clientId)
+    server.added.players[p.id] = p:serialize()
+    server.nutServer:sendRPC('returnPlayer', bitser.dumps(p:serialize()), clientId)
     if not server.singleplayer then
         server.nutServer:sendRPC('chatMsg', p.name .. ' connected')
     end
@@ -177,9 +173,9 @@ end
 
 function server.removePlayer(clientId)
     local p = server.currentState.players[clientId]
-    server.removed.players[p.id] = p.id
     server.uuid2clientId[p.id] = nil
     server.playerNames[p.name] = nil
+    p:destroy()
     server.currentState.players[clientId] = nil
 end
 
@@ -188,9 +184,9 @@ function server.addXP(playerId, xp)
     if clientId then
         local p = server.currentState.players[clientId]
         if p then
-            local _l = player.xp2level(p.xp)
+            local _l = entities.server.defs.player.xp2level(p.xp)
             p.xp = p.xp + xp
-            local l = player.xp2level(p.xp)
+            local l = entities.server.defs.player.xp2level(p.xp)
             if math.floor(_l) ~= math.floor(l) then -- level increased
                 p.stats.vit.base = math.floor(l*10 + 100)
                 p.stats.atk.base = math.floor(l*8 + 80)

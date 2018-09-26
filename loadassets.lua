@@ -51,8 +51,14 @@ gfx = {
         tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png')
     },
     player = {
-        walkSheet = love.graphics.newImage('gfx/player/player_walk.png'),
-        swingSheet = love.graphics.newImage('gfx/player/player_swing.png')
+        walk = {
+            body = love.graphics.newImage('gfx/player/walk/body.png'),
+            sword = love.graphics.newImage('gfx/player/walk/sword.png')
+        },
+        swing = {
+            body = love.graphics.newImage('gfx/player/swing/body.png'),
+            sword = love.graphics.newImage('gfx/player/swing/sword.png')
+        }
     },
     enemies = {
         slime1 = love.graphics.newImage('gfx/enemies/slime1.png'),
@@ -84,8 +90,14 @@ end
 
 anims.logo = newAnim(gfx.logoAnim, 54, 41, 1, 8)
 anims.player = {
-    walk = newAnim(gfx.player.walkSheet, 20, 29, 1, 5),
-    swing = newAnim(gfx.player.swingSheet, 43, 34, 1, 5)
+    walk = {
+        body = newAnim(gfx.player.walk.body, 20, 29, 1, 5),
+        sword = newAnim(gfx.player.walk.sword, 20, 29, 1, 5)
+    },
+    swing = {
+        body = newAnim(gfx.player.swing.body, 43, 34, 1, 5),
+        sword = newAnim(gfx.player.swing.sword, 43, 34, 1, 5)
+    }
 }
 
 tileSheets = {}

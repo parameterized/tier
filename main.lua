@@ -15,9 +15,9 @@ require 'hud'
 require 'physics'
 require 'scene'
 require 'world'
-require 'player'
-require 'projectiles'
 require 'entities'
+require 'projectiles'
+require 'playerController'
 require 'lootBags'
 require 'chat'
 
@@ -87,21 +87,20 @@ function love.update(dt)
 end
 
 function love.mousepressed(x, y, btn, isTouch)
+    menu.mousepressed(x, y, btn)
     if gameState == 'playing' then
-        player.mousepressed(x, y, btn)
         hud.mousepressed(x, y, btn)
         lootBags.client.mousepressed(x, y, btn)
+        playerController.mousepressed(x, y, btn)
     end
-    menu.mousepressed(x, y, btn)
 end
 
 function love.mousereleased(x, y, btn, isTouch)
+    menu.mousereleased(x, y, btn)
     if gameState == 'playing' then
-        player.mousereleased(x, y, btn)
         hud.mousereleased(x, y, btn)
         lootBags.client.mousereleased(x, y, btn)
     end
-    menu.mousereleased(x, y, btn)
 
     uiMouseDown = false
     local heldItem = lootBags.client.heldItem
@@ -130,7 +129,7 @@ function love.keypressed(k, scancode, isrepeat)
         end
     end
     -- if chat open, esc pressed, chat.active=false & chatActive=true
-    if not (chatActive or chat.active or chatPanelOpen) then
+    if not (chatActive or chat.active) then
         if gameState == 'menu' then
             menu.keypressed(k, scancode, isrepeat)
         elseif gameState == 'playing' then
@@ -138,7 +137,7 @@ function love.keypressed(k, scancode, isrepeat)
             lootBags.client.keypressed(k, scancode, isrepeat)
         end
         if not isrepeat then
-            if k == 'escape' then
+            if k == 'escape' and not chatPanelOpen then
                 gameState = 'menu'
                 menu.state = 'main'
                 if server.running then
@@ -169,9 +168,8 @@ function love.draw()
 
         world.draw()
         entities.client.draw()
-        lootBags.client.draw()
         projectiles.client.draw()
-        player.draw()
+        lootBags.client.draw()
 
         scene.draw()
         scene.reset()

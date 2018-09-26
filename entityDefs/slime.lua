@@ -6,6 +6,17 @@ local slime = {
 }
 
 for _, sc in pairs{'server', 'client'} do
+    slime[sc].newDefaults = function()
+        return {
+            id = lume.uuid(),
+            x = 0, y = 0,
+            xv = 0, yv = 0,
+            slimeType = math.random() < 0.5 and 'slime1' or 'slime2',
+            hpMax = 5, hp = math.random(1, 5),
+            hitBy = {}
+        }
+    end
+
     slime[sc].type = 'slime'
     slime[sc].static = false
     slime[sc].enemy = true
@@ -13,15 +24,7 @@ end
 
 function slime.server:new(o)
     o = o or {}
-    local defaults = {
-        id = lume.uuid(),
-        x = 0, y = 0,
-        xv = 0, yv = 0,
-        slimeType = math.random() < 0.5 and 'slime1' or 'slime2',
-        hpMax = 5, hp = math.random(1, 5),
-        hitBy = {}
-    }
-    for k, v in pairs(defaults) do
+    for k, v in pairs(self.newDefaults()) do
         if o[k] == nil then o[k] = v end
     end
     setmetatable(o, self)
@@ -134,14 +137,7 @@ end
 
 function slime.client:new(o)
     o = o or {}
-    local defaults = {
-        id = lume.uuid(),
-        x = 0, y = 0,
-        hpMax = 5,
-        hp = math.random(1, 5),
-        hitBy = {}
-    }
-    for k, v in pairs(defaults) do
+    for k, v in pairs(self.newDefaults()) do
         if o[k] == nil then o[k] = v end
     end
     setmetatable(o, self)
