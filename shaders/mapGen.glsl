@@ -38,6 +38,8 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
 	vec2 uv = screen_coords;
     uv += camPos;
     vec2 p = floor(uv);
+
+    // grass/sand/rock/water
     int tileChoices[3] = int[](1, 2, 4);
     float r1 = snoise(p/32.0)*0.5 + 0.5;
     int choice = 0;
@@ -51,5 +53,11 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
     if (r1 < 0.2 && r2 < 0.5) {
         choice = 3;
     }
+
+    // spawn platform
+    if (length(p) < (128.0/15.0 + 1.0)) {
+        choice = 5;
+    }
+
     return vec4(choice/255.0, 0, 0, 1);
 }

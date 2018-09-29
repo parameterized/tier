@@ -48,7 +48,8 @@ gfx = {
         }
     },
     tiles = {
-        tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png')
+        tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png'),
+        platformSheet = love.graphics.newImage('gfx/tiles/platformSheet.png')
     },
     player = {
         walk = {
@@ -117,6 +118,7 @@ function newTileSheet(sheet, w, h, pad, num, names)
 end
 
 tileSheets.ts1 = newTileSheet(gfx.tiles.tileSheet1, 15, 15, 1, 4, {'grass', 'sand', 'rock', 'water'})
+tileSheets.platform = newTileSheet(gfx.tiles.platformSheet, 15, 15, 1, 2)
 
 fonts = {
     f10 = love.graphics.newFont(10),
@@ -155,3 +157,13 @@ for _, v in pairs{'grass', 'sand', 'rock', 'water'} do
     table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
 end
 shaders.mapRender:send('tiles', unpack(tileImgs))
+
+local platformFrames = {}
+for _, quad in pairs(tileSheets.platform.quads) do
+    love.graphics.setCanvas(tileCanv)
+    love.graphics.clear()
+    love.graphics.draw(tileSheets.platform.sheet, quad, 0, 0)
+    love.graphics.setCanvas()
+    table.insert(platformFrames, love.graphics.newImage(tileCanv:newImageData()))
+end
+shaders.mapRender:send('platformFrames', unpack(platformFrames))

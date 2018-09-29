@@ -167,10 +167,12 @@ function server.newState()
 end
 
 function server.addPlayer(name, clientId)
+    local a = math.random()*2*math.pi
+    local d = math.random()*128
     local p = entities.server.defs.player:new{
         name = name,
-        x = (math.random()*2-1)*128,
-        y = (math.random()*2-1)*128,
+        x = math.cos(a)*d,
+        y = -math.sin(a)*d,
     }:spawn()
     server.currentState.players[clientId] = p
     server.playerNames[name] = true

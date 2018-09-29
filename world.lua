@@ -15,7 +15,8 @@ world.tileColors = {
     {98/255, 195/255, 116/255},
     {251/255, 228/255, 125/255},
     {98/255, 98/255, 98/255},
-    {41/255, 137/255, 214/255}
+    {41/255, 137/255, 214/255},
+    {73/255, 73/255, 73/255}
 }
 
 world.server.chunkCanvas = love.graphics.newCanvas(world.chunkSize, world.chunkSize)
@@ -75,7 +76,7 @@ function world.client.setChunk(x, y, chunk)
     for i=1, world.chunkSize do
         for j=1, world.chunkSize do
             local v = chunk[i][j]
-            imageData:setPixel((i-1), (j-1), unpack(world.tileColors[v]))
+            imageData:setPixel((i-1), (j-1), unpack(world.tileColors[v] or {0,0,0}))
             idImageData:setPixel((i-1), (j-1), v/255, 0, 0)
         end
     end
@@ -105,7 +106,6 @@ function world.client.update(dt)
 end
 
 function world.client.draw()
-    print((camera.x - camera.ssx/2)/15)
     local _canvas = love.graphics.getCanvas()
     local _shader = love.graphics.getShader()
 
@@ -147,6 +147,7 @@ function world.client.draw()
         math.floor((camera.x - camera.ssx/2)/15) - 2,
         math.floor((camera.y - camera.ssy/2)/15) - 2,
     })
+    shaders.mapRender:send('time', time)
     love.graphics.setColor(1, 1, 1)
     love.graphics.push()
     love.graphics.origin()
