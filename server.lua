@@ -96,6 +96,16 @@ function server.start(port, singleplayer)
             else
                 print('error decoding server rpc moveItem')
             end
+        end,
+        getWorldChunk = function(self, data, clientId)
+            local ok, data = pcall(bitser.loads, data)
+            if ok then
+                local chunk = world.server.getChunk(data.x, data.y)
+                local res = {x=data.x, y=data.y, chunk=chunk}
+                server.nutServer:sendRPC('setWorldChunk', bitser.dumps(res), clientId)
+            else
+                print('error decoding server rpc getWorldChunk')
+            end
         end
     }
     server.nutServer:addUpdate(function(self)
@@ -142,8 +152,9 @@ function server.start(port, singleplayer)
     server.removed = server.newState()
     -- cleanup previous game
     if server.currentState then
-        entities.server.reset()
         projectiles.server.reset()
+        entities.server.reset()
+        world.server.reset()
     end
     server.currentState = server.newState()
 

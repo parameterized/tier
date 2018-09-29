@@ -86,7 +86,7 @@ function hud.load()
     hud.mapPanel = hud.addPanel{
         img = gfx.hud.panels.map, openPos={x=392, y=13}, closedPos={x=473, y=13}
     }
-    hud.addButton{
+    hud.mapButton = hud.addButton{
         img=gfx.ui.buttons.right, x=388, y=28, panel=hud.mapPanel,
         action = function(self)
             self.panel.open = not self.panel.open
@@ -148,7 +148,7 @@ function hud.load()
     hud.inventoryPanel = hud.addPanel{
         img=gfx.hud.panels.inventory, openPos={x=378, y=144}, closedPos={x=473, y=144}
     }
-    hud.addButton{
+    hud.inventoryButton = hud.addButton{
         img=gfx.ui.buttons.right, x=374, y=178, panel=hud.inventoryPanel,
         action = function(self)
             self.panel.open = not self.panel.open
@@ -242,9 +242,11 @@ end
 function hud.keypressed(k, scancode, isrepeat)
     if scancode == 'tab' then
         hud.inventoryPanel.open = not hud.inventoryPanel.open
+        hud.inventoryButton.img = hud.inventoryPanel.open and gfx.ui.buttons.right or gfx.ui.buttons.left
     end
     if k == 'm' then
         hud.mapPanel.open = not hud.mapPanel.open
+        hud.mapButton.img = hud.mapPanel.open and gfx.ui.buttons.right or gfx.ui.buttons.left
     elseif k == 'l' then
         hud.statsPanel.open = not hud.statsPanel.open
     end
@@ -258,10 +260,7 @@ function hud.draw()
     love.graphics.draw(gfx.hud.frame, 0, 0)
     love.graphics.draw(gfx.hud.lifemana, 11, 18)
 
-    love.graphics.setColor(48/255, 102/255, 57/255)
-    local x = hud.mapPanel.x + 7
-    local y = hud.mapPanel.y + 8
-    love.graphics.rectangle('fill', x, y, 60, 62)
+    world.client.drawMinimap()
 
     -- panels/buttons
     love.graphics.setColor(1, 1, 1)

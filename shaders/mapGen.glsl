@@ -1,5 +1,4 @@
 
-uniform Image tiles[4];
 uniform vec2 camPos;
 
 
@@ -38,9 +37,8 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
 {
 	vec2 uv = screen_coords;
     uv += camPos;
-    float tileSize = 15.0;
-    vec2 p = floor(uv/tileSize);
-    int tileChoices[3] = int[](0, 1, 3);
+    vec2 p = floor(uv);
+    int tileChoices[3] = int[](1, 2, 4);
     float r1 = snoise(p/32.0)*0.5 + 0.5;
     int choice = 0;
     for (int i=0; i < 3; i++) {
@@ -51,7 +49,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
     }
     float r2 = snoise(1000 + p/64.0)*0.5 + 0.5;
     if (r1 < 0.2 && r2 < 0.5) {
-        choice = 2;
+        choice = 3;
     }
-    return Texel(tiles[choice], mod(uv/tileSize, 1.0))*color;
+    return vec4(choice/255.0, 0, 0, 1);
 }

@@ -84,7 +84,15 @@ function client.connect(ip, port)
             if ok then
                 client.currentState.lootBags[data.id] = data
             else
-                print('error decoding cient rpc bagUpdate')
+                print('error decoding client rpc bagUpdate')
+            end
+        end,
+        setWorldChunk = function(self, data)
+            local ok, data = pcall(bitser.loads, data)
+            if ok then
+                world.client.setChunk(data.x, data.y, data.chunk)
+            else
+                print('error decoding client rpc setWorldChunk')
             end
         end
     }
@@ -104,6 +112,7 @@ function client.connect(ip, port)
     -- cleanup previous connection
     if client.currentState then
         entities.client.reset()
+        world.client.reset()
         collectgarbage()
     end
     client.currentState = client.newState()
@@ -205,7 +214,7 @@ function client.update(dt)
         hud.update(dt)
         lootBags.client.update(dt)
         physics.client.update(dt)
-        world.update(dt)
+        world.client.update(dt)
         playerController.update(dt)
         entities.client.update(dt)
     end

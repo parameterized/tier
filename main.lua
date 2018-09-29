@@ -166,7 +166,7 @@ function love.draw()
     if gameState == 'playing' then
         camera:set()
 
-        world.draw()
+        world.client.draw()
         entities.client.draw()
         projectiles.client.draw()
         lootBags.client.draw()

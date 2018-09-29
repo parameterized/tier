@@ -142,7 +142,7 @@ function player.server:update(dt)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
-    and self.inputState.mouse.lmb and self.inventory.items[2]) then
+    and self.inputState.mouse.lmb and self.inventory.items[2] == 'sword') then
         local a = math.atan2(dx, dy) - math.pi/2
         self.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
     end
@@ -165,7 +165,7 @@ function player.server:update(dt)
             end
         end
         if self.automaticSwing and self.inputState.mouse.lmb
-        and self.inventory.items[2] then
+        and self.inventory.items[2] == 'sword' then
             self:swing()
         end
     end
@@ -257,6 +257,11 @@ function player.client:lerpState(a, b, t)
     for _, v in pairs{'x', 'y', 'xv', 'yv', 'walkTimer', 'swingTimer'} do
         state[v] = lume.lerp(a[v], b[v], t)
     end
+    -- set instead of interpolate timers if b < a
+    -- todo: interpolate flag
+    for _, v in pairs{'walkTimer', 'swingTimer'} do
+        if b[v] < a[v] then state[v] = b[v] end
+    end
     for _, v in pairs{'automaticSwing', 'swinging',
     'direction', 'spd', 'xp', 'stats', 'inventory'} do
         state[v] = b[v]
@@ -291,7 +296,7 @@ function player.client:update(dt)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
-    and self.inputState.mouse.lmb and self.inventory.items[2]) then
+    and self.inputState.mouse.lmb and self.inventory.items[2] == 'sword') then
         local a = math.atan2(dx, dy) - math.pi/2
         self.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
     end
@@ -314,7 +319,7 @@ function player.client:update(dt)
             end
         end
         if self.automaticSwing and self.inputState.mouse.lmb
-        and self.inventory.items[2] then
+        and self.inventory.items[2] == 'sword' then
             self:swing()
         end
     end
@@ -359,7 +364,7 @@ function player.client:drawBody()
             lume.round(px), lume.round(py),
             0, self.direction, 1,
             23, h)
-        if self.inventory.items[2] then
+        if self.inventory.items[2] == 'sword' then
             local quad = anims.player.swing.body.quads[frameIdx]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.swing.sword.sheet, quad,
@@ -375,7 +380,7 @@ function player.client:drawBody()
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 23, h)
-            if self.inventory.items[2] then
+            if self.inventory.items[2] == 'sword' then
                 local quad = anims.player.swing.body.quads[1]
                 local _, _, w, h = quad:getViewport()
                 love.graphics.draw(anims.player.swing.sword.sheet, quad,
@@ -390,7 +395,7 @@ function player.client:drawBody()
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 8, h)
-            if self.inventory.items[2] then
+            if self.inventory.items[2] == 'sword' then
                 local quad = anims.player.walk.sword.quads[walkFrameIdx]
                 local _, _, w, h = quad:getViewport()
                 love.graphics.draw(anims.player.walk.sword.sheet, quad,

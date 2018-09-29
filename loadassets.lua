@@ -135,12 +135,18 @@ shaders = {
     fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),
     outline = love.graphics.newShader('shaders/outline.glsl'),
     hpBar = love.graphics.newShader('shaders/hpBar.glsl'),
-    mapGen = love.graphics.newShader('shaders/mapGen.glsl')
+    mapGen = love.graphics.newShader('shaders/mapGen.glsl'),
+    mapRender = love.graphics.newShader('shaders/mapRender.glsl')
 }
 
 local tileCanv = love.graphics.newCanvas(15, 15)
 love.graphics.setColor(1, 1, 1)
 local tileImgs = {}
+love.graphics.setCanvas(tileCanv)
+love.graphics.clear(0, 0, 0)
+love.graphics.setCanvas()
+-- black tile
+table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
 for _, v in pairs{'grass', 'sand', 'rock', 'water'} do
     love.graphics.setCanvas(tileCanv)
     love.graphics.clear()
@@ -148,4 +154,4 @@ for _, v in pairs{'grass', 'sand', 'rock', 'water'} do
     love.graphics.setCanvas()
     table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
 end
-shaders.mapGen:send('tiles', unpack(tileImgs))
+shaders.mapRender:send('tiles', unpack(tileImgs))
