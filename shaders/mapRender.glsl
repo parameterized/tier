@@ -9,6 +9,8 @@ uniform float time;
 
 float tileSize = 15.0;
 
+
+
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
 {
     vec2 uv = screen_coords;
@@ -35,22 +37,22 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = max(1.0 - length(1.0 - tileUV*3.0), 0.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (topId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = tileUV.y*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (leftId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = tileUV.x*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (topLeftId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = length(tileUV*3.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         } else if (tileUV.y < 2.0/3.0) {
@@ -62,7 +64,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = tileUV.x*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         } else {
@@ -78,22 +80,22 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = max(1.0 - length(vec2(1.0, 2.0) - tileUV*3.0), 0.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (bottomId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = 3.0 - tileUV.y*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (leftId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = tileUV.x*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (bottomLeftId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = length(vec2(0.0, 3.0) - tileUV*3.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         }
@@ -107,7 +109,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = tileUV.y*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         } else if (tileUV.y < 2.0/3.0) {
@@ -121,7 +123,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = 3.0 - tileUV.y*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         }
@@ -139,22 +141,22 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = max(1.0 - length(vec2(2.0, 1.0) - tileUV*3.0), 0.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (topId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = tileUV.y*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (rightId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = 3.0 - tileUV.x*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (topRightId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = length(vec2(3.0, 0.0) - tileUV*3.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         } else if (tileUV.y < 2.0/3.0) {
@@ -166,7 +168,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = 3.0 - tileUV.x*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         } else {
@@ -182,22 +184,22 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = max(1.0 - length(2.0 - tileUV*3.0), 0.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (bottomId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = 3.0 - tileUV.y*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (rightId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = 3.0 - tileUV.x*3.0;
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 } else if (bottomRightId == 4) {
                     vec4 c1 = Texel(tiles[id], tileUV)*color;
                     vec4 c2 = Texel(tiles[4], tileUV)*color;
                     float t = length(vec2(3.0, 3.0) - tileUV*3.0);
-                    return c1*t + c2*(1-t);
+                    return c1*t + c2*(1.0-t);
                 }
             }
         }
