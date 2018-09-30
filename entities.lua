@@ -2,12 +2,17 @@
 entities = {
     server = {
         defs = {},
-        container = {}
+        container = {},
+        activeChunks = {}
     },
     client = {
         defs = {},
     }
 }
+
+-- 306px visible on screen, 465 visible on map
+entities.activeRadius = 500
+entities.chunkSize = 8
 
 local entityDefs = {
     require 'entityDefs.player',
@@ -21,6 +26,7 @@ for _, sc in pairs{'server', 'client'} do
     end
 end
 
+--[[
 function entities.server.load()
     -- todo: load chunks
     for i=1, 8 do
@@ -28,6 +34,7 @@ function entities.server.load()
         entities.server.defs.slime:new{x=x, y=y}:spawn()
     end
 end
+]]
 
 function entities.server.reset()
     for etype, _ in pairs(entities.server.defs) do
@@ -38,11 +45,42 @@ function entities.server.reset()
 end
 
 function entities.server.update(dt)
-    -- todo: load chunks, cull/uncull
+    -- spawn if new chunks active
+    local newActiveChunks = {}
+    for _, v in pairs(server.currentState.players) do
+        local cx1 = math.floor((v.x - entities.activeRadius)/15/entities.chunkSize)
+        local cx2 = math.floor((v.x + entities.activeRadius)/15/entities.chunkSize)
+        local cy1 = math.floor((v.y - entities.activeRadius)/15/entities.chunkSize)
+        local cy2 = math.floor((v.y + entities.activeRadius)/15/entities.chunkSize)
+        for cx=cx1, cx2 do
+            for cy=cy1, cy2 do
+                if newActiveChunks[cx] == nil then newActiveChunks[cx] = {} end
+                newActiveChunks[cx][cy] = true
+                if not entities.server.activeChunks[cx] or not entities.server.activeChunks[cx][cy] then
+                    local choices = {none=90, slime=10}
+                    for _=1, 3 do
+                        choice = lume.weightedchoice(choices)
+                        if choice ~= 'none' then
+                            local x = cx*entities.chunkSize*15 + math.random()*entities.chunkSize*15
+                            local y = cy*entities.chunkSize*15 + math.random()*entities.chunkSize*15
+                            entities.server.defs[choice]:new{x=x, y=y}:spawn()
+                        end
+                    end
+                end
+            end
+        end
+    end
+    entities.server.activeChunks = newActiveChunks
 
+    -- update, destroy if not in active chunk
     for etype, _ in pairs(entities.server.defs) do
         for _, v in pairs(entities.server.container[etype] or {}) do
             v:update(dt)
+            local cx = math.floor(v.x/15/entities.chunkSize)
+            local cy = math.floor(v.y/15/entities.chunkSize)
+            if not entities.server.activeChunks[cx] or not entities.server.activeChunks[cx][cy] then
+                v:destroy()
+            end
         end
     end
 end

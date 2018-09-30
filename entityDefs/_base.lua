@@ -38,7 +38,6 @@ function base.server:spawn()
     local id = self.id
     container[type] = container[type] or {}
     container[type][id] = self
-    --self:freeze()
     server.currentState.entities[self.id] = self:serialize()
     server.added.entities[self.id] = self:serialize()
     return self
@@ -67,40 +66,6 @@ function base.server:destroy()
     server.currentState.entities[self.id] = nil
     server.removed.entities[self.id] = self.id
 end
-
---[[
-function base.server:freeze()
-    self.frozen = true
-end
-
-function base.server:unfreeze()
-    self.frozen = false
-end
-
-function base.server:cull()
-    self:destroy()
-    self.culled = true
-    local container = self.static and entities.server.static.culledContainer
-        or entities.server.dynamic.culledContainer
-    local cs = entities.chunkSize
-    local chunk = math.floor(self.x/cs) .. ',' .. math.floor(self.y/cs)
-    self.culledChunk = chunk
-    local type = self.type
-    local id = self.id
-    container[chunk] = container[chunk] or {}
-    container[chunk][type] = container[chunk][type] or {}
-    container[chunk][type][id] = self
-end
-
-function base.server:uncull()
-    local container = self.static and entities.server.static.culledContainer
-    or entities.server.dynamic.culledContainer
-    container[self.culledChunk][self.type][self.id] = nil
-    self.culled = false
-    self.culledChunk = nil
-    self:spawn()
-end
-]]
 
 
 

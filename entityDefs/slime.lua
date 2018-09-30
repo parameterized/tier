@@ -84,14 +84,14 @@ function slime.server:damage(d, clientId)
     self.hp = self.hp - d
     if self.hp <= 0 and not self.destroyed then
         server.addXP(clientId, math.random(3, 5))
-        for i=1, math.random(1, 2) do
+        for _=1, math.random(1, 2) do
             local x = self.x + (math.random()*2-1)*64
             local y = self.y + (math.random()*2-1)*64
             self:new{x=x, y=y}:spawn()
         end
         local items = {}
         local choices = {none=50, sword=25, shield=25}
-        for i=1, 3 do
+        for _=1, 3 do
             choice = lume.weightedchoice(choices)
             if choice ~= 'none' then table.insert(items, choice) end
         end
@@ -120,18 +120,6 @@ function slime.server:destroy()
     end
     base.server.destroy(self)
 end
-
---[[
-function slime.server:freeze()
-    self.body:setType('static')
-    base.server.freeze(self)
-end
-
-function slime.server:unfreeze()
-    self.body:setType('dynamic')
-    base.server.unfreeze(self)
-end
-]]
 
 
 

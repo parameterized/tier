@@ -159,7 +159,7 @@ function server.start(port, singleplayer)
     server.currentState = server.newState()
 
     physics.server.load()
-    entities.server.load()
+    --entities.server.load()
 end
 
 function server.newState()
