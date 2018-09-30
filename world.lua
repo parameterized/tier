@@ -62,6 +62,18 @@ function world.server.getChunk(x, y)
     end
 end
 
+function world.server.getTile(x, y)
+    local tx = math.floor(x/15)
+    local ty = math.floor(y/15)
+    local cx = math.floor(tx/world.chunkSize)
+    local cy = math.floor(ty/world.chunkSize)
+    tx = tx - cx*world.chunkSize + 1
+    ty = ty - cy*world.chunkSize + 1
+    if world.server.chunks[cx] and world.server.chunks[cx][cy] then
+        return world.server.chunks[cx][cy][tx][ty]
+    end
+end
+
 function world.server.reset()
     world.server.chunks = {}
 end
@@ -84,6 +96,18 @@ function world.client.setChunk(x, y, chunk)
     world.client.chunkImages[x][y] = love.graphics.newImage(imageData)
     if world.client.chunkIdImages[x] == nil then world.client.chunkIdImages[x] = {} end
     world.client.chunkIdImages[x][y] = love.graphics.newImage(idImageData)
+end
+
+function world.client.getTile(x, y)
+    local tx = math.floor(x/15)
+    local ty = math.floor(y/15)
+    local cx = math.floor(tx/world.chunkSize)
+    local cy = math.floor(ty/world.chunkSize)
+    tx = tx - cx*world.chunkSize + 1
+    ty = ty - cy*world.chunkSize + 1
+    if world.client.chunks[cx] and world.client.chunks[cx][cy] then
+        return world.client.chunks[cx][cy][tx][ty]
+    end
 end
 
 function world.client.reset()

@@ -59,9 +59,5 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
         choice = 5;
     }
 
-    if (p == vec2(0.0, 12.0)) {
-        choice = 2;
-    }
-
     return vec4(choice/255.0, 0, 0, 1);
 }

@@ -64,21 +64,13 @@ end
 
 function entities.client.draw()
     for _, v in pairs(client.currentState.entities) do
-        if not v.destroyed and v.drawBody and v.id ~= playerController.serverId then
+        if not v.destroyed and v.draw and v.id ~= playerController.serverId then
             scene.add{
                 draw = function()
-                    v:drawBody()
+                    v:draw()
                 end,
                 y = v.y
             }
-            if v.drawHP then
-                scene.add{
-                    draw = function()
-                        v:drawHP()
-                    end,
-                    y = v.y
-                }
-            end
         end
     end
 end

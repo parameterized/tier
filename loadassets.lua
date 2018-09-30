@@ -138,7 +138,7 @@ shaders = {
     outline = love.graphics.newShader('shaders/outline.glsl'),
     hpBar = love.graphics.newShader('shaders/hpBar.glsl'),
     mapGen = love.graphics.newShader('shaders/mapGen.glsl'),
-    mapRender = love.graphics.newShader('shaders/mapRenderV3.glsl')
+    mapRender = love.graphics.newShader('shaders/mapRender.glsl')
 }
 
 local tileCanv = love.graphics.newCanvas(15, 15)

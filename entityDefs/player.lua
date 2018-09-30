@@ -140,6 +140,8 @@ function player.server:update(dt)
     dy = dy + (self.inputState.keyboard.w and -1 or 0)
     dy = dy + (self.inputState.keyboard.s and 1 or 0)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
+    if world.server.getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
+    if world.server.getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
     and self.inputState.mouse.lmb and self.inventory.items[2] == 'sword') then
@@ -294,6 +296,8 @@ function player.client:update(dt)
     dy = dy + (self.inputState.keyboard.w and -1 or 0)
     dy = dy + (self.inputState.keyboard.s and 1 or 0)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
+    if world.client.getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
+    if world.client.getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
     and self.inputState.mouse.lmb and self.inventory.items[2] == 'sword') then
@@ -335,9 +339,15 @@ function player.client:mousepressed(x, y, btn)
     end
 end
 
-function player.client:drawBody()
+function player.client:draw()
     local _canvas = love.graphics.getCanvas()
     local _shader = love.graphics.getShader()
+    love.graphics.push()
+
+    -- offset if on platform
+    if world.client.getTile(self.x, self.y) == 5 then
+        love.graphics.translate(0, -2)
+    end
 
     local px, py = self.body:getPosition()
     local xv, yv = self.body:getLinearVelocity()
@@ -351,9 +361,19 @@ function player.client:drawBody()
     love.graphics.ellipse('fill', lume.round(px), lume.round(py), shadowWidth, 2)
 
     -- player
-    love.graphics.setCanvas(canvases.tempGame)
+    love.graphics.setCanvas{canvases.tempGame, stencil=true}
     love.graphics.setShader()
     love.graphics.clear()
+
+    -- offset/clip feet if in water
+    if world.client.getTile(self.x, self.y) == 4 then
+        love.graphics.translate(0, 4)
+        love.graphics.stencil(function()
+            love.graphics.rectangle('fill', self.x - 50, self.y - 4, 100, 100)
+        end, 'replace', 1)
+        love.graphics.setStencilTest('equal', 0)
+    end
+
     love.graphics.setColor(1, 1, 1)
     if self.swinging then
         local frameIdx = math.floor(self.swingTimer*12) + 1
@@ -406,6 +426,8 @@ function player.client:drawBody()
         end
     end
 
+    love.graphics.setStencilTest()
+
     -- outline
     love.graphics.setCanvas(_canvas)
     love.graphics.setShader(shaders.outline)
@@ -431,6 +453,8 @@ function player.client:drawBody()
         love.graphics.circle('fill',
             lume.round(px), lume.round(py), self.shapes[1]:getRadius())
     end
+
+    love.graphics.pop()
 end
 
 function player.client:destroy()

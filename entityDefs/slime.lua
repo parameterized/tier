@@ -204,8 +204,11 @@ function slime.client:update(dt)
     base.client.update(self, dt)
 end
 
-function slime.client:drawBody()
+function slime.client:draw()
+    local _canvas = love.graphics.getCanvas()
     local _shader = love.graphics.getShader()
+
+    -- body
     love.graphics.setColor(1, 1, 1)
     love.graphics.setShader(shaders.outline)
     -- gfx.enemies.slime1
@@ -220,12 +223,8 @@ function slime.client:drawBody()
         0, 1, 1,
         lume.round(img:getWidth()/2), img:getHeight())
     love.graphics.pop()
-    love.graphics.setShader(_shader)
-end
 
-function slime.client:drawHP()
-    local _canvas = love.graphics.getCanvas()
-    local _shader = love.graphics.getShader()
+    -- hp
     love.graphics.setColor(1, 1, 1)
     love.graphics.setCanvas(canvases.hpBar)
     love.graphics.setShader(shaders.hpBar)
