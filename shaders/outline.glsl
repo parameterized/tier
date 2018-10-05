@@ -1,6 +1,6 @@
 
-extern vec2 stepSize;
-extern vec4 outlineColor;
+uniform vec2 stepSize;
+uniform vec4 outlineColor;
 
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
 {

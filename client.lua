@@ -24,7 +24,6 @@ function client.connect(ip, port)
             gameState = 'menu'
             menu.state = 'main'
             client.close()
-            love.mouse.setVisible(true)
             love.mouse.setGrabbed(false)
         end,
         add = function(self, data)
@@ -133,7 +132,6 @@ function client.startGame(data)
     p.name = data.name
     p:setState(data)
     gameState = 'playing'
-    love.mouse.setVisible(false)
     if menu.cursorLockBtn.active then love.mouse.setGrabbed(true) end
 end
 

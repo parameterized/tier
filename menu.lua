@@ -191,6 +191,7 @@ function menu.load()
         end
     end, draw=function(v, mx, my)
         if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
+            cursor.cursor = cursor.hand
             love.graphics.setColor(0.3, 0.3, 0.3)
         else
             love.graphics.setColor(0.4, 0.4, 0.4)
@@ -372,6 +373,7 @@ function menu.draw()
                 v.draw(v, mx, my)
             else
                 if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
+                    cursor.cursor = cursor.hand
                     love.graphics.setColor(0.3, 0.3, 0.3)
                 else
                     if v.type == 'toggle' and v.active then
@@ -396,9 +398,11 @@ function menu.draw()
             if v.draw then
                 v.draw(v, mx, my)
             else
-                if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh
-                and (menu.activeInput == v or menu.activeInput == nil) or menu.activeInput == v then
-                    love.graphics.setColor(0.3, 0.3, 0.3)
+                if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
+                    cursor.cursor = cursor.hand
+                    if (menu.activeInput == v or menu.activeInput == nil) or menu.activeInput == v then
+                        love.graphics.setColor(0.3, 0.3, 0.3)
+                    end
                 else
                     love.graphics.setColor(0.6, 0.6, 0.6)
                 end

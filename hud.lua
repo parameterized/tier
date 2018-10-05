@@ -117,6 +117,7 @@ function hud.load()
                 love.graphics.setColor(c, c, 1)
             end
             if mx > self.x and mx < self.x + self.img:getWidth() and my > self.y and my < self.y + self.img:getHeight() then
+                cursor.cursor = cursor.hand
                 local r, g, b = love.graphics.getColor()
                 love.graphics.setColor(r*0.8, g*0.8, b*0.8)
             end
@@ -253,6 +254,8 @@ function hud.keypressed(k, scancode, isrepeat)
 end
 
 function hud.draw()
+    local _shader = love.graphics.getShader()
+
     local mx, my = window2game(love.mouse.getPosition())
     mx, my = lume.round(mx), lume.round(my)
 
@@ -273,6 +276,7 @@ function hud.draw()
         else
             love.graphics.setColor(1, 1, 1)
             if mx > v.x and mx < v.x + v.img:getWidth() and my > v.y and my < v.y + v.img:getHeight() then
+                cursor.cursor = cursor.hand
                 love.graphics.setColor(0.8, 0.8, 0.8)
             end
             love.graphics.draw(v.img, lume.round(v.x), lume.round(v.y))
@@ -321,13 +325,19 @@ function hud.draw()
 
     -- inventory items
     love.graphics.push()
+    local bag = playerController.player.inventory
     local panel = hud.inventoryPanel
     love.graphics.translate(panel.x, panel.y)
     local pmx = mx - lume.round(panel.x)
     local pmy = my - lume.round(panel.y)
     for slotId, slot in ipairs(hud.inventorySlots) do
+        local item = bag.items[slotId]
         if pmx >= slot.x and pmx <= slot.x + slot.w
         and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
+            if item then
+                cursor.cursor = cursor.hand
+                lootBags.client.hoveredItem = item
+            end
             love.graphics.setColor(1, 1, 1, 0.4)
             love.graphics.rectangle('fill', slot.x, slot.y, slot.w, slot.h)
         end
@@ -342,6 +352,20 @@ function hud.draw()
     end
     love.graphics.pop()
 
+    -- item info
+    if lootBags.client.hoveredItem then
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.setShader(shaders.panel)
+        local w = 104
+        local h = 91
+        local x = lume.clamp(mx - w, 0, gsx - w)
+        local y = lume.clamp(my - h, 0, gsy - h)
+        shaders.panel:send('box', {x, y, w, h})
+        love.graphics.rectangle('fill', x, y, w, h)
+        love.graphics.setShader(_shader)
+        love.graphics.draw(gfx.ui.itemInfo, x, y)
+    end
+
     -- held item
     local heldItem = lootBags.client.heldItem
     if heldItem.bagId then
@@ -352,6 +376,7 @@ function hud.draw()
         if bag then
             local item = bag.items[heldItem.slotId]
             if item then
+                cursor.cursor = cursor.hand
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.draw(gfx.items[item], mx + heldItem.offset.x, my + heldItem.offset.y)
             end

@@ -18,7 +18,8 @@ canvases = {
 
 gfx = {
     cursors = {
-        main = love.graphics.newImage('gfx/ui/cursors/cursor.png')
+        main = love.graphics.newImage('gfx/ui/cursors/cursor.png'),
+        hand = love.graphics.newImage('gfx/ui/cursors/hand.png')
     },
     logo = love.graphics.newImage('gfx/logo.png'),
     logoAnim = love.graphics.newImage('gfx/logo_anim.png'),
@@ -29,7 +30,8 @@ gfx = {
             left = love.graphics.newImage('gfx/ui/buttons/left.png'),
             right = love.graphics.newImage('gfx/ui/buttons/right.png')
         },
-        bag = love.graphics.newImage('gfx/ui/bagui.png')
+        bag = love.graphics.newImage('gfx/ui/bagui.png'),
+        itemInfo = love.graphics.newImage('gfx/ui/item_info.png')
     },
     hud = {
         frame = love.graphics.newImage('gfx/ui/hud/frame.png'),
@@ -138,7 +140,8 @@ shaders = {
     outline = love.graphics.newShader('shaders/outline.glsl'),
     hpBar = love.graphics.newShader('shaders/hpBar.glsl'),
     mapGen = love.graphics.newShader('shaders/mapGen.glsl'),
-    mapRender = love.graphics.newShader('shaders/mapRender.glsl')
+    mapRender = love.graphics.newShader('shaders/mapRender.glsl'),
+    panel = love.graphics.newShader('shaders/panel.glsl')
 }
 
 local tileCanv = love.graphics.newCanvas(15, 15)

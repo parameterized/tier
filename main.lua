@@ -7,9 +7,10 @@ Camera = require 'lib.camera'
 
 require 'utils'
 require 'loadassets'
-require 'text'
 require 'server'
 require 'client'
+require 'cursor'
+require 'text'
 require 'menu'
 require 'hud'
 require 'physics'
@@ -32,6 +33,7 @@ function love.load()
     drawDebug = false
     menu.load()
     hud.load()
+    love.mouse.setVisible(false)
 end
 
 gameScale = math.min(ssx/gsx, ssy/gsy)
@@ -72,6 +74,7 @@ end
 function love.update(dt)
     time = time + dt
     love.window.setTitle('Tier (' .. love.timer.getFPS() .. ' FPS)')
+    cursor.cursor = cursor.main
     if server.running then
         server.update(dt)
     end
@@ -81,7 +84,7 @@ function love.update(dt)
     menu.update(dt)
     gcTimer = gcTimer - dt
     if gcTimer < 0 then
-        collectgarbage()
+        --collectgarbage('collect')
         gcTimer = 10
     end
 end
@@ -146,7 +149,6 @@ function love.keypressed(k, scancode, isrepeat)
                 if client.connected then
                     client.close()
                 end
-                love.mouse.setVisible(true)
                 love.mouse.setGrabbed(false)
             elseif k == 'f1' then
                 drawDebug = not drawDebug
@@ -197,12 +199,10 @@ function love.draw()
 
         hud.draw()
         chat.draw()
-
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(gfx.cursors.main, mx, my, 0, 1, 1, 0, 0) -- hotspot 0, 0
     end
 
     menu.draw()
+    cursor.draw()
 
     -- draw game on game2x
     setGameCanvas2x()
