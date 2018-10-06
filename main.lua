@@ -1,4 +1,8 @@
 
+--PROF_CAPTURE = true
+prof = require 'lib.jprof'
+--prof.connect()
+manual_gc = require 'lib.manual_gc'
 lume = require 'lib.lume'
 nut = require 'lib.love_nut'
 json = require 'lib.json'
@@ -27,7 +31,6 @@ function love.load()
     gameState = 'menu'
     time = 0
     gameTime = 0
-    gcTimer = 10
     -- don't shoot if pressing ui
     uiMouseDown = false
     drawDebug = false
@@ -72,21 +75,28 @@ function setGameCanvas2x()
 end
 
 function love.update(dt)
+    prof.push('frame')
+    prof.push('update')
     time = time + dt
     love.window.setTitle('Tier (' .. love.timer.getFPS() .. ' FPS)')
     cursor.cursor = cursor.main
+    prof.push('update server')
     if server.running then
         server.update(dt)
     end
+    prof.pop('update server')
+    prof.push('update client')
     if client.connected then
         client.update(dt)
     end
+    prof.pop('update client')
+    prof.push('update menu')
     menu.update(dt)
-    gcTimer = gcTimer - dt
-    if gcTimer < 0 then
-        --collectgarbage('collect')
-        gcTimer = 10
-    end
+    prof.pop('update menu')
+    prof.push('update gc')
+    manual_gc(1e-3, 64)
+    prof.pop('update gc')
+    prof.pop('update')
 end
 
 function love.mousepressed(x, y, btn, isTouch)
@@ -158,6 +168,8 @@ function love.keypressed(k, scancode, isrepeat)
 end
 
 function love.draw()
+    prof.push('draw')
+    prof.push('draw setup')
     local mx, my = window2game(love.mouse.getPosition())
     mx, my = lume.round(mx), lume.round(my)
     love.graphics.setBlendMode('alpha')
@@ -165,17 +177,26 @@ function love.draw()
     love.graphics.clear()
     love.graphics.setCanvas(canvases.game)
     love.graphics.clear(0.15, 0.15, 0.15)
+    prof.pop('draw setup')
     if gameState == 'playing' then
+        prof.push('draw playing')
         camera:set()
 
+        prof.push('draw world')
         world.client.draw()
+        prof.pop('draw world')
+        prof.push('draw entities')
         entities.client.draw()
+        prof.pop('draw entities')
         projectiles.client.draw()
         lootBags.client.draw()
 
+        prof.push('draw scene')
         scene.draw()
         scene.reset()
+        prof.pop('draw scene')
 
+        prof.push('draw debug')
         if drawDebug then
             if server.running then
                 local serverBodies = physics.server.world:getBodies()
@@ -194,16 +215,23 @@ function love.draw()
                 end
             end
         end
+        prof.pop('draw debug')
 
         camera:reset()
 
+        prof.push('draw hud/chat')
         hud.draw()
         chat.draw()
+        prof.pop('draw hud/chat')
+        prof.pop('draw playing')
     end
 
+    prof.push('draw menu/cursor')
     menu.draw()
     cursor.draw()
+    prof.pop('draw menu/cursor')
 
+    prof.push('draw canvas')
     -- draw game on game2x
     setGameCanvas2x()
     love.graphics.setCanvas()
@@ -211,6 +239,9 @@ function love.draw()
     love.graphics.clear(0, 0, 0)
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(canvases.game2x, ssx/2-gameScale*gsx/2, ssy/2-gameScale*gsy/2, 0, gameScale/2, gameScale/2)
+    prof.pop('draw canvas')
+    prof.pop('draw')
+    prof.pop('frame')
 end
 
 function love.quit()
@@ -221,4 +252,5 @@ function love.quit()
         client.close()
     end
     menu.writeDefaults()
+    --prof.write('prof.mpack')
 end

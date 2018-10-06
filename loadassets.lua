@@ -1,9 +1,6 @@
 
 ssx, ssy = love.graphics.getDimensions()
-
-love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
-
 love.keyboard.setKeyRepeat(true)
 love.graphics.setDefaultFilter('nearest', 'nearest')
 love.graphics.setLineStyle('rough')

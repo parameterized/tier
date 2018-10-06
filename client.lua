@@ -167,6 +167,7 @@ function client.update(dt)
         while client.states[client.stateIdx+1] and client.states[client.stateIdx+2]
         and client.states[client.stateIdx+1].time < client.stateTime do
             client.stateIdx = client.stateIdx + 1
+            client.states[client.stateIdx-1] = false
         end
         local t = (client.stateTime - client.states[client.stateIdx].time)
             / (client.states[client.stateIdx+1].time - client.states[client.stateIdx].time)
