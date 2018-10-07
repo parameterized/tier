@@ -116,10 +116,11 @@ end
 
 function world.client.update(dt)
     -- get visible chunks (+ pad) if nil
-    local cx1 = math.floor((camera.x - camera.ssx/2)/15/world.chunkSize) - 1
-    local cx2 = math.floor((camera.x + camera.ssx/2)/15/world.chunkSize) + 1
-    local cy1 = math.floor((camera.y - camera.ssy/2)/15/world.chunkSize) - 1
-    local cy2 = math.floor((camera.y + camera.ssy/2)/15/world.chunkSize) + 1
+    local p = playerController.player
+    local cx1 = math.floor((p.x - 465)/15/world.chunkSize) - 1
+    local cx2 = math.floor((p.x + 465)/15/world.chunkSize) + 1
+    local cy1 = math.floor((p.y - 465)/15/world.chunkSize) - 1
+    local cy2 = math.floor((p.y + 465)/15/world.chunkSize) + 1
     for cx=cx1, cx2 do
         for cy=cy1, cy2 do
             if not world.client.chunks[cx] or not world.client.chunks[cx][cy] then

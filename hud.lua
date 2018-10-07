@@ -194,11 +194,33 @@ function hud.mousepressed(x, y, btn)
         and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
             uiMouseDown = true
             if bag.items[slotId] then
-                local heldItem = lootBags.client.heldItem
-                heldItem.bagId = bag.id
-                heldItem.slotId = slotId
-                heldItem.offset.x = slot.x - pmx
-                heldItem.offset.y = slot.y - pmy
+                if btn == 1 then
+                    local heldItem = lootBags.client.heldItem
+                    heldItem.bagId = bag.id
+                    heldItem.slotId = slotId
+                    heldItem.offset.x = slot.x - pmx
+                    heldItem.offset.y = slot.y - pmy
+                elseif btn == 2 then
+                    local closestBag = lootBags.client.closest
+                    if closestBag.id and closestBag.open then
+                        local bagTo = client.currentState.lootBags[closestBag.id]
+                        for bagSlotId, _ in ipairs(lootBags.client.slots) do
+                            if bagTo.items[bagSlotId] == nil then
+                                client.moveItem{
+                                    from = {
+                                        bagId = bag.id,
+                                        slotId = slotId
+                                    },
+                                    to = {
+                                        bagId = bagTo.id,
+                                        slotId = bagSlotId
+                                    }
+                                }
+                                break
+                            end
+                        end
+                    end
+                end
             end
         end
     end
@@ -217,25 +239,54 @@ function hud.mousereleased(x, y, btn)
         local panel = hud.inventoryPanel
         local pmx = mx - lume.round(panel.x)
         local pmy = my - lume.round(panel.y)
-        for slotId, slot in ipairs(hud.inventorySlots) do
-            if pmx >= slot.x and pmx <= slot.x + slot.w
-            and pmy >= slot.y and pmy <= slot.y + slot.h then
-                client.moveItem{
-                    from = {
-                        bagId = bagFrom.id,
-                        slotId = heldItem.slotId
-                    },
-                    to = {
-                        bagId = bagTo.id,
-                        slotId = slotId
+        local itemHeld = true
+        if pmx > 0 and pmx < panel.img:getWidth()
+        and pmy > 0 and pmy < panel.img:getHeight() then
+            for slotId, slot in ipairs(hud.inventorySlots) do
+                if pmx >= slot.x and pmx <= slot.x + slot.w
+                and pmy >= slot.y and pmy <= slot.y + slot.h then
+                    client.moveItem{
+                        from = {
+                            bagId = bagFrom.id,
+                            slotId = heldItem.slotId
+                        },
+                        to = {
+                            bagId = bagTo.id,
+                            slotId = slotId
+                        }
                     }
-                }
-                -- move clientside before response (will be corrected/affirmed)
-                local temp = bagTo.items[slotId]
-                bagTo.items[slotId] = bagFrom.items[heldItem.slotId]
-                bagFrom.items[heldItem.slotId] = temp
-                break
+                    itemHeld = false
+                    -- move clientside before response (will be corrected/affirmed)
+                    local temp = bagTo.items[slotId]
+                    bagTo.items[slotId] = bagFrom.items[heldItem.slotId]
+                    bagFrom.items[heldItem.slotId] = temp
+                    break
+                end
             end
+            -- move to open slot if dropped in inventory panel
+            if itemHeld then
+                for invSlotId, _ in ipairs(hud.inventorySlots) do
+                    if bagTo.items[invSlotId] == nil then
+                        client.moveItem{
+                            from = {
+                                bagId = bagFrom.id,
+                                slotId = heldItem.slotId
+                            },
+                            to = {
+                                bagId = bagTo.id,
+                                slotId = invSlotId
+                            }
+                        }
+                        itemHeld = false
+                        break
+                    end
+                end
+            end
+        elseif bagFrom.id == 'inventory' then
+            client.dropItem{
+                slotId = heldItem.slotId
+            }
+            itemHeld = false
         end
     end
 end

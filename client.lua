@@ -225,15 +225,9 @@ function client.sendMessage(msg)
     end
 end
 
-function client.spawnProjectile(data)
-    if client.connected then
-        client.nutClient:sendRPC('spawnProjectile', bitser.dumps(data))
-    end
-end
-
-function client.moveItem(data)
-    if client.connected then
-        client.nutClient:sendRPC('moveItem', bitser.dumps(data))
+for _, v in pairs{'spawnProjectile', 'moveItem', 'dropItem'} do
+    client[v] = function(data)
+        client.nutClient:sendRPC(v, bitser.dumps(data))
     end
 end
 

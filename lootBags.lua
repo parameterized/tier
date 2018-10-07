@@ -113,11 +113,30 @@ function lootBags.client.mousepressed(x, y, btn)
             and bmy >= slot.y and bmy <= slot.y + slot.h then
                 uiMouseDown = true
                 if bag.items[slotId] then
-                    local heldItem = lootBags.client.heldItem
-                    heldItem.bagId = bag.id
-                    heldItem.slotId = slotId
-                    heldItem.offset.x = slot.x - bmx
-                    heldItem.offset.y = slot.y - bmy
+                    if btn == 1 then
+                        local heldItem = lootBags.client.heldItem
+                        heldItem.bagId = bag.id
+                        heldItem.slotId = slotId
+                        heldItem.offset.x = slot.x - bmx
+                        heldItem.offset.y = slot.y - bmy
+                    elseif btn == 2 then
+                        local p = playerController.player
+                        for invSlotId, _ in ipairs(hud.inventorySlots) do
+                            if p.inventory.items[invSlotId] == nil then
+                                client.moveItem{
+                                    from = {
+                                        bagId = bag.id,
+                                        slotId = slotId
+                                    },
+                                    to = {
+                                        bagId = p.inventory.id,
+                                        slotId = invSlotId
+                                    }
+                                }
+                                break
+                            end
+                        end
+                    end
                 end
                 break
             end
