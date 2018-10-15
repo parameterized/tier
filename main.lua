@@ -22,6 +22,7 @@ require 'scene'
 require 'world'
 require 'entities'
 require 'projectiles'
+require 'slimeBalls'
 require 'playerController'
 require 'lootBags'
 require 'chat'
@@ -189,6 +190,7 @@ function love.draw()
         entities.client.draw()
         prof.pop('draw entities')
         projectiles.client.draw()
+        slimeBalls.draw()
         lootBags.client.draw()
 
         prof.push('draw scene')

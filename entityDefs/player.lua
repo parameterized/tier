@@ -12,6 +12,7 @@ for _, sc in pairs{'server', 'client'} do
             name = 'Player',
             x = 0, y = 0,
             xv = 0, yv = 0,
+            hpMax = 20, hp = 20,
             walkTimer = 0, swingTimer = 0,
             swinging = false, automaticSwing = true,
             direction = 1, spd = 6e2, xp = 0,
@@ -212,7 +213,11 @@ function player.client:spawn()
     local fix = self.fixtures[1]
     fix:setUserData(self)
     fix:setCategory(1)
-    fix:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+    if self.isLocalPlayer then
+        fix:setMask(1, 2)
+    else
+        fix:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+    end
     self.body:setFixedRotation(true)
     self.body:setLinearDamping(10)
     return base.client.spawn(self)
@@ -331,6 +336,17 @@ function player.client:update(dt)
     self.x, self.y = self.body:getPosition()
     self.xv, self.yv = self.body:getLinearVelocity()
     base.client.update(self, dt)
+end
+
+function player.client:damage(dmg)
+    self.hp = self.hp - dmg
+    if self.hp <= 0 then
+        self.hp = self.hpMax
+        local a = math.random()*2*math.pi
+        local dist = math.random()*128
+        self.x, self.y = math.cos(a)*dist, -math.sin(a)*dist
+        self.body:setPosition(self.x, self.y)
+    end
 end
 
 function player.client:mousepressed(x, y, btn)

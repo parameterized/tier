@@ -112,6 +112,7 @@ function client.connect(ip, port)
     if client.currentState then
         entities.client.reset()
         world.client.reset()
+        slimeBalls.reset()
         collectgarbage()
     end
     client.currentState = client.newState()
@@ -216,6 +217,7 @@ function client.update(dt)
         world.client.update(dt)
         playerController.update(dt)
         entities.client.update(dt)
+        slimeBalls.update(dt)
     end
 end
 

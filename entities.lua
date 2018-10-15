@@ -63,7 +63,10 @@ function entities.server.update(dt)
                         if choice ~= 'none' then
                             local x = cx*entities.chunkSize*15 + math.random()*entities.chunkSize*15
                             local y = cy*entities.chunkSize*15 + math.random()*entities.chunkSize*15
-                            entities.server.defs[choice]:new{x=x, y=y}:spawn()
+                            -- if not in spawn area
+                            if not (x^2 + y^2 < 192^2) then
+                                entities.server.defs[choice]:new{x=x, y=y}:spawn()
+                            end
                         end
                     end
                 end

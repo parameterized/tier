@@ -87,7 +87,18 @@ function physics.client.postUpdatePush(f)
 end
 
 function physics.client.beginContact(a, b, coll)
-
+    for _, v in pairs{{a, b}, {b, a}} do
+        local fixa = v[1]
+        local fixb = v[2]
+        local uda = fixa:getUserData() or {}
+        local udb = fixb:getUserData() or {}
+        if uda.type == 'slimeBall' and udb.id == playerController.player.id then
+            physics.client.postUpdatePush(function()
+                udb:damage(1)
+                slimeBalls.destroy(uda.id)
+            end)
+        end
+    end
 end
 
 function physics.client.endContact(a, b, coll)

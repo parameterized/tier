@@ -33,6 +33,7 @@ gfx = {
     hud = {
         frame = love.graphics.newImage('gfx/ui/hud/frame.png'),
         lifemana = love.graphics.newImage('gfx/ui/hud/lifemana.png'),
+        lifemanaEmpty = love.graphics.newImage('gfx/ui/hud/lifemana_empty.png'),
         panels = {
             map = love.graphics.newImage('gfx/ui/hud/panels/map.png'),
             chat = love.graphics.newImage('gfx/ui/hud/panels/chat.png'),
@@ -70,7 +71,8 @@ gfx = {
         lootBagFuse = love.graphics.newImage('gfx/items/loot-fuse.png'),
         sword = love.graphics.newImage('gfx/items/sword.png'),
         shield = love.graphics.newImage('gfx/items/shield.png')
-    }
+    },
+    slimeBall = love.graphics.newImage('gfx/slime_ball.png')
 }
 
 anims = {}
@@ -138,7 +140,8 @@ shaders = {
     hpBar = love.graphics.newShader('shaders/hpBar.glsl'),
     mapGen = love.graphics.newShader('shaders/mapGen.glsl'),
     mapRender = love.graphics.newShader('shaders/mapRender.glsl'),
-    panel = love.graphics.newShader('shaders/panel.glsl')
+    panel = love.graphics.newShader('shaders/panel.glsl'),
+    lifemana = love.graphics.newShader('shaders/lifemana.glsl')
 }
 
 local tileCanv = love.graphics.newCanvas(15, 15)
@@ -167,3 +170,5 @@ for _, quad in pairs(tileSheets.platform.quads) do
     table.insert(platformFrames, love.graphics.newImage(tileCanv:newImageData()))
 end
 shaders.mapRender:send('platformFrames', unpack(platformFrames))
+
+shaders.lifemana:send('lifemanaEmpty', gfx.hud.lifemanaEmpty)

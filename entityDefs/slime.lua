@@ -128,6 +128,9 @@ function slime.client:new(o)
     for k, v in pairs(self.newDefaults()) do
         if o[k] == nil then o[k] = v end
     end
+    -- client-side attacking
+    o.attackTimerMax = 3
+    o.attackTimer = math.random()*o.attackTimerMax
     setmetatable(o, self)
     self.__index = self
     return o
@@ -189,6 +192,13 @@ end
 
 function slime.client:update(dt)
     -- todo: simulate with future action prediction from server
+    self.attackTimer = self.attackTimer - dt
+    if self.attackTimer < 0 then
+        self.attackTimer = self.attackTimer + self.attackTimerMax
+        local p = playerController.player
+        local a = math.atan2(p.x - self.x, p.y - self.y) - math.pi/2
+        slimeBalls.spawn{slimeType=self.slimeType, x=self.x, y=self.y, angle=a}
+    end
     base.client.update(self, dt)
 end
 

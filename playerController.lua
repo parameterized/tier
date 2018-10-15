@@ -2,7 +2,7 @@
 playerController = {}
 
 function playerController.load()
-    playerController.player = entities.client.defs.player:new{}:spawn()
+    playerController.player = entities.client.defs.player:new{isLocalPlayer=true}:spawn()
     playerController.serverId = nil
 end
 

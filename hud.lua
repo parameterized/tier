@@ -312,7 +312,14 @@ function hud.draw()
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(gfx.hud.frame, 0, 0)
-    love.graphics.draw(gfx.hud.lifemana, 11, 18)
+
+    -- hp/mana
+    local p = playerController.player
+    love.graphics.setShader(shaders.lifemana)
+    shaders.lifemana:send('hp', p.hp/p.hpMax)
+    shaders.lifemana:send('mana', 1)
+    love.graphics.rectangle('fill', 11, 18, 131, 25)
+    love.graphics.setShader(_shader)
 
     world.client.drawMinimap()
 
