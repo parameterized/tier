@@ -17,7 +17,8 @@ function slimeBalls.spawn(t)
         angle = 0,
         speed = 1.5e2,
         life = 1,
-        pierce = 0
+        pierce = 0,
+        damage = 5
     }
     for k, v in pairs(defaults) do
         if t[k] == nil then t[k] = v end

@@ -13,7 +13,8 @@ function projectiles.server.spawn(data)
         angle = 0,
         speed = 2e2,
         life = 3,
-        pierce = 2
+        pierce = 2,
+        damage = 5
     }
     for k, v in pairs(defaults) do
         if data[k] == nil then data[k] = v end

@@ -229,7 +229,7 @@ function lootBags.client.draw()
                     local bmx = wmx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
                     local bmy = wmy - (lume.round(bag.y) - img:getHeight() - 20)
                     for slotId, slot in ipairs(lootBags.client.slots) do
-                        local item = bag.items[slotId]
+                        local item = items.client.getItem(bag.items[slotId])
                         if bmx >= slot.x and bmx <= slot.x + slot.w
                         and bmy >= slot.y and bmy <= slot.y + slot.h then
                             if item then
@@ -243,7 +243,7 @@ function lootBags.client.draw()
                         if not (heldItem.bagId == bag.id and heldItem.slotId == slotId) then
                             if item then
                                 love.graphics.setColor(1, 1, 1)
-                                love.graphics.draw(gfx.items[item], slot.x, slot.y)
+                                love.graphics.draw(gfx.items[item.imageId], slot.x, slot.y)
                             end
                         end
                     end

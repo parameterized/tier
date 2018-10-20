@@ -12,12 +12,12 @@ for _, sc in pairs{'server', 'client'} do
             name = 'Player',
             x = 0, y = 0,
             xv = 0, yv = 0,
-            hpMax = 20, hp = 20,
+            hpMax = 100, hp = 100,
             walkTimer = 0, swingTimer = 0,
             swinging = false, automaticSwing = true,
             direction = 1, spd = 6e2, xp = 0,
             stats = player[sc].newStats(),
-            inventory = {id='inventory', items={[2]='sword'}},
+            inventory = {id='inventory', items={}},
             inputState = {keyboard={}, mouse={x=0, y=0}}
         }
     end
@@ -51,6 +51,7 @@ function player.server:new(o)
     for k, v in pairs(self.newDefaults()) do
         if o[k] == nil then o[k] = v end
     end
+    o.inventory.items[2] = items.server.newItem{imageId='sword', atk=10}
     setmetatable(o, self)
     self.__index = self
     return o
@@ -143,9 +144,10 @@ function player.server:update(dt)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
     if world.server.getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
     if world.server.getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
+    local attackItem = items.server.getItem(self.inventory.items[2])
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
-    and self.inputState.mouse.lmb and self.inventory.items[2] == 'sword') then
+    and self.inputState.mouse.lmb and attackItem and attackItem.imageId == 'sword') then
         local a = math.atan2(dx, dy) - math.pi/2
         self.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
     end
@@ -168,7 +170,7 @@ function player.server:update(dt)
             end
         end
         if self.automaticSwing and self.inputState.mouse.lmb
-        and self.inventory.items[2] == 'sword' then
+        and attackItem and attackItem.imageId == 'sword' then
             self:swing()
         end
     end
@@ -285,12 +287,18 @@ function player.client:swing()
     local dy = my - gsy/2
     local a = math.atan2(dx, dy) - math.pi/2
     local px, py = self.body:getPosition()
+    local playerDamage = 5
+    local attackItem = items.client.getItem(self.inventory.items[2])
+    if attackItem and attackItem.atk then
+        playerDamage = attackItem.atk
+    end
     client.spawnProjectile{
         x = px, y = py - 14,
         angle = a,
         speed = 2e2,
         life = 3,
-        pierce = 2
+        pierce = 2,
+        damage = playerDamage
     }
 end
 
@@ -303,9 +311,10 @@ function player.client:update(dt)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
     if world.client.getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
     if world.client.getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
+    local attackItem = items.client.getItem(self.inventory.items[2])
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
-    and self.inputState.mouse.lmb and self.inventory.items[2] == 'sword') then
+    and self.inputState.mouse.lmb and attackItem and attackItem.imageId == 'sword') then
         local a = math.atan2(dx, dy) - math.pi/2
         self.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
     end
@@ -328,7 +337,7 @@ function player.client:update(dt)
             end
         end
         if self.automaticSwing and self.inputState.mouse.lmb
-        and self.inventory.items[2] == 'sword' then
+        and attackItem and attackItem.imageId == 'sword' then
             self:swing()
         end
     end
@@ -391,6 +400,7 @@ function player.client:draw()
     end
 
     love.graphics.setColor(1, 1, 1)
+    local attackItem = items.client.getItem(self.inventory.items[2])
     if self.swinging then
         local frameIdx = math.floor(self.swingTimer*12) + 1
         frameIdx = lume.clamp(frameIdx, 1, 5)
@@ -400,7 +410,7 @@ function player.client:draw()
             lume.round(px), lume.round(py),
             0, self.direction, 1,
             23, h)
-        if self.inventory.items[2] == 'sword' then
+        if attackItem and attackItem.imageId == 'sword' then
             local quad = anims.player.swing.body.quads[frameIdx]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.swing.sword.sheet, quad,
@@ -416,7 +426,7 @@ function player.client:draw()
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 23, h)
-            if self.inventory.items[2] == 'sword' then
+            if attackItem and attackItem.imageId == 'sword' then
                 local quad = anims.player.swing.body.quads[1]
                 local _, _, w, h = quad:getViewport()
                 love.graphics.draw(anims.player.swing.sword.sheet, quad,
@@ -431,7 +441,7 @@ function player.client:draw()
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 8, h)
-            if self.inventory.items[2] == 'sword' then
+            if attackItem and attackItem.imageId == 'sword' then
                 local quad = anims.player.walk.sword.quads[walkFrameIdx]
                 local _, _, w, h = quad:getViewport()
                 love.graphics.draw(anims.player.walk.sword.sheet, quad,

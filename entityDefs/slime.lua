@@ -12,7 +12,7 @@ for _, sc in pairs{'server', 'client'} do
             x = 0, y = 0,
             xv = 0, yv = 0,
             slimeType = math.random() < 0.5 and 'slime1' or 'slime2',
-            hpMax = 5, hp = math.random(1, 5),
+            hpMax = 25, hp = math.random(20, 25),
             hitBy = {}
         }
     end
@@ -89,18 +89,25 @@ function slime.server:damage(d, clientId)
             local y = self.y + (math.random()*2-1)*64
             self:new{x=x, y=y}:spawn()
         end
-        local items = {}
+        local bagItems = {}
         local choices = {none=50, sword=25, shield=25}
         for _=1, 3 do
             choice = lume.weightedchoice(choices)
-            if choice ~= 'none' then table.insert(items, choice) end
+            if choice ~= 'none' then
+                local itemData = {imageId=choice}
+                if choice == 'sword' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+10))
+                end
+                local itemId = items.server.newItem(itemData)
+                table.insert(bagItems, itemId)
+            end
         end
-        local numItems = #items
+        local numItems = #bagItems
         if numItems ~= 0 then
             local type = lume.randomchoice{'lootBag', 'lootBag1', 'lootBagFuse'}
             lootBags.server.spawn{
                 x = self.x, y = self.y,
-                items = items,
+                items = bagItems,
                 type = type,
                 life = 30
             }

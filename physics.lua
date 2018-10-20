@@ -42,7 +42,7 @@ function physics.server.beginContact(a, b, coll)
                 local enemy = udb
                 if swing and enemy and not enemy.hitBy[swing.id] then
                     enemy.hitBy[swing.id] = true
-                    enemy:damage(2, swing.playerId)
+                    enemy:damage(swing.damage, swing.playerId)
                     swing.pierce = swing.pierce - 1
                     if swing.pierce <= 0 then
                         projectiles.server.destroy(swing.id)
@@ -94,7 +94,7 @@ function physics.client.beginContact(a, b, coll)
         local udb = fixb:getUserData() or {}
         if uda.type == 'slimeBall' and udb.id == playerController.player.id then
             physics.client.postUpdatePush(function()
-                udb:damage(1)
+                udb:damage(uda.damage)
                 slimeBalls.destroy(uda.id)
             end)
         end

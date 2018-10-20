@@ -383,13 +383,12 @@ function hud.draw()
 
     -- inventory items
     love.graphics.push()
-    local bag = playerController.player.inventory
     local panel = hud.inventoryPanel
     love.graphics.translate(panel.x, panel.y)
     local pmx = mx - lume.round(panel.x)
     local pmy = my - lume.round(panel.y)
     for slotId, slot in ipairs(hud.inventorySlots) do
-        local item = bag.items[slotId]
+        local item = items.client.getItem(playerController.player.inventory.items[slotId])
         if pmx >= slot.x and pmx <= slot.x + slot.w
         and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
             if item then
@@ -401,17 +400,17 @@ function hud.draw()
         end
         local heldItem = lootBags.client.heldItem
         if not (heldItem.bagId == 'inventory' and heldItem.slotId == slotId) then
-            local item = playerController.player.inventory.items[slotId]
             if item then
                 love.graphics.setColor(1, 1, 1)
-                love.graphics.draw(gfx.items[item], slot.x, slot.y)
+                love.graphics.draw(gfx.items[item.imageId], slot.x, slot.y)
             end
         end
     end
     love.graphics.pop()
 
     -- item info
-    if lootBags.client.hoveredItem then
+    local item = lootBags.client.hoveredItem
+    if item then
         love.graphics.setColor(1, 1, 1)
         love.graphics.setShader(shaders.panel)
         local w = 104
@@ -421,7 +420,25 @@ function hud.draw()
         shaders.panel:send('box', {x, y, w, h})
         love.graphics.rectangle('fill', x, y, w, h)
         love.graphics.setShader(_shader)
-        love.graphics.draw(gfx.ui.itemInfo, x, y)
+        love.graphics.push()
+        love.graphics.translate(x, y)
+        love.graphics.draw(gfx.ui.itemInfo, 0, 0)
+        font = fonts.stats
+        love.graphics.setFont(font)
+        local playerWeapon = items.client.getItem(playerController.player.inventory.items[2])
+        if item.imageId == 'sword' and item.atk then
+            if playerWeapon and playerWeapon.atk then
+                if item.atk < playerWeapon.atk then
+                    love.graphics.setColor(1, 0, 0)
+                elseif item.atk > playerWeapon.atk then
+                    love.graphics.setColor(0, 1, 0)
+                end
+            end
+            text.print(item.atk, 35, 34)
+        else
+            text.print('100', 35, 34)
+        end
+        love.graphics.pop()
     end
 
     -- held item
@@ -432,11 +449,11 @@ function hud.draw()
             bag = playerController.player.inventory
         end
         if bag then
-            local item = bag.items[heldItem.slotId]
+            local item = items.client.getItem(bag.items[heldItem.slotId])
             if item then
                 cursor.cursor = cursor.hand
                 love.graphics.setColor(1, 1, 1)
-                love.graphics.draw(gfx.items[item], mx + heldItem.offset.x, my + heldItem.offset.y)
+                love.graphics.draw(gfx.items[item.imageId], mx + heldItem.offset.x, my + heldItem.offset.y)
             end
         end
     end

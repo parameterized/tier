@@ -66,6 +66,15 @@ function server.start(port, singleplayer)
                 print('error decoding server rpc spawnBullet')
             end
         end,
+        getItem = function(self, data, clientId)
+            local ok, data = pcall(bitser.loads, data)
+            if ok then
+                local res = {id=data.id, item=items.server.getItem(data.id)}
+                server.nutServer:sendRPC('returnItem', bitser.dumps(res))
+            else
+                print('error decoding server rpc getItem')
+            end
+        end,
         moveItem = function(self, data, clientId)
             local ok, data = pcall(bitser.loads, data)
             if ok then
@@ -213,6 +222,8 @@ function server.start(port, singleplayer)
         projectiles.server.reset()
         entities.server.reset()
         world.server.reset()
+        items.server.reset()
+        lootBags.server.reset()
     end
     server.currentState = server.newState()
 

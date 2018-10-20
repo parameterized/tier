@@ -78,6 +78,15 @@ function client.connect(ip, port)
                 print('error decoding client rpc stateUpdate')
             end
         end,
+        returnItem = function(self, data)
+            local ok, data = pcall(bitser.loads, data)
+            if ok then
+                items.client.container[data.id] = data.item
+                items.client.requested[data.id] = nil
+            else
+                print('error decoding client rpc returnItem')
+            end
+        end,
         bagUpdate = function(self, data)
             local ok, data = pcall(bitser.loads, data)
             if ok then
@@ -113,6 +122,7 @@ function client.connect(ip, port)
         entities.client.reset()
         world.client.reset()
         slimeBalls.reset()
+        items.client.reset()
         collectgarbage()
     end
     client.currentState = client.newState()

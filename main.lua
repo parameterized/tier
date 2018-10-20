@@ -24,6 +24,7 @@ require 'entities'
 require 'projectiles'
 require 'slimeBalls'
 require 'playerController'
+require 'items'
 require 'lootBags'
 require 'chat'
 
