@@ -7,14 +7,6 @@ function client.connect(ip, port)
     port = tonumber(port)
     client.nutClient = nut.client()
     client.nutClient:addRPCs{
-        returnPlayer = function(self, data)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                client.startGame(data)
-            else
-                print('error decoding client rpc returnPlayer')
-            end
-        end,
         chatMsg = function(self, data)
             chat.addMsg(data)
         end,
@@ -25,85 +17,71 @@ function client.connect(ip, port)
             menu.state = 'main'
             client.close()
             love.mouse.setGrabbed(false)
+        end
+    }
+    local bitserRPCs = {
+        returnPlayer = function(self, data)
+            client.startGame(data)
         end,
         add = function(self, data)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                for _, v in pairs(data.projectiles) do
-                    v.startedMoving = false
-                    client.currentState.projectiles[v.id] = v
-                end
-                for _, v in pairs(data.entities) do
-                    local ent = entities.client.defs[v.type]:new(v):spawn()
-                end
-                for _, v in pairs(data.lootBags) do
-                    client.currentState.lootBags[v.id] = v
-                end
-            else
-                print('error decoding client rpc add')
+            for _, v in pairs(data.projectiles) do
+                v.startedMoving = false
+                client.currentState.projectiles[v.id] = v
+            end
+            for _, v in pairs(data.entities) do
+                local ent = entities.client.defs[v.type]:new(v):spawn()
+            end
+            for _, v in pairs(data.lootBags) do
+                client.currentState.lootBags[v.id] = v
             end
         end,
         remove = function(self, data)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                for _, id in pairs(data.projectiles) do
-                    client.currentState.projectiles[id] = nil
-                end
-                for _, id in pairs(data.entities) do
-                    local ent = client.currentState.entities[id]
-                    if ent then ent:destroy() end
-                    client.currentState.entities[id] = nil
-                end
-                for _, id in pairs(data.lootBags) do
-                    client.currentState.lootBags[id] = nil
-                end
-            else
-                print('error decoding client rpc remove')
+            for _, id in pairs(data.projectiles) do
+                client.currentState.projectiles[id] = nil
+            end
+            for _, id in pairs(data.entities) do
+                local ent = client.currentState.entities[id]
+                if ent then ent:destroy() end
+                client.currentState.entities[id] = nil
+            end
+            for _, id in pairs(data.lootBags) do
+                client.currentState.lootBags[id] = nil
             end
         end,
         stateUpdate = function(self, data)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                client.serverTime = data.time
-                -- todo: delete old states (or make replay feature)
-                -- todo: multiple states in update -
-                -- - 20fps update -> 60fps replay, (3 states per update)
-                table.insert(client.states, data)
-                --[[
-                if #client.states == 2 then
-                    client.stateTime = client.states[1].time
-                end
-                ]]
-            else
-                print('error decoding client rpc stateUpdate')
+            client.serverTime = data.time
+            -- todo: delete old states (or make replay feature)
+            -- todo: multiple states in update -
+            -- - 20fps update -> 60fps replay, (3 states per update)
+            table.insert(client.states, data)
+            --[[
+            if #client.states == 2 then
+                client.stateTime = client.states[1].time
             end
+            ]]
         end,
         returnItem = function(self, data)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                items.client.container[data.id] = data.item
-                items.client.requested[data.id] = nil
-            else
-                print('error decoding client rpc returnItem')
-            end
+            items.client.container[data.id] = data.item
+            items.client.requested[data.id] = nil
         end,
         bagUpdate = function(self, data)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                client.currentState.lootBags[data.id] = data
-            else
-                print('error decoding client rpc bagUpdate')
-            end
+            client.currentState.lootBags[data.id] = data
         end,
         setWorldChunk = function(self, data)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                world.client.setChunk(data.x, data.y, data.chunk)
-            else
-                print('error decoding client rpc setWorldChunk')
-            end
+            world.client.setChunk(data.x, data.y, data.chunk)
         end
     }
+    for k, v in pairs(bitserRPCs) do
+        bitserRPCs[k] = function(self, data)
+            local ok, data = pcall(bitser.loads, data)
+            if ok then
+                v(self, data)
+            else
+                print('error decoding client rpc ' .. k)
+            end
+        end
+    end
+    client.nutClient:addRPCs(bitserRPCs)
     client.nutClient:addUpdate(function(self)
         if gameState == 'playing' then
             self:sendRPC('setPlayer', bitser.dumps(playerController.player:serialize()))

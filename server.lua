@@ -43,138 +43,121 @@ function server.start(port, singleplayer)
         chatMsg = function(self, data, clientId)
             local pname = server.currentState.players[clientId].name
             self:sendRPC('chatMsg', string.format('%s: %s', pname, data))
-        end,
+        end
+    }
+    local bitserRPCs = {
         setPlayer = function(self, data, clientId)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                if not server.currentState.players[clientId] then
-                    print('attempt to setPlayer on non-existent player')
-                    return
-                end
-                server.currentState.players[clientId]:setState(data)
-            else
-                print('error decoding server rpc setPlayer')
+            if not server.currentState.players[clientId] then
+                print('attempt to setPlayer on non-existent player')
+                return
             end
+            server.currentState.players[clientId]:setState(data)
         end,
         spawnProjectile = function(self, data, clientId)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                local playerId = server.currentState.players[clientId].id
-                data.playerId = playerId
-                projectiles.server.spawn(data)
-            else
-                print('error decoding server rpc spawnBullet')
-            end
+            local playerId = server.currentState.players[clientId].id
+            data.playerId = playerId
+            projectiles.server.spawn(data)
         end,
         getItem = function(self, data, clientId)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                local res = {id=data.id, item=items.server.getItem(data.id)}
-                server.nutServer:sendRPC('returnItem', bitser.dumps(res))
-            else
-                print('error decoding server rpc getItem')
-            end
+            local res = {id=data.id, item=items.server.getItem(data.id)}
+            server.nutServer:sendRPC('returnItem', bitser.dumps(res))
         end,
         moveItem = function(self, data, clientId)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                -- todo: validation
-                local p = server.currentState.players[clientId]
-                local bagFrom = server.currentState.lootBags[data.from.bagId]
-                if data.from.bagId == 'inventory' then
-                    bagFrom = p.inventory
-                end
-                local bagTo = server.currentState.lootBags[data.to.bagId]
-                if data.to.bagId == 'inventory' then
-                    bagTo = p.inventory
-                end
-                if bagFrom and bagTo then
-                    if bagFrom.items[data.from.slotId] then
-                        local temp = bagTo.items[data.to.slotId]
-                        bagTo.items[data.to.slotId] = bagFrom.items[data.from.slotId]
-                        bagFrom.items[data.from.slotId] = temp
-                        -- remove bag if empty
-                        if bagFrom.id ~= 'inventory' then
-                            local empty = true
-                            for _, v in pairs(bagFrom.items) do
-                                if v ~= nil then
-                                    empty = false
-                                    break
-                                end
-                            end
-                            if empty then
-                                lootBags.server.destroy(bagFrom.id)
+            -- todo: validation
+            local p = server.currentState.players[clientId]
+            local bagFrom = server.currentState.lootBags[data.from.bagId]
+            if data.from.bagId == 'inventory' then
+                bagFrom = p.inventory
+            end
+            local bagTo = server.currentState.lootBags[data.to.bagId]
+            if data.to.bagId == 'inventory' then
+                bagTo = p.inventory
+            end
+            if bagFrom and bagTo then
+                if bagFrom.items[data.from.slotId] then
+                    local temp = bagTo.items[data.to.slotId]
+                    bagTo.items[data.to.slotId] = bagFrom.items[data.from.slotId]
+                    bagFrom.items[data.from.slotId] = temp
+                    -- remove bag if empty
+                    if bagFrom.id ~= 'inventory' then
+                        local empty = true
+                        for _, v in pairs(bagFrom.items) do
+                            if v ~= nil then
+                                empty = false
+                                break
                             end
                         end
-                        -- inventory sent in player update
-                        if data.from.bagId ~= 'inventory' then
-                            server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagFrom))
-                        end
-                        if data.to.bagId ~= 'inventory' then
-                            server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagTo))
+                        if empty then
+                            lootBags.server.destroy(bagFrom.id)
                         end
                     end
+                    -- inventory sent in player update
+                    if data.from.bagId ~= 'inventory' then
+                        server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagFrom))
+                    end
+                    if data.to.bagId ~= 'inventory' then
+                        server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagTo))
+                    end
                 end
-            else
-                print('error decoding server rpc moveItem')
             end
         end,
         dropItem = function(self, data, clientId)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                local p = server.currentState.players[clientId]
-                local item = p.inventory.items[data.slotId]
-                if item then
-                    local itemDropped = false
-                    local bags = {}
-                    for _, bag in pairs(lootBags.server.container) do
-                        table.insert(bags, bag)
-                    end
-                    local sortedBags = isort(bags, function(a, b)
-                        local da = (a.x - p.x)^2 + (a.y - p.y)^2
-                        local db = (b.x - p.x)^2 + (b.y - p.y)^2
-                        return da < db
-                    end)
-                    for _, bag in ipairs(sortedBags) do
-                        local dist = math.sqrt((bag.x - p.x)^2 + (bag.y - p.y)^2)
-                        if dist < lootBags.client.openRange then
-                            for bagSlotId, _ in ipairs(lootBags.client.slots) do
-                                if bag.items[bagSlotId] == nil then
-                                    bag.items[bagSlotId] = item
-                                    server.nutServer:sendRPC('bagUpdate', bitser.dumps(bag))
-                                    itemDropped = true
-                                    break
-                                end
+            local p = server.currentState.players[clientId]
+            local item = p.inventory.items[data.slotId]
+            if item then
+                local itemDropped = false
+                local bags = {}
+                for _, bag in pairs(lootBags.server.container) do
+                    table.insert(bags, bag)
+                end
+                local sortedBags = isort(bags, function(a, b)
+                    local da = (a.x - p.x)^2 + (a.y - p.y)^2
+                    local db = (b.x - p.x)^2 + (b.y - p.y)^2
+                    return da < db
+                end)
+                for _, bag in ipairs(sortedBags) do
+                    local dist = math.sqrt((bag.x - p.x)^2 + (bag.y - p.y)^2)
+                    if dist < lootBags.client.openRange then
+                        for bagSlotId, _ in ipairs(lootBags.client.slots) do
+                            if bag.items[bagSlotId] == nil then
+                                bag.items[bagSlotId] = item
+                                server.nutServer:sendRPC('bagUpdate', bitser.dumps(bag))
+                                itemDropped = true
+                                break
                             end
                         end
-                        if itemDropped then break end
                     end
-                    if not itemDropped then
-                        lootBags.server.spawn{
-                            x = p.x, y = p.y,
-                            items = {item},
-                            life = 30
-                        }
-                        itemDropped = true
-                    end
-                    p.inventory.items[data.slotId] = nil
-                    -- inventory sent in player update
+                    if itemDropped then break end
                 end
-            else
-                print('error decoding server rpc dropItem')
+                if not itemDropped then
+                    lootBags.server.spawn{
+                        x = p.x, y = p.y,
+                        items = {item},
+                        life = 30
+                    }
+                    itemDropped = true
+                end
+                p.inventory.items[data.slotId] = nil
+                -- inventory sent in player update
             end
         end,
         getWorldChunk = function(self, data, clientId)
-            local ok, data = pcall(bitser.loads, data)
-            if ok then
-                local chunk = world.server.getChunk(data.x, data.y)
-                local res = {x=data.x, y=data.y, chunk=chunk}
-                server.nutServer:sendRPC('setWorldChunk', bitser.dumps(res), clientId)
-            else
-                print('error decoding server rpc getWorldChunk')
-            end
+            local chunk = world.server.getChunk(data.x, data.y)
+            local res = {x=data.x, y=data.y, chunk=chunk}
+            server.nutServer:sendRPC('setWorldChunk', bitser.dumps(res), clientId)
         end
     }
+    for k, v in pairs(bitserRPCs) do
+        bitserRPCs[k] = function(self, data, clientId)
+            local ok, data = pcall(bitser.loads, data)
+            if ok then
+                v(self, data, clientId)
+            else
+                print('error decoding server rpc ' .. k)
+            end
+        end
+    end
+    server.nutServer:addRPCs(bitserRPCs)
     server.nutServer:addUpdate(function(self)
         local addStr = bitser.dumps(server.added)
         if addStr ~= bitser.dumps(server.newState()) then
