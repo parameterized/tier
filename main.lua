@@ -25,7 +25,9 @@ require 'projectiles'
 require 'slimeBalls'
 require 'playerController'
 require 'items'
-require 'lootBags'
+require 'lootBag'
+require 'portals'
+require 'realm'
 require 'chat'
 
 function love.load()
@@ -38,6 +40,8 @@ function love.load()
     drawDebug = false
     menu.load()
     hud.load()
+    serverRealm = realm.server:new()
+    clientRealm = realm.client:new()
     love.mouse.setVisible(false)
 end
 
@@ -101,24 +105,23 @@ function love.update(dt)
     prof.pop('update')
 end
 
-function love.mousepressed(x, y, btn, isTouch)
-    menu.mousepressed(x, y, btn)
+function love.mousepressed(x, y, btn, isTouch, presses)
+    menu.mousepressed(x, y, btn, isTouch, presses)
     if gameState == 'playing' then
-        hud.mousepressed(x, y, btn)
-        lootBags.client.mousepressed(x, y, btn)
-        playerController.mousepressed(x, y, btn)
+        hud.mousepressed(x, y, btn, isTouch, presses)
+        playerController.mousepressed(x, y, btn, isTouch, presses)
     end
 end
 
-function love.mousereleased(x, y, btn, isTouch)
-    menu.mousereleased(x, y, btn)
+function love.mousereleased(x, y, btn, isTouch, presses)
+    menu.mousereleased(x, y, btn, isTouch, presses)
     if gameState == 'playing' then
-        hud.mousereleased(x, y, btn)
-        lootBags.client.mousereleased(x, y, btn)
+        hud.mousereleased(x, y, btn, isTouch, presses)
+        playerController.mousereleased(x, y, btn, isTouch, presses)
     end
 
     uiMouseDown = false
-    local heldItem = lootBags.client.heldItem
+    local heldItem = playerController.heldItem
     heldItem.bagId = nil
     heldItem.slotId = nil
 end
@@ -149,7 +152,8 @@ function love.keypressed(k, scancode, isrepeat)
             menu.keypressed(k, scancode, isrepeat)
         elseif gameState == 'playing' then
             hud.keypressed(k, scancode, isrepeat)
-            lootBags.client.keypressed(k, scancode, isrepeat)
+            playerController.keypressed(k, scancode, isrepeat)
+            portals.client.keypressed(k, scancode, isrepeat)
         end
         if not isrepeat then
             if k == 'escape' and not chatPanelOpen then
@@ -184,25 +188,22 @@ function love.draw()
         prof.push('draw playing')
         camera:set()
 
-        prof.push('draw world')
-        world.client.draw()
-        prof.pop('draw world')
-        prof.push('draw entities')
+        prof.push('draw scene')
+        scene.reset()
+        clientRealm:draw()
+
         entities.client.draw()
-        prof.pop('draw entities')
         projectiles.client.draw()
         slimeBalls.draw()
-        lootBags.client.draw()
+        portals.client.draw()
 
-        prof.push('draw scene')
         scene.draw()
-        scene.reset()
         prof.pop('draw scene')
 
         prof.push('draw debug')
         if drawDebug then
             if server.running then
-                local serverBodies = physics.server.world:getBodies()
+                local serverBodies = serverRealm.physics.world:getBodies()
                 love.graphics.setColor(1, 0, 0, 0.5)
                 for _, v in pairs(serverBodies) do
                     local x, y = v:getPosition()
@@ -210,7 +211,7 @@ function love.draw()
                 end
             end
             if client.connected then
-                local clientBodies = physics.client.world:getBodies()
+                local clientBodies = clientRealm.physics.world:getBodies()
                 love.graphics.setColor(0, 1, 0, 0.5)
                 for _, v in pairs(clientBodies) do
                     local x, y = v:getPosition()

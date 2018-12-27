@@ -108,6 +108,7 @@ end
 
 function base.client:destroy()
     self.destroyed = true
+    client.currentState.entities[self.id] = nil
 end
 
 

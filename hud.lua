@@ -167,7 +167,7 @@ function hud.update(dt)
     end
 end
 
-function hud.mousepressed(x, y, btn)
+function hud.mousepressed(x, y, btn, isTouch, presses)
     mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
 
@@ -194,17 +194,25 @@ function hud.mousepressed(x, y, btn)
         and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
             uiMouseDown = true
             if bag.items[slotId] then
+                -- use item
+                if btn == 1 and (love.keyboard.isScancodeDown('lshift') or presses > 1) then
+                    client.useItem{
+                        bagId = bag.id,
+                        slotId = slotId
+                    }
+                end
+                -- move items
                 if btn == 1 then
-                    local heldItem = lootBags.client.heldItem
+                    local heldItem = playerController.heldItem
                     heldItem.bagId = bag.id
                     heldItem.slotId = slotId
                     heldItem.offset.x = slot.x - pmx
                     heldItem.offset.y = slot.y - pmy
                 elseif btn == 2 then
-                    local closestBag = lootBags.client.closest
+                    local closestBag = playerController.closestBag
                     if closestBag.id and closestBag.open then
                         local bagTo = client.currentState.lootBags[closestBag.id]
-                        for bagSlotId, _ in ipairs(lootBags.client.slots) do
+                        for bagSlotId, _ in ipairs(lootBagSlots) do
                             if bagTo.items[bagSlotId] == nil then
                                 client.moveItem{
                                     from = {
@@ -226,10 +234,10 @@ function hud.mousepressed(x, y, btn)
     end
 end
 
-function hud.mousereleased(x, y, btn)
+function hud.mousereleased(x, y, btn, isTouch, presses)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
-    local heldItem = lootBags.client.heldItem
+    local heldItem = playerController.heldItem
     if heldItem.bagId then
         local bagFrom = client.currentState.lootBags[heldItem.bagId]
         if heldItem.bagId == 'inventory' then
@@ -321,7 +329,7 @@ function hud.draw()
     love.graphics.rectangle('fill', 11, 18, 131, 25)
     love.graphics.setShader(_shader)
 
-    world.client.drawMinimap()
+    clientRealm.world:drawMinimap()
 
     -- panels/buttons
     love.graphics.setColor(1, 1, 1)
@@ -393,12 +401,12 @@ function hud.draw()
         and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
             if item then
                 cursor.cursor = cursor.hand
-                lootBags.client.hoveredItem = item
+                playerController.hoveredItem = item
             end
             love.graphics.setColor(1, 1, 1, 0.4)
             love.graphics.rectangle('fill', slot.x, slot.y, slot.w, slot.h)
         end
-        local heldItem = lootBags.client.heldItem
+        local heldItem = playerController.heldItem
         if not (heldItem.bagId == 'inventory' and heldItem.slotId == slotId) then
             if item then
                 love.graphics.setColor(1, 1, 1)
@@ -409,7 +417,7 @@ function hud.draw()
     love.graphics.pop()
 
     -- item info
-    local item = lootBags.client.hoveredItem
+    local item = playerController.hoveredItem
     if item then
         love.graphics.setColor(1, 1, 1)
         love.graphics.setShader(shaders.panel)
@@ -442,7 +450,7 @@ function hud.draw()
     end
 
     -- held item
-    local heldItem = lootBags.client.heldItem
+    local heldItem = playerController.heldItem
     if heldItem.bagId then
         local bag = client.currentState.lootBags[heldItem.bagId]
         if heldItem.bagId == 'inventory' then

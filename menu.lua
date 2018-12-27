@@ -85,7 +85,7 @@ function menu.load()
         resolution = 2,
         fullscreen = 1,
         vsync = true,
-        cursorLock = true
+        cursorLock = false
     }
 
     local menuDefaults

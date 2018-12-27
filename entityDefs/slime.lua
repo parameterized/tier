@@ -33,7 +33,7 @@ function slime.server:new(o)
 end
 
 function slime.server:spawn()
-    self.body = love.physics.newBody(physics.server.world, self.x, self.y, 'dynamic')
+    self.body = love.physics.newBody(serverRealm.physics.world, self.x, self.y, 'dynamic')
     self.polys = {
         {0.36, 0.64, 0.08, 0.36, 0.08, 0.2, 0.2, 0.08, 0.8, 0.08, 0.92, 0.2, 0.92, 0.36, 0.64, 0.64}
     }
@@ -85,12 +85,12 @@ function slime.server:damage(d, clientId)
     if self.hp <= 0 and not self.destroyed then
         server.addXP(clientId, math.random(3, 5))
         for _=1, math.random(1, 2) do
-            local x = self.x + (math.random()*2-1)*64
-            local y = self.y + (math.random()*2-1)*64
+            local x = self.x + lume.random(-64, 64)
+            local y = self.y + lume.random(-64, 64)
             self:new{x=x, y=y}:spawn()
         end
         local bagItems = {}
-        local choices = {none=50, sword=25, shield=25}
+        local choices = {none=50, sword=15, shield=15, apple=20}
         for _=1, 3 do
             choice = lume.weightedchoice(choices)
             if choice ~= 'none' then
@@ -105,13 +105,15 @@ function slime.server:damage(d, clientId)
         local numItems = #bagItems
         if numItems ~= 0 then
             local type = lume.randomchoice{'lootBag', 'lootBag1', 'lootBagFuse'}
-            lootBags.server.spawn{
+            lootBag.server:new{
+                realm = serverRealm,
                 x = self.x, y = self.y,
                 items = bagItems,
                 type = type,
                 life = 30
-            }
+            }:spawn()
         end
+        --if math.random() < 0.5 then portals.server.spawn{x=self.x, y=self.y, life=10} end
         self:destroy()
     end
 end
@@ -145,7 +147,7 @@ end
 
 
 function slime.client:spawn()
-    self.body = love.physics.newBody(physics.client.world, self.x, self.y, 'dynamic')
+    self.body = love.physics.newBody(clientRealm.physics.world, self.x, self.y, 'dynamic')
     self.polys = {
         {0.36, 0.64, 0.08, 0.36, 0.08, 0.2, 0.2, 0.08, 0.8, 0.08, 0.92, 0.2, 0.92, 0.36, 0.64, 0.64}
     }

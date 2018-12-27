@@ -23,7 +23,7 @@ function projectiles.server.spawn(data)
     data.id = lume.uuid()
     data.type = 'playerSwing'
     data.spawnTime = gameTime
-    data.body = love.physics.newBody(physics.server.world, data.x, data.y, 'dynamic')
+    data.body = love.physics.newBody(serverRealm.physics.world, data.x, data.y, 'dynamic')
     data.polys = {
         {-0.2, 0.6, 0, 0.3, -0.1, 0.2},
         {0, 0.3, 0.1, 0, 0, -0.3, -0.1, -0.2, -0.1, 0.2},

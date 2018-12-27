@@ -29,10 +29,13 @@ function client.connect(ip, port)
                 client.currentState.projectiles[v.id] = v
             end
             for _, v in pairs(data.entities) do
-                local ent = entities.client.defs[v.type]:new(v):spawn()
+                entities.client.defs[v.type]:new(v):spawn()
             end
             for _, v in pairs(data.lootBags) do
-                client.currentState.lootBags[v.id] = v
+                lootBag.client:new(v):spawn()
+            end
+            for _, v in pairs(data.portals) do
+                client.currentState.portals[v.id] = v
             end
         end,
         remove = function(self, data)
@@ -42,10 +45,13 @@ function client.connect(ip, port)
             for _, id in pairs(data.entities) do
                 local ent = client.currentState.entities[id]
                 if ent then ent:destroy() end
-                client.currentState.entities[id] = nil
             end
             for _, id in pairs(data.lootBags) do
-                client.currentState.lootBags[id] = nil
+                local bag = clientRealm.lootBags[id]
+                if bag then bag:destroy() end
+            end
+            for _, id in pairs(data.portals) do
+                client.currentState.portals[id] = nil
             end
         end,
         stateUpdate = function(self, data)
@@ -65,10 +71,22 @@ function client.connect(ip, port)
             items.client.requested[data.id] = nil
         end,
         bagUpdate = function(self, data)
-            client.currentState.lootBags[data.id] = data
+            local bag = clientRealm.lootBags[data.id]
+            if bag then
+                for k, v in pairs(data) do
+                    bag[k] = v
+                end
+            end
         end,
         setWorldChunk = function(self, data)
-            world.client.setChunk(data.x, data.y, data.chunk)
+            clientRealm.world:setChunk(data.x, data.y, data.chunk)
+        end,
+        teleportPlayer = function(self, data)
+            playerController.player.body:setPosition(data.x, data.y)
+        end,
+        healPlayer = function(self, data)
+            local p = playerController.player
+            p.hp = math.min(p.hp + data.hp, p.hpMax)
         end
     }
     for k, v in pairs(bitserRPCs) do
@@ -98,7 +116,7 @@ function client.connect(ip, port)
     -- cleanup previous connection
     if client.currentState then
         entities.client.reset()
-        world.client.reset()
+        clientRealm:destroy()
         slimeBalls.reset()
         items.client.reset()
         collectgarbage()
@@ -107,12 +125,12 @@ function client.connect(ip, port)
 
     menu.writeDefaults()
 
-    physics.client.load()
+    clientRealm:load()
     playerController.load()
 end
 
 function client.newState()
-    return {entities={}, projectiles={}, lootBags={}}
+    return {entities={}, projectiles={}, lootBags={}, portals={}}
 end
 
 function client.startGame(data)
@@ -200,9 +218,7 @@ function client.update(dt)
     if not (server.running and server.paused) then
         gameTime = gameTime + dt
         hud.update(dt)
-        lootBags.client.update(dt)
-        physics.client.update(dt)
-        world.client.update(dt)
+        clientRealm:update(dt)
         playerController.update(dt)
         entities.client.update(dt)
         slimeBalls.update(dt)
@@ -215,7 +231,7 @@ function client.sendMessage(msg)
     end
 end
 
-for _, v in pairs{'spawnProjectile', 'moveItem', 'dropItem'} do
+for _, v in pairs{'spawnProjectile', 'moveItem', 'dropItem', 'useItem', 'usePortal'} do
     client[v] = function(data)
         client.nutClient:sendRPC(v, bitser.dumps(data))
     end

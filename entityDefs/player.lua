@@ -58,7 +58,7 @@ function player.server:new(o)
 end
 
 function player.server:spawn()
-    self.body = love.physics.newBody(physics.server.world, self.x, self.y, 'dynamic')
+    self.body = love.physics.newBody(serverRealm.physics.world, self.x, self.y, 'dynamic')
     self.shapes = {
         love.physics.newCircleShape(6)
     }
@@ -142,8 +142,8 @@ function player.server:update(dt)
     dy = dy + (self.inputState.keyboard.w and -1 or 0)
     dy = dy + (self.inputState.keyboard.s and 1 or 0)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
-    if world.server.getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
-    if world.server.getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
+    if serverRealm.world:getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
+    if serverRealm.world:getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
     local attackItem = items.server.getItem(self.inventory.items[2])
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
@@ -205,7 +205,7 @@ function player.client:new(o)
 end
 
 function player.client:spawn()
-    self.body = love.physics.newBody(physics.client.world, self.x, self.y, 'dynamic')
+    self.body = love.physics.newBody(clientRealm.physics.world, self.x, self.y, 'dynamic')
     self.shapes = {
         love.physics.newCircleShape(6)
     }
@@ -309,8 +309,8 @@ function player.client:update(dt)
     dy = dy + (self.inputState.keyboard.w and -1 or 0)
     dy = dy + (self.inputState.keyboard.s and 1 or 0)
     local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
-    if world.client.getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
-    if world.client.getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
+    if clientRealm.world:getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
+    if clientRealm.world:getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
     local attackItem = items.client.getItem(self.inventory.items[2])
     if not (dx == 0 and dy == 0)
     and not (self.swinging or self.automaticSwing
@@ -370,7 +370,7 @@ function player.client:draw()
     love.graphics.push()
 
     -- offset if on platform
-    if world.client.getTile(self.x, self.y) == 5 then
+    if clientRealm.world:getTile(self.x, self.y) == 5 then
         love.graphics.translate(0, -2)
     end
 
@@ -391,7 +391,7 @@ function player.client:draw()
     love.graphics.clear()
 
     -- offset/clip feet if in water
-    if world.client.getTile(self.x, self.y) == 4 then
+    if clientRealm.world:getTile(self.x, self.y) == 4 then
         love.graphics.translate(0, 4)
         love.graphics.stencil(function()
             love.graphics.rectangle('fill', self.x - 50, self.y - 4, 100, 100)

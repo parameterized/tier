@@ -65,11 +65,11 @@ function server.start(port, singleplayer)
         moveItem = function(self, data, clientId)
             -- todo: validation
             local p = server.currentState.players[clientId]
-            local bagFrom = server.currentState.lootBags[data.from.bagId]
+            local bagFrom = serverRealm.lootBags[data.from.bagId]
             if data.from.bagId == 'inventory' then
                 bagFrom = p.inventory
             end
-            local bagTo = server.currentState.lootBags[data.to.bagId]
+            local bagTo = serverRealm.lootBags[data.to.bagId]
             if data.to.bagId == 'inventory' then
                 bagTo = p.inventory
             end
@@ -88,15 +88,15 @@ function server.start(port, singleplayer)
                             end
                         end
                         if empty then
-                            lootBags.server.destroy(bagFrom.id)
+                            bagFrom:destroy()
                         end
                     end
                     -- inventory sent in player update
                     if data.from.bagId ~= 'inventory' then
-                        server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagFrom))
+                        server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagFrom:serialize()))
                     end
                     if data.to.bagId ~= 'inventory' then
-                        server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagTo))
+                        server.nutServer:sendRPC('bagUpdate', bitser.dumps(bagTo:serialize()))
                     end
                 end
             end
@@ -107,7 +107,7 @@ function server.start(port, singleplayer)
             if item then
                 local itemDropped = false
                 local bags = {}
-                for _, bag in pairs(lootBags.server.container) do
+                for _, bag in pairs(serverRealm.lootBags) do
                     table.insert(bags, bag)
                 end
                 local sortedBags = isort(bags, function(a, b)
@@ -117,11 +117,11 @@ function server.start(port, singleplayer)
                 end)
                 for _, bag in ipairs(sortedBags) do
                     local dist = math.sqrt((bag.x - p.x)^2 + (bag.y - p.y)^2)
-                    if dist < lootBags.client.openRange then
-                        for bagSlotId, _ in ipairs(lootBags.client.slots) do
+                    if dist < playerController.interactRange then
+                        for bagSlotId, _ in ipairs(lootBagSlots) do
                             if bag.items[bagSlotId] == nil then
                                 bag.items[bagSlotId] = item
-                                server.nutServer:sendRPC('bagUpdate', bitser.dumps(bag))
+                                server.nutServer:sendRPC('bagUpdate', bitser.dumps(bag:serialize()))
                                 itemDropped = true
                                 break
                             end
@@ -130,21 +130,41 @@ function server.start(port, singleplayer)
                     if itemDropped then break end
                 end
                 if not itemDropped then
-                    lootBags.server.spawn{
+                    lootBag.server:new{
+                        realm = serverRealm,
                         x = p.x, y = p.y,
                         items = {item},
                         life = 30
-                    }
+                    }:spawn()
                     itemDropped = true
                 end
                 p.inventory.items[data.slotId] = nil
                 -- inventory sent in player update
             end
         end,
+        useItem = function(self, data, clientId)
+            local p = server.currentState.players[clientId]
+            local itemId = p.inventory.items[data.slotId]
+            local item = items.server.getItem(itemId)
+            if item then
+                if item.imageId == 'apple' then
+                    server.nutServer:sendRPC('healPlayer', bitser.dumps{hp=20}, clientId)
+                    p.inventory.items[data.slotId] = nil
+                end
+            end
+        end,
         getWorldChunk = function(self, data, clientId)
-            local chunk = world.server.getChunk(data.x, data.y)
+            local chunk = serverRealm.world:getChunk(data.x, data.y)
             local res = {x=data.x, y=data.y, chunk=chunk}
             server.nutServer:sendRPC('setWorldChunk', bitser.dumps(res), clientId)
+        end,
+        usePortal = function(self, data, clientId)
+            local portal = portals.server.container[data.id]
+            if portal then
+                local tx = portal.x + lume.random(-128, 128)
+                local ty = portal.y + lume.random(-128, 128)
+                server.nutServer:sendRPC('teleportPlayer', bitser.dumps{x=tx, y=ty}, clientId)
+            end
         end
     }
     for k, v in pairs(bitserRPCs) do
@@ -185,7 +205,7 @@ function server.start(port, singleplayer)
                 stateUpdate.entities[v.id] = v
             end
         end
-        -- no lootBags updates
+        -- no lootBags or portals updates
         self:sendRPC('stateUpdate', bitser.dumps(stateUpdate))
     end)
     server.nutServer:start()
@@ -204,18 +224,17 @@ function server.start(port, singleplayer)
     if server.currentState then
         projectiles.server.reset()
         entities.server.reset()
-        world.server.reset()
+        serverRealm:destroy()
         items.server.reset()
-        lootBags.server.reset()
+        portals.server.reset()
     end
     server.currentState = server.newState()
 
-    physics.server.load()
-    --entities.server.load()
+    serverRealm:load()
 end
 
 function server.newState()
-    return {players={}, entities={}, projectiles={}, lootBags={}}
+    return {players={}, entities={}, projectiles={}, lootBags={}, portals={}}
 end
 
 function server.addPlayer(name, clientId)
@@ -275,10 +294,10 @@ function server.update(dt)
     server.nutServer:update(dt)
 
     if not server.paused then
-        physics.server.update(dt)
+        serverRealm:update(dt)
         projectiles.server.update(dt)
         entities.server.update(dt)
-        lootBags.server.update(dt)
+        portals.server.update(dt)
     end
 end
 

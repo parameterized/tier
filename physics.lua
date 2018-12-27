@@ -1,114 +1,119 @@
 
 physics = {
-    server = {
-        postUpdateQueue = {}
-    },
-    client = {
-        postUpdateQueue = {}
-    }
+    server = {},
+    client = {}
 }
 
 love.physics.setMeter(16)
 
-function physics.server.load()
-    if physics.server.world then physics.server.world:destroy() end
-    physics.server.world = love.physics.newWorld(0, 0, true)
-    physics.server.world:setCallbacks(physics.server.beginContact,
-    physics.server.endContact, physics.server.preSolve, physics.server.postSolve)
+local defaults = {server={}, client={}}
+for _, sc in pairs{'server', 'client'} do
+    defaults[sc].postUpdateQueue = function() return {} end
 end
 
-function physics.server.update(dt)
-    physics.server.world:update(dt)
-    for i, v in pairs(physics.server.postUpdateQueue) do
+
+
+function physics.server:new(o)
+    o = o or {}
+    for k, v in pairs(defaults.server) do
+        if o[k] == nil then o[k] = v() end
+    end
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function physics.server:load()
+    self.beginContact = function(a, b, coll)
+        for _, v in pairs{{a, b}, {b, a}} do
+            local fixa = v[1]
+            local fixb = v[2]
+            local uda = fixa:getUserData() or {}
+            local udb = fixb:getUserData() or {}
+            if uda.type == 'playerSwing' and udb.enemy then
+                self:postUpdatePush(function()
+                    local swing = projectiles.server.container[uda.id]
+                    local enemy = udb
+                    if swing and enemy and not enemy.hitBy[swing.id] then
+                        enemy.hitBy[swing.id] = true
+                        enemy:damage(swing.damage, swing.playerId)
+                        swing.pierce = swing.pierce - 1
+                        if swing.pierce <= 0 then
+                            projectiles.server.destroy(swing.id)
+                        end
+                    end
+                end)
+            end
+        end
+    end
+    self.endContact = function(a, b, coll) end
+    self.preSolve = function(a, b, coll) end
+    self.postSolve = function(a, b, coll, normalImpulse, tangentImpulse) end
+
+    if self.world then self.world:destroy() end
+    self.world = love.physics.newWorld(0, 0, true)
+    self.world:setCallbacks(self.beginContact,
+    self.endContact, self.preSolve, self.postSolve)
+end
+
+function physics.server:update(dt)
+    self.world:update(dt)
+    for i, v in pairs(self.postUpdateQueue) do
         v()
-        physics.server.postUpdateQueue[i] = nil
+        self.postUpdateQueue[i] = nil
     end
 end
 
 -- can't do stuff like destroying fixtures in callbacks - queue for update
-function physics.server.postUpdatePush(f)
-    table.insert(physics.server.postUpdateQueue, f)
+function physics.server:postUpdatePush(f)
+    table.insert(self.postUpdateQueue, f)
 end
 
-function physics.server.beginContact(a, b, coll)
-    for _, v in pairs{{a, b}, {b, a}} do
-        local fixa = v[1]
-        local fixb = v[2]
-        local uda = fixa:getUserData() or {}
-        local udb = fixb:getUserData() or {}
-        if uda.type == 'playerSwing' and udb.enemy then
-            physics.server.postUpdatePush(function()
-                local swing = projectiles.server.container[uda.id]
-                local enemy = udb
-                if swing and enemy and not enemy.hitBy[swing.id] then
-                    enemy.hitBy[swing.id] = true
-                    enemy:damage(swing.damage, swing.playerId)
-                    swing.pierce = swing.pierce - 1
-                    if swing.pierce <= 0 then
-                        projectiles.server.destroy(swing.id)
-                    end
-                end
-            end)
+
+
+function physics.client:new(o)
+    o = o or {}
+    for k, v in pairs(defaults.client) do
+        if o[k] == nil then o[k] = v() end
+    end
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function physics.client:load()
+    self.beginContact = function(a, b, coll)
+        for _, v in pairs{{a, b}, {b, a}} do
+            local fixa = v[1]
+            local fixb = v[2]
+            local uda = fixa:getUserData() or {}
+            local udb = fixb:getUserData() or {}
+            if uda.type == 'slimeBall' and udb.id == playerController.player.id then
+                self:postUpdatePush(function()
+                    udb:damage(uda.damage)
+                    slimeBalls.destroy(uda.id)
+                end)
+            end
         end
     end
+    self.endContact = function(a, b, coll) end
+    self.preSolve = function(a, b, coll) end
+    self.postSolve = function(a, b, coll, normalImpulse, tangentImpulse) end
+
+    if self.world then self.world:destroy() end
+    self.world = love.physics.newWorld(0, 0, true)
+    self.world:setCallbacks(self.beginContact,
+        self.endContact, self.preSolve, self.postSolve)
 end
 
-function physics.server.endContact(a, b, coll)
-
-end
-
-function physics.server.preSolve(a, b, coll)
-
-end
-
-function physics.server.postSolve(a, b, coll, normalImpulse, tangentImpulse)
-
-end
-
-
-
-function physics.client.load()
-    if physics.client.world then physics.client.world:destroy() end
-    physics.client.world = love.physics.newWorld(0, 0, true)
-    physics.client.world:setCallbacks(physics.client.beginContact,
-        physics.client.endContact, physics.client.preSolve, physics.client.postSolve)
-end
-
-function physics.client.update(dt)
-    physics.client.world:update(dt)
-    for i, v in pairs(physics.client.postUpdateQueue) do
+function physics.client:update(dt)
+    self.world:update(dt)
+    for i, v in pairs(self.postUpdateQueue) do
         v()
-        physics.client.postUpdateQueue[i] = nil
+        self.postUpdateQueue[i] = nil
     end
 end
 
-function physics.client.postUpdatePush(f)
-    table.insert(physics.client.postUpdateQueue, f)
-end
-
-function physics.client.beginContact(a, b, coll)
-    for _, v in pairs{{a, b}, {b, a}} do
-        local fixa = v[1]
-        local fixb = v[2]
-        local uda = fixa:getUserData() or {}
-        local udb = fixb:getUserData() or {}
-        if uda.type == 'slimeBall' and udb.id == playerController.player.id then
-            physics.client.postUpdatePush(function()
-                udb:damage(uda.damage)
-                slimeBalls.destroy(uda.id)
-            end)
-        end
-    end
-end
-
-function physics.client.endContact(a, b, coll)
-
-end
-
-function physics.client.preSolve(a, b, coll)
-
-end
-
-function physics.client.postSolve(a, b, coll, normalImpulse, tangentImpulse)
-
+function physics.client:postUpdatePush(f)
+    table.insert(self.postUpdateQueue, f)
 end

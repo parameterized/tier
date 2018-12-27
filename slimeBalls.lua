@@ -28,7 +28,7 @@ function slimeBalls.spawn(t)
     t.type = 'slimeBall'
     t.color = slimeBalls.slimeType2color[t.slimeType]
     t.spawnTime = gameTime
-    t.body = love.physics.newBody(physics.client.world, t.x, t.y, 'dynamic')
+    t.body = love.physics.newBody(clientRealm.physics.world, t.x, t.y, 'dynamic')
     t.shape = love.physics.newCircleShape(5)
     t.fixture = love.physics.newFixture(t.body, t.shape, 1)
     t.fixture:setUserData(t)
