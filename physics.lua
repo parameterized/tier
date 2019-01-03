@@ -7,7 +7,7 @@ physics = {
 love.physics.setMeter(16)
 
 local defaults = {server={}, client={}}
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     defaults[sc].postUpdateQueue = function() return {} end
 end
 
@@ -25,7 +25,7 @@ end
 
 function physics.server:load()
     self.beginContact = function(a, b, coll)
-        for _, v in pairs{{a, b}, {b, a}} do
+        for _, v in ipairs{{a, b}, {b, a}} do
             local fixa = v[1]
             local fixb = v[2]
             local uda = fixa:getUserData() or {}
@@ -83,7 +83,7 @@ end
 
 function physics.client:load()
     self.beginContact = function(a, b, coll)
-        for _, v in pairs{{a, b}, {b, a}} do
+        for _, v in ipairs{{a, b}, {b, a}} do
             local fixa = v[1]
             local fixb = v[2]
             local uda = fixa:getUserData() or {}

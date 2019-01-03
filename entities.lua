@@ -19,7 +19,7 @@ local entityDefs = {
     require 'entityDefs.slime'
 }
 
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     -- entities.server.defs.slime = slime.server
     for _, v in pairs(entityDefs) do
         entities[sc].defs[v.server.type] = v[sc]

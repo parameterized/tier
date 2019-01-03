@@ -5,13 +5,13 @@ realm = {
 }
 
 local defaults = {server={}, client={}}
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     defaults[sc].id = function() return lume.uuid() end
     defaults[sc].name = function() return 'realm' end
-    for _, v in pairs{'entities', 'projectiles', 'slimeBalls', 'lootBags', 'portals'} do
+    for _, v in ipairs{'entities', 'projectiles', 'slimeBalls', 'lootBags', 'portals'} do
         defaults[sc][v] = function() return {} end
     end
-    for _, v in pairs{{'physics', physics}, {'world', world}} do
+    for _, v in ipairs{{'physics', physics}, {'world', world}} do
         defaults[sc][v[1]] = function() return v[2][sc]:new() end
     end
 end

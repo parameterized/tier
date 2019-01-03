@@ -7,7 +7,7 @@ world = {
 local chunkSize = 8
 
 local defaults = {server={}, client={}}
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     defaults[sc].chunks = function() return {} end
     defaults[sc].chunkSize = function() return chunkSize end
 end

@@ -367,14 +367,14 @@ function hud.draw()
     love.graphics.setFont(font)
     local stats_x, stats_y = 202, 227
     local stats_dx, stats_dy = 20, 11
-    for j, row in pairs{'base', 'arm', 'total'} do
+    for j, row in ipairs{'base', 'arm', 'total'} do
         local c = ({
             {255/255, 175/255, 48/255},
             {255/255, 84/255, 252/255},
             {48/255, 255/255, 241/255}
         })[j]
         love.graphics.setColor(c)
-        for i, col in pairs{'vit', 'atk', 'spd', 'wis', 'def', 'reg'} do
+        for i, col in ipairs{'vit', 'atk', 'spd', 'wis', 'def', 'reg'} do
             local sx = stats_x + stats_dx*(i-1)
             local sy = stats_y + stats_dy*(j-1)
             sx = x + (sx - hud.statsPanel.openPos.x)

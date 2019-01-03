@@ -1,13 +1,6 @@
 
 menu = {}
 
-menu.state = 'main'
-menu.buttons = {}
-menu.inputs = {}
-menu.infos = {}
-menu.activeInput = nil
-menu.logoAnimTimer = 0
-
 function menu.addButton(t)
     local defaults = {
         state = 'main',
@@ -77,48 +70,94 @@ function menu.addInfo(t)
     return t
 end
 
-function menu.load()
-    local menuFactoryDefaults = {
-        name = 'Player',
-        ip = '127.0.0.1',
-        port = '1357',
-        resolution = 2,
-        fullscreen = 1,
-        vsync = true,
-        cursorLock = false
-    }
+menu.factoryDefaults = {
+    name = 'Player',
+    ip = '127.0.0.1',
+    port = '1357',
+    resolution = 1,
+    fullscreen = 1,
+    vsync = false,
+    cursorLock = false
+}
 
-    local menuDefaults
-    function menu.readDefaults()
-        local path = love.filesystem.getRealDirectory('menuDefaults.json') .. '/menuDefaults.json'
-        local file = io.open(path, 'rb')
-        local content = file:read('*a')
-        file:close()
-        menuDefaults = json.decode(content)
-        for k, v in pairs(menuFactoryDefaults) do
-            if menuDefaults[k] == nil then
-                menuDefaults[k] = v
-            end
+function menu.readDefaults()
+    local path = love.filesystem.getRealDirectory('menuDefaults.json') .. '/menuDefaults.json'
+    local file = io.open(path, 'rb')
+    local content = file:read('*a')
+    file:close()
+    menu.defaults = json.decode(content)
+    for k, v in pairs(menu.factoryDefaults) do
+        if menu.defaults[k] == nil then
+            menu.defaults[k] = v
         end
     end
-    if not pcall(menu.readDefaults) then
-        -- write default if not exist or malformed
-        local content = json.encode(menuFactoryDefaults)
-        love.filesystem.write('menuDefaults.json', content)
-        menu.readDefaults()
+end
+
+function menu.writeDefaults()
+    local content = json.encode{
+        name = menu.nameInput.value,
+        ip = menu.ipInput.value,
+        port = menu.portInput.value,
+        resolution = menu.resolutionBtn.active,
+        fullscreen = menu.fullscreenBtn.active,
+        vsync = menu.vsyncBtn.active,
+        cursorLock = menu.cursorLockBtn.active
+    }
+    love.filesystem.write('menuDefaults.json', content)
+end
+
+function menu.applyOptions()
+    local w, h, flags = love.window.getMode()
+    local vsyncOn = flags.vsync ~= 0
+    flags.vsync = menu.defaults.vsync and 1 or 0
+
+    local fullscreen, fstype = love.window.getFullscreen()
+    local newResolution = menu.resolutionBtn.items[menu.defaults.resolution]
+    if not (fullscreen and fstype == 'desktop')
+    and newResolution ~= string.format('%sx%s', w, h) then
+        w, h = newResolution:match('(%d+)x(%d+)')
+        local wd, hd = love.window.getDesktopDimensions()
+        flags.x = wd/2 - w/2
+        flags.y = hd/2 - h/2
+        love.window.setMode(w, h, flags)
+        love.resize(w, h)
+    elseif vsyncOn ~= menu.defaults.vsync then
+        love.window.setMode(w, h, flags)
     end
 
-    function menu.writeDefaults()
-        local content = json.encode{
-            name = menu.nameInput.value,
-            ip = menu.ipInput.value,
-            port = menu.portInput.value,
-            resolution = menu.resolutionBtn.active,
-            fullscreen = menu.fullscreenBtn.active,
-            vsync = menu.vsyncBtn.active,
-            cursorLock = menu.cursorLockBtn.active
-        }
+    local currentWindowType = love.window.getFullscreen()
+    local newWindowType = menu.fullscreenBtn.items[menu.defaults.fullscreen]
+    if newWindowType == 'Windowed'
+    and currentWindowType ~= 'Windowed' then
+        love.window.setFullscreen(false)
+        w, h = love.graphics.getDimensions()
+        love.resize(w, h)
+    elseif newWindowType == 'Borderless Fullscreen Windowed'
+    and currentWindowType ~= 'Borderless Fullscreen Windowed' then
+        love.window.setFullscreen(true, 'desktop')
+        w, h = love.graphics.getDimensions()
+        love.resize(w, h)
+    elseif newWindowType == 'Fullscreen'
+    and currentWindowType ~= 'Fullscreen' then
+        love.window.setFullscreen(true, 'exclusive')
+        w, h = love.graphics.getDimensions()
+        love.resize(w, h)
+    end
+end
+
+function menu.load()
+    menu.state = 'main'
+    menu.buttons = {}
+    menu.inputs = {}
+    menu.infos = {}
+    menu.activeInput = nil
+    menu.logoAnimTimer = 0
+
+    if not pcall(menu.readDefaults) then
+        -- write default if not exist or malformed
+        local content = json.encode(menu.factoryDefaults)
         love.filesystem.write('menuDefaults.json', content)
+        menu.readDefaults()
     end
 
     local exitY = 220
@@ -133,7 +172,7 @@ function menu.load()
         love.event.quit()
     end}
 
-    menu.nameInput = menu.addInput{state='play', text='Player Name', value=menuDefaults.name, x=gsx/2 - 70, y=exitY - h*2}
+    menu.nameInput = menu.addInput{state='play', text='Player Name', value=menu.defaults.name, x=gsx/2 - 70, y=exitY - h*2}
     menu.addButton{state='play', text='Singleplayer', x=gsx/2 - 70, y=exitY - h*1, action=function()
         chat.log = {}
         server.start(nil, true)
@@ -141,8 +180,8 @@ function menu.load()
         menu.state = 'connect'
         menu.connectInfo.text = 'Starting Game'
     end}
-    menu.ipInput = menu.addInput{state='play', text='IP', value=menuDefaults.ip, x=gsx/2 + 70, y=exitY - h*3}
-    menu.portInput = menu.addInput{state='play', text='Port', value=menuDefaults.port, x=gsx/2 + 70, y=exitY - h*2}
+    menu.ipInput = menu.addInput{state='play', text='IP', value=menu.defaults.ip, x=gsx/2 + 70, y=exitY - h*3}
+    menu.portInput = menu.addInput{state='play', text='Port', value=menu.defaults.port, x=gsx/2 + 70, y=exitY - h*2}
     menu.addButton{state='play', text='Host', x=gsx/2 + 70 - 25, y=exitY - h*1, action=function()
         chat.log = {}
         -- todo: notify if not open or other err
@@ -178,9 +217,9 @@ function menu.load()
 
     menu.resolutionBtn = menu.addButton{state='options', text='Resolution', y=exitY - h*4,
     type='cycle', items={'960x540', '1440x810', '1920x1080'},
-    active=menuDefaults.resolution, action=function(v)
+    active=menu.defaults.resolution, action=function(v)
         local fullscreen, fstype = love.window.getFullscreen()
-        if not (fullscreen and fstype == 'desktop') then
+        if not fullscreen then
             local w, h, flags = love.window.getMode()
             w, h = v:match('(%d+)x(%d+)')
             local wd, hd = love.window.getDesktopDimensions()
@@ -197,7 +236,7 @@ function menu.load()
             love.graphics.setColor(0.4, 0.4, 0.4)
         end
         local fullscreen, fstype = love.window.getFullscreen()
-        if fullscreen and fstype == 'desktop' then
+        if fullscreen then
             love.graphics.setColor(0.7, 0.7, 0.7)
         end
         love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
@@ -206,7 +245,7 @@ function menu.load()
         text.print(v.text, lume.round(v.x - v.font:getWidth(v.text)/2), lume.round(v.by - v.font:getHeight()))
         love.graphics.setColor(1, 1, 1)
         local txt = v.items[v.active]
-        if fullscreen and fstype == 'desktop' then
+        if fullscreen then
             local w, h = love.graphics.getDimensions()
             txt = w .. 'x' .. h
         end
@@ -214,71 +253,51 @@ function menu.load()
     end}
     menu.fullscreenBtn = menu.addButton{state='options', text='Fullscreen', y=exitY - h*3,
     type='cycle', items={'Windowed', 'Borderless Fullscreen Windowed', 'Fullscreen'},
-    active=menuDefaults.fullscreen, action=function(v)
+    active=menu.defaults.fullscreen, action=function(v)
         if v == 'Windowed' then
-            love.window.setFullscreen(false)
-            local w, h = love.graphics.getDimensions()
+            local w, h, flags = love.window.getMode()
+            local rb = menu.resolutionBtn
+            w, h = rb.items[rb.active]:match('(%d+)x(%d+)')
+            flags.fullscreen = false
+            flags.fullscreentype = 'desktop'
+            love.window.setMode(w, h, flags)
             love.resize(w, h)
+            local dw, dh = love.window.getDesktopDimensions(flags.display)
+            love.window.setPosition(lume.round(dw/2 - w/2), lume.round(dh/2 - h/2))
         elseif v == 'Borderless Fullscreen Windowed' then
-            love.window.setFullscreen(true, 'desktop')
-            local w, h = love.graphics.getDimensions()
+            local w, h, flags = love.window.getMode()
+            w, h = love.window.getDesktopDimensions(flags.display)
+            flags.fullscreen = true
+            flags.fullscreentype = 'desktop'
+            love.window.setMode(w, h, flags)
             love.resize(w, h)
         elseif v == 'Fullscreen' then
-            love.window.setFullscreen(true, 'exclusive')
-            local w, h = love.graphics.getDimensions()
+            local w, h, flags = love.window.getMode()
+            w, h = love.window.getDesktopDimensions(flags.display)
+            flags.fullscreen = true
+            flags.fullscreentype = 'exclusive'
+            love.window.setMode(w, h, flags)
             love.resize(w, h)
         end
     end}
     menu.vsyncBtn = menu.addButton{state='options', text='Vsync', y=exitY - h*2.2, type='toggle',
-    active=menuDefaults.vsync, action=function(v)
+    active=menu.defaults.vsync, action=function(v)
         local w, h, flags = love.window.getMode()
-        flags.vsync = v
+        flags.vsync = v and 1 or 0
         love.window.setMode(w, h, flags)
     end}
-    menu.cursorLockBtn = menu.addButton{state='options', text='Cursor Lock', y=exitY - h*1.4, type='toggle', active=menuDefaults.cursorLock}
+    menu.cursorLockBtn = menu.addButton{state='options', text='Cursor Lock', y=exitY - h*1.4, type='toggle', active=menu.defaults.cursorLock}
     menu.addButton{state='options', text='Back', y=exitY, action=function()
         menu.state = 'main'
     end}
+    menu.addButton{state='options', text='Load Defaults', x=400, y=exitY, action=function()
+        local content = json.encode(menu.factoryDefaults)
+        love.filesystem.write('menuDefaults.json', content)
+        menu.load()
+        menu.state = 'options'
+    end}
 
-    -- apply options (block-local vars)
-    repeat
-        local w, h, flags = love.window.getMode()
-        local vsyncOn = flags.vsync
-        flags.vsync = menuDefaults.vsync
-
-        local fullscreen, fstype = love.window.getFullscreen()
-        local newResolution = menu.resolutionBtn.items[menuDefaults.resolution]
-        if not (fullscreen and fstype == 'desktop')
-        and newResolution ~= string.format('%sx%s', w, h) then
-            w, h = newResolution:match('(%d+)x(%d+)')
-            local wd, hd = love.window.getDesktopDimensions()
-            flags.x = wd/2 - w/2
-            flags.y = hd/2 - h/2
-            love.window.setMode(w, h, flags)
-            love.resize(w, h)
-        elseif vsyncOn ~= menuDefaults.vsync then
-            love.window.setMode(w, h, flags)
-        end
-
-        local currentWindowType = love.window.getFullscreen()
-        local newWindowType = menu.fullscreenBtn.items[menuDefaults.fullscreen]
-        if newWindowType == 'Windowed'
-        and currentWindowType ~= 'Windowed' then
-            love.window.setFullscreen(false)
-            w, h = love.graphics.getDimensions()
-            love.resize(w, h)
-        elseif newWindowType == 'Borderless Fullscreen Windowed'
-        and currentWindowType ~= 'Borderless Fullscreen Windowed' then
-            love.window.setFullscreen(true, 'desktop')
-            w, h = love.graphics.getDimensions()
-            love.resize(w, h)
-        elseif newWindowType == 'Fullscreen'
-        and currentWindowType ~= 'Fullscreen' then
-            love.window.setFullscreen(true, 'exclusive')
-            w, h = love.graphics.getDimensions()
-            love.resize(w, h)
-        end
-    until true
+    menu.applyOptions()
 end
 
 function menu.update(dt)

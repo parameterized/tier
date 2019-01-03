@@ -153,7 +153,7 @@ love.graphics.clear(0, 0, 0)
 love.graphics.setCanvas()
 -- black tile
 table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
-for _, v in pairs{'grass', 'sand', 'rock', 'water'} do
+for _, v in ipairs{'grass', 'sand', 'rock', 'water'} do
     love.graphics.setCanvas(tileCanv)
     love.graphics.clear()
     love.graphics.draw(tileSheets.ts1.sheet, tileSheets.ts1.quads[v], 0, 0)
