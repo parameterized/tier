@@ -5,7 +5,7 @@ lootBag = {
 }
 
 local defaults = {server={}, client={}}
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     for k, v in pairs{x=0, y=0, type='lootBag'} do
         defaults[sc][k] = function() return v end
     end

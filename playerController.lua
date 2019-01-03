@@ -17,7 +17,7 @@ function playerController.update(dt)
 
     -- update player input
     local inputState = {keyboard={}, mouse={}}
-    for _, key in pairs{'w', 'a', 's', 'd', 'lshift'} do
+    for _, key in ipairs{'w', 'a', 's', 'd', 'lshift'} do
         inputState.keyboard[key] = love.keyboard.isScancodeDown(key) and not chat.active
     end
     inputState.mouse.lmb = love.mouse.isDown(1) and not uiMouseDown

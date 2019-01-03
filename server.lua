@@ -21,7 +21,7 @@ function server.start(port, singleplayer)
         requestPlayer = function(self, data, clientId)
             local postfix = 0
             local reservedNames = {}
-            for _, v in pairs{'Server', 'server'} do reservedNames[v] = true end
+            for _, v in ipairs{'Server', 'server'} do reservedNames[v] = true end
             while server.playerNames[buildName(data, postfix)]
             or reservedNames[buildName(data, postfix)] do
                 postfix = postfix + 1

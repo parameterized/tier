@@ -4,7 +4,7 @@ local base = {
     client = {}
 }
 
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     base[sc].newDefaults = function()
         return {
             id = lume.uuid(),
@@ -44,10 +44,11 @@ function base.server:spawn()
 end
 
 function base.server:serialize()
-    return {
-        id = self.id, type = self.type,
-        x = self.x, y = self.y
-    }
+    local t = {}
+    for _, v in ipairs{'id', 'type', 'x', 'y'} do
+        t[v] = self[v]
+    end
+    return t
 end
 
 function base.server:update(dt)
@@ -86,13 +87,13 @@ function base.client:spawn()
 end
 
 function base.client:setState(state)
-    for _, v in pairs{'x', 'y'} do
+    for _, v in ipairs{'x', 'y'} do
         self[v] = state[v]
     end
 end
 
 function base.client:lerpState(a, b, t)
-    for _, v in pairs{'x', 'y'} do
+    for _, v in ipairs{'x', 'y'} do
         self[v] = lume.lerp(a[v], b[v], t)
     end
 end

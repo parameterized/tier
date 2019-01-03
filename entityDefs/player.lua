@@ -5,7 +5,7 @@ local player = {
     client = base.client:new()
 }
 
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     player[sc].newDefaults = function()
         return {
             id = lume.uuid(),
@@ -74,33 +74,30 @@ function player.server:spawn()
 end
 
 function player.server:serialize()
-    return {
-        id = self.id, type = self.type,
-        name = self.name,
-        x = self.x, y = self.y,
-        xv = self.xv, yv = self.yv,
-        walkTimer = self.walkTimer,
-        swingTimer = self.swingTimer,
-        swinging = self.swinging,
-        automaticSwing = self.automaticSwing,
-        direction = self.direction,
-        spd = self.spd, xp = self.xp,
-        stats = self.stats,
-        inventory = self.inventory
-    }
+    local t = {}
+    for _, v in ipairs{
+        'id', 'type', 'name',
+        'x', 'y', 'xv', 'yv',
+        'walkTimer', 'swingTimer', 'swinging', 'automaticSwing',
+        'direction', 'spd', 'xp',
+        'stats', 'inventory'
+    } do
+        t[v] = self[v]
+    end
+    return t
 end
 
 function player.server:setInputState(state)
-    for _, v in pairs{'w', 'a', 's', 'd', 'lshift'} do
+    for _, v in ipairs{'w', 'a', 's', 'd', 'lshift'} do
         self.inputState[v] = state.keyboard[v]
     end
-    for _, v in pairs{'lmb', 'x', 'y'} do
+    for _, v in ipairs{'lmb', 'x', 'y'} do
         self.inputState[v] = state.mouse[v]
     end
 end
 
 function player.server:setState(state)
-    for _, v in pairs{
+    for _, v in ipairs{
         'x', 'y', 'xv', 'yv',
         'walkTimer', 'swingTimer', 'swinging',
         'direction'
@@ -226,28 +223,28 @@ function player.client:spawn()
 end
 
 function player.client:serialize()
-    return {
-        x = self.x, y = self.y,
-        xv = self.xv, yv = self.yv,
-        walkTimer = self.walkTimer,
-        swingTimer = self.swingTimer,
-        swinging = self.swinging,
-        direction = self.direction,
-        inputState = self.inputState
-    }
+    local t = {}
+    for _, v in ipairs{
+        'x', 'y', 'xv', 'yv',
+        'walkTimer', 'swingTimer', 'swinging',
+        'direction', 'inputState'
+    } do
+        t[v] = self[v]
+    end
+    return t
 end
 
 function player.client:setInputState(state)
-    for _, v in pairs{'w', 'a', 's', 'd', 'lshift'} do
+    for _, v in ipairs{'w', 'a', 's', 'd', 'lshift'} do
         self.inputState.keyboard[v] = state.keyboard[v]
     end
-    for _, v in pairs{'lmb', 'x', 'y'} do
+    for _, v in ipairs{'lmb', 'x', 'y'} do
         self.inputState.mouse[v] = state.mouse[v]
     end
 end
 
 function player.client:setState(state)
-    for _, v in pairs{
+    for _, v in ipairs{
         'x', 'y', 'xv', 'yv',
         'walkTimer', 'swingTimer', 'automaticSwing', 'swinging',
         'direction', 'spd', 'xp',
@@ -263,15 +260,15 @@ end
 
 function player.client:lerpState(a, b, t)
     local state = {}
-    for _, v in pairs{'x', 'y', 'xv', 'yv', 'walkTimer', 'swingTimer'} do
+    for _, v in ipairs{'x', 'y', 'xv', 'yv', 'walkTimer', 'swingTimer'} do
         state[v] = lume.lerp(a[v], b[v], t)
     end
     -- set instead of interpolate timers if b < a
     -- todo: interpolate flag
-    for _, v in pairs{'walkTimer', 'swingTimer'} do
+    for _, v in ipairs{'walkTimer', 'swingTimer'} do
         if b[v] < a[v] then state[v] = b[v] end
     end
-    for _, v in pairs{'automaticSwing', 'swinging',
+    for _, v in ipairs{'automaticSwing', 'swinging',
     'direction', 'spd', 'xp', 'stats', 'inventory'} do
         state[v] = b[v]
     end

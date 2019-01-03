@@ -5,7 +5,7 @@ local slime = {
     client = base.client:new()
 }
 
-for _, sc in pairs{'server', 'client'} do
+for _, sc in ipairs{'server', 'client'} do
     slime[sc].newDefaults = function()
         return {
             id = lume.uuid(),
@@ -64,13 +64,15 @@ function slime.server:spawn()
 end
 
 function slime.server:serialize()
-    return {
-        id = self.id, type = self.type,
-        x = self.x, y = self.y,
-        xv = self.xv, yv = self.yv,
-        slimeType = self.slimeType,
-        hpMax = self.hpMax, hp = self.hp
-    }
+    local t = {}
+    for _, v in ipairs{
+        'id', 'type',
+        'x', 'y', 'xv', 'yv',
+        'slimeType', 'hpMax', 'hp'
+    } do
+        t[v] = self[v]
+    end
+    return t
 end
 
 function slime.server:update(dt)
@@ -179,7 +181,7 @@ function slime.client:spawn()
 end
 
 function slime.client:setState(state)
-    for _, v in pairs{'x', 'y', 'xv', 'yv', 'slimeType', 'hpMax', 'hp'} do
+    for _, v in ipairs{'x', 'y', 'xv', 'yv', 'slimeType', 'hpMax', 'hp'} do
         self[v] = state[v]
     end
     if self.body and not self.body:isDestroyed() then
@@ -190,10 +192,10 @@ end
 
 function slime.client:lerpState(a, b, t)
     local state = {}
-    for _, v in pairs{'x', 'y', 'xv', 'yv'} do
+    for _, v in ipairs{'x', 'y', 'xv', 'yv'} do
         state[v] = lume.lerp(a[v], b[v], t)
     end
-    for _, v in pairs{'slimeType', 'hpMax', 'hp'} do
+    for _, v in ipairs{'slimeType', 'hpMax', 'hp'} do
         state[v] = b[v]
     end
     self:setState(state)

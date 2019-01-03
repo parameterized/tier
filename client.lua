@@ -231,7 +231,7 @@ function client.sendMessage(msg)
     end
 end
 
-for _, v in pairs{'spawnProjectile', 'moveItem', 'dropItem', 'useItem', 'usePortal'} do
+for _, v in ipairs{'spawnProjectile', 'moveItem', 'dropItem', 'useItem', 'usePortal'} do
     client[v] = function(data)
         client.nutClient:sendRPC(v, bitser.dumps(data))
     end
