@@ -7,7 +7,7 @@ local player = {
 
 for _, sc in ipairs{'server', 'client'} do
     player[sc].newDefaults = function()
-        return {
+        local t = {
             id = lume.uuid(),
             name = 'Player',
             x = 0, y = 0,
@@ -20,6 +20,16 @@ for _, sc in ipairs{'server', 'client'} do
             inventory = {id='inventory', items={}},
             inputState = {keyboard={}, mouse={x=0, y=0}}
         }
+        if sc == 'server' then
+            t.base = base.server
+            t.realm = serverRealm
+            t.items = items.server
+        elseif sc == 'client' then
+            t.base = base.client
+            t.realm = clientRealm
+            t.items = items.client
+        end
+        return t
     end
 
     player[sc].xp2level = function(x)
@@ -39,6 +49,49 @@ for _, sc in ipairs{'server', 'client'} do
             v.total = v.base + v.arm
         end
         return t
+    end
+
+    player[sc].update = function(self, dt)
+        local dx, dy = 0, 0
+        dx = dx + (self.inputState.keyboard.d and 1 or 0)
+        dx = dx + (self.inputState.keyboard.a and -1 or 0)
+        dy = dy + (self.inputState.keyboard.w and -1 or 0)
+        dy = dy + (self.inputState.keyboard.s and 1 or 0)
+        dd = math.sqrt(dx^2 + dy^2)
+        local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
+        if self.realm.world:getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
+        if self.realm.world:getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
+        local attackItem = self.items.getItem(self.inventory.items[2])
+        if dd ~= 0 then
+            self.body:applyForce(dx/dd*spd, dy/dd*spd)
+        end
+
+        local xv, yv = self.body:getLinearVelocity()
+        local vd = math.sqrt(xv^2 + yv^2)
+        self.walkTimer = self.walkTimer + vd*0.01*dt
+
+        if self.swinging then
+            self.swingTimer = self.swingTimer + dt
+            if self.swingTimer > 5/12 then
+                self.swinging = false
+            end
+        else
+            if math.abs(vd) > 10 then
+                if self.direction == 1 then
+                    if xv < 0 then self.direction = -1 end
+                else
+                    if xv > 0 then self.direction = 1 end
+                end
+            end
+            if self.automaticSwing and self.inputState.mouse.lmb
+            and attackItem and attackItem.imageId == 'sword' then
+                self:swing()
+            end
+        end
+
+        self.x, self.y = self.body:getPosition()
+        self.xv, self.yv = self.body:getLinearVelocity()
+        self.base.update(self, dt)
     end
 
     player[sc].type = 'player'
@@ -130,51 +183,6 @@ function player.server:swing()
         }
         ]]
     end
-end
-
-function player.server:update(dt)
-    local dx, dy = 0, 0
-    dx = dx + (self.inputState.keyboard.d and 1 or 0)
-    dx = dx + (self.inputState.keyboard.a and -1 or 0)
-    dy = dy + (self.inputState.keyboard.w and -1 or 0)
-    dy = dy + (self.inputState.keyboard.s and 1 or 0)
-    local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
-    if serverRealm.world:getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
-    if serverRealm.world:getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
-    local attackItem = items.server.getItem(self.inventory.items[2])
-    if not (dx == 0 and dy == 0)
-    and not (self.swinging or self.automaticSwing
-    and self.inputState.mouse.lmb and attackItem and attackItem.imageId == 'sword') then
-        local a = math.atan2(dx, dy) - math.pi/2
-        self.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
-    end
-
-    local xv, yv = self.body:getLinearVelocity()
-    local vd = math.sqrt(xv^2 + yv^2)
-    self.walkTimer = self.walkTimer + vd*0.01*dt
-
-    if self.swinging then
-        self.swingTimer = self.swingTimer + dt
-        if self.swingTimer > 5/12 then
-            self.swinging = false
-        end
-    else
-        if math.abs(vd) > 10 then
-            if self.direction == 1 then
-                if xv < 0 then self.direction = -1 end
-            else
-                if xv > 0 then self.direction = 1 end
-            end
-        end
-        if self.automaticSwing and self.inputState.mouse.lmb
-        and attackItem and attackItem.imageId == 'sword' then
-            self:swing()
-        end
-    end
-
-    self.x, self.y = self.body:getPosition()
-    self.xv, self.yv = self.body:getLinearVelocity()
-    base.server.update(self, dt)
 end
 
 function player.server:destroy()
@@ -299,51 +307,6 @@ function player.client:swing()
     }
 end
 
-function player.client:update(dt)
-    local dx, dy = 0, 0
-    dx = dx + (self.inputState.keyboard.d and 1 or 0)
-    dx = dx + (self.inputState.keyboard.a and -1 or 0)
-    dy = dy + (self.inputState.keyboard.w and -1 or 0)
-    dy = dy + (self.inputState.keyboard.s and 1 or 0)
-    local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
-    if clientRealm.world:getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
-    if clientRealm.world:getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
-    local attackItem = items.client.getItem(self.inventory.items[2])
-    if not (dx == 0 and dy == 0)
-    and not (self.swinging or self.automaticSwing
-    and self.inputState.mouse.lmb and attackItem and attackItem.imageId == 'sword') then
-        local a = math.atan2(dx, dy) - math.pi/2
-        self.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
-    end
-
-    local xv, yv = self.body:getLinearVelocity()
-    local vd = math.sqrt(xv^2 + yv^2)
-    self.walkTimer = self.walkTimer + vd*0.01*dt
-
-    if self.swinging then
-        self.swingTimer = self.swingTimer + dt
-        if self.swingTimer > 5/12 then
-            self.swinging = false
-        end
-    else
-        if math.abs(vd) > 10 then
-            if self.direction == 1 then
-                if xv < 0 then self.direction = -1 end
-            else
-                if xv > 0 then self.direction = 1 end
-            end
-        end
-        if self.automaticSwing and self.inputState.mouse.lmb
-        and attackItem and attackItem.imageId == 'sword' then
-            self:swing()
-        end
-    end
-
-    self.x, self.y = self.body:getPosition()
-    self.xv, self.yv = self.body:getLinearVelocity()
-    base.client.update(self, dt)
-end
-
 function player.client:damage(dmg)
     self.hp = self.hp - dmg
     if self.hp <= 0 then
@@ -379,7 +342,7 @@ function player.client:draw()
     love.graphics.setColor(0, 0, 0, 0.2)
     local walkFrameIdx = math.floor(self.walkTimer*12) % #anims.player.walk.body.quads + 1
     local shadowWidth = ({6, 5, 4, 5, 5})[walkFrameIdx]
-    if self.swinging or vd < 10 then shadowWidth = 6 end
+    if vd < 10 then shadowWidth = 6 end
     love.graphics.ellipse('fill', lume.round(px), lume.round(py), shadowWidth, 2)
 
     -- player
@@ -401,22 +364,42 @@ function player.client:draw()
     if self.swinging then
         local frameIdx = math.floor(self.swingTimer*12) + 1
         frameIdx = lume.clamp(frameIdx, 1, 5)
-        local quad = anims.player.swing.body.quads[frameIdx]
-        local _, _, w, h = quad:getViewport()
-        love.graphics.draw(anims.player.swing.body.sheet, quad,
+        if vd < 10 then
+            -- swinging and standing still
+            local quad = anims.player.swing.body.quads[frameIdx]
+            local _, _, w, h = quad:getViewport()
+            love.graphics.draw(anims.player.swing.body.sheet, quad,
             lume.round(px), lume.round(py),
             0, self.direction, 1,
             23, h)
-        if attackItem and attackItem.imageId == 'sword' then
-            local quad = anims.player.swing.body.quads[frameIdx]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.swing.sword.sheet, quad,
+            if attackItem and attackItem.imageId == 'sword' then
+                local quad = anims.player.swing.sword.quads[frameIdx]
+                local _, _, w, h = quad:getViewport()
+                love.graphics.draw(anims.player.swing.sword.sheet, quad,
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 23, h)
+            end
+        else
+            -- swinging and walking
+            local quad = anims.player.walkAndSwing.body.quads[frameIdx]
+            local _, _, w, h = quad:getViewport()
+            love.graphics.draw(anims.player.walkAndSwing.body.sheet, quad,
+            lume.round(px), lume.round(py),
+            0, self.direction, 1,
+            23, h)
+            if attackItem and attackItem.imageId == 'sword' then
+                local quad = anims.player.walkAndSwing.sword.quads[frameIdx]
+                local _, _, w, h = quad:getViewport()
+                love.graphics.draw(anims.player.walkAndSwing.sword.sheet, quad,
+                lume.round(px), lume.round(py),
+                0, self.direction, 1,
+                23, h)
+            end
         end
     else
         if vd < 10 then
+            -- standing still
             local quad = anims.player.swing.body.quads[1]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.swing.body.sheet, quad,
@@ -424,7 +407,7 @@ function player.client:draw()
                 0, self.direction, 1,
                 23, h)
             if attackItem and attackItem.imageId == 'sword' then
-                local quad = anims.player.swing.body.quads[1]
+                local quad = anims.player.swing.sword.quads[1]
                 local _, _, w, h = quad:getViewport()
                 love.graphics.draw(anims.player.swing.sword.sheet, quad,
                     lume.round(px), lume.round(py),
@@ -432,6 +415,7 @@ function player.client:draw()
                     23, h)
             end
         else
+            -- walking
             local quad = anims.player.walk.body.quads[walkFrameIdx]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.walk.body.sheet, quad,

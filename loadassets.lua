@@ -59,6 +59,10 @@ gfx = {
         swing = {
             body = love.graphics.newImage('gfx/player/swing/body.png'),
             sword = love.graphics.newImage('gfx/player/swing/sword.png')
+        },
+        walkAndSwing = {
+            body = love.graphics.newImage('gfx/player/walk_and_swing/body.png'),
+            sword = love.graphics.newImage('gfx/player/walk_and_swing/sword.png')
         }
     },
     enemies = {
@@ -100,6 +104,10 @@ anims.player = {
     swing = {
         body = newAnim(gfx.player.swing.body, 43, 34, 1, 5),
         sword = newAnim(gfx.player.swing.sword, 43, 34, 1, 5)
+    },
+    walkAndSwing = {
+        body = newAnim(gfx.player.walkAndSwing.body, 43, 34, 1, 5),
+        sword = newAnim(gfx.player.walkAndSwing.sword, 43, 34, 1, 5)
     }
 }
 
