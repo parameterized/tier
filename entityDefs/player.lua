@@ -308,39 +308,56 @@ function player.client:draw()
     love.graphics.setColor(1, 1, 1)
     local attackItem = items.client.getItem(self.inventory.items[2])
     if self.swinging then
-        local frameIdx = math.floor(self.swingTimer*12) + 1
-        frameIdx = lume.clamp(frameIdx, 1, 5)
+        local swingFrameIdx = math.floor(self.swingTimer*12) + 1
+        swingFrameIdx = lume.clamp(swingFrameIdx, 1, 5)
         if vd < 10 then
             -- swinging and standing still
-            local quad = anims.player.swing.body.quads[frameIdx]
+            local quad = anims.player.swing.body.quads[swingFrameIdx]
             local _, _, w, h = quad:getViewport()
             love.graphics.draw(anims.player.swing.body.sheet, quad,
-            lume.round(px), lume.round(py),
-            0, self.direction, 1,
-            23, h)
-            if attackItem and attackItem.imageId == 'sword' then
-                local quad = anims.player.swing.sword.quads[frameIdx]
-                local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.swing.sword.sheet, quad,
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 23, h)
+            if attackItem and attackItem.imageId == 'sword' then
+                local quad = anims.player.swing.sword.quads[swingFrameIdx]
+                local _, _, w, h = quad:getViewport()
+                love.graphics.draw(anims.player.swing.sword.sheet, quad,
+                    lume.round(px), lume.round(py),
+                    0, self.direction, 1,
+                    23, h)
             end
         else
             -- swinging and walking
-            local quad = anims.player.walkAndSwing.body.quads[frameIdx]
+            -- lower body
+            if xv > 10 and self.direction == -1
+            or xv < -10 and self.direction == 1 then
+                walkFrameIdx = math.floor(-self.walkTimer*12) % #anims.player.walk.body.quads + 1
+            end
+            local quad = anims.player.walkAndSwing.lowerBody.quads[walkFrameIdx]
             local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.walkAndSwing.body.sheet, quad,
-            lume.round(px), lume.round(py),
-            0, self.direction, 1,
-            23, h)
-            if attackItem and attackItem.imageId == 'sword' then
-                local quad = anims.player.walkAndSwing.sword.quads[frameIdx]
-                local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.walkAndSwing.sword.sheet, quad,
+            love.graphics.draw(anims.player.walkAndSwing.lowerBody.sheet, quad,
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 23, h)
+            -- upper body
+            love.graphics.push()
+            if swingFrameIdx == 4 then love.graphics.translate(0, 1) end
+            if walkFrameIdx == 4 then love.graphics.translate(0, -1) end
+            local quad = anims.player.walkAndSwing.upperBody.quads[swingFrameIdx]
+            local _, _, w, h = quad:getViewport()
+            love.graphics.draw(anims.player.walkAndSwing.upperBody.sheet, quad,
+                lume.round(px), lume.round(py),
+                0, self.direction, 1,
+                23, h)
+            love.graphics.pop()
+            -- sword
+            if attackItem and attackItem.imageId == 'sword' then
+                local quad = anims.player.walkAndSwing.sword.quads[swingFrameIdx]
+                local _, _, w, h = quad:getViewport()
+                love.graphics.draw(anims.player.walkAndSwing.sword.sheet, quad,
+                    lume.round(px), lume.round(py),
+                    0, self.direction, 1,
+                    23, h)
             end
         end
     else
