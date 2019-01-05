@@ -51,6 +51,9 @@ gfx = {
         tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png'),
         platformSheet = love.graphics.newImage('gfx/tiles/platformSheet.png')
     },
+    environment = {
+        tree = love.graphics.newImage('gfx/environment/tree.png')
+    },
     player = {
         walk = {
             body = love.graphics.newImage('gfx/player/walk/body.png'),

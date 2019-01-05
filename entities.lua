@@ -16,7 +16,8 @@ entities.chunkSize = 8
 
 local entityDefs = {
     require 'entityDefs.player',
-    require 'entityDefs.slime'
+    require 'entityDefs.slime',
+    require 'entityDefs.tree'
 }
 
 for _, sc in ipairs{'server', 'client'} do
@@ -57,6 +58,7 @@ function entities.server.update(dt)
                 if newActiveChunks[cx] == nil then newActiveChunks[cx] = {} end
                 newActiveChunks[cx][cy] = true
                 if not entities.server.activeChunks[cx] or not entities.server.activeChunks[cx][cy] then
+                    -- spawn slimes
                     local choices = {none=90, slime=10}
                     for _=1, 3 do
                         choice = lume.weightedchoice(choices)
@@ -67,6 +69,15 @@ function entities.server.update(dt)
                             if not (x^2 + y^2 < 192^2) then
                                 entities.server.defs[choice]:new{x=x, y=y}:spawn()
                             end
+                        end
+                    end
+                    -- spawn trees
+                    if math.random() < 0.5 then
+                        local x = cx*entities.chunkSize*15 + math.random()*entities.chunkSize*15
+                        local y = cy*entities.chunkSize*15 + math.random()*entities.chunkSize*15
+                        -- if on grass
+                        if serverRealm.world:getTile(x, y) == 1 then
+                            entities.server.defs.tree:new{x=x, y=y}:spawn()
                         end
                     end
                 end

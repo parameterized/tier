@@ -6,6 +6,8 @@ physics = {
 
 love.physics.setMeter(16)
 
+-- categories: 1=player, 2=projectile, 3=enemy, 4=object
+
 local defaults = {server={}, client={}}
 for _, sc in ipairs{'server', 'client'} do
     defaults[sc].postUpdateQueue = function() return {} end

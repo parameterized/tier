@@ -88,9 +88,7 @@ function world.server:getTile(x, y)
     local cy = math.floor(ty/self.chunkSize)
     tx = tx - cx*self.chunkSize + 1
     ty = ty - cy*self.chunkSize + 1
-    if self.chunks[cx] and self.chunks[cx][cy] then
-        return self.chunks[cx][cy][tx][ty]
-    end
+    return self:getChunk(cx, cy)[tx][ty]
 end
 
 function world.server:destroy()
@@ -137,6 +135,7 @@ function world.client:getTile(x, y)
     if self.chunks[cx] and self.chunks[cx][cy] then
         return self.chunks[cx][cy][tx][ty]
     end
+    -- have to wait for server to send
 end
 
 function world.client:destroy()

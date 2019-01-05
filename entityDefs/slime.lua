@@ -7,7 +7,7 @@ local slime = {
 
 for _, sc in ipairs{'server', 'client'} do
     slime[sc].newDefaults = function()
-        return {
+        local t = {
             id = lume.uuid(),
             x = 0, y = 0,
             xv = 0, yv = 0,
@@ -15,6 +15,60 @@ for _, sc in ipairs{'server', 'client'} do
             hpMax = 25, hp = math.random(20, 25),
             hitBy = {}
         }
+        if sc == 'server' then
+            t.base = base.server
+            t.realm = serverRealm
+        elseif sc == 'client' then
+            t.base = base.client
+            t.realm = clientRealm
+        end
+        return t
+    end
+
+    slime[sc].spawn = function(self)
+        self.body = love.physics.newBody(self.realm.physics.world, self.x, self.y, 'dynamic')
+        self.polys = {
+            {0.36, 0.64, 0.08, 0.36, 0.08, 0.2, 0.2, 0.08, 0.8, 0.08, 0.92, 0.2, 0.92, 0.36, 0.64, 0.64}
+        }
+        -- transform - todo: load from file already transformed
+        local img = gfx.enemies.slime1
+        for _, v in pairs(self.polys) do
+            for i2, v2 in pairs(v) do
+                if (i2-1) % 2 == 0 then -- x
+                    v[i2] = v2*img:getWidth() - img:getWidth()/2
+                else
+                    v[i2] = v2*img:getWidth()*-1
+                end
+            end
+        end
+        self.shapes = {}
+        self.fixtures = {}
+        for _, v in pairs(self.polys) do
+            local shape = love.physics.newPolygonShape(unpack(v))
+            table.insert(self.shapes, shape)
+            local fixture = love.physics.newFixture(self.body, shape, 1)
+            table.insert(self.fixtures, fixture)
+            fixture:setUserData(self)
+            fixture:setCategory(3)
+            if sc == 'client' then
+                fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+            end
+        end
+        self.body:setFixedRotation(true)
+        self.body:setLinearDamping(10)
+        return self.base.spawn(self)
+    end
+
+    slime[sc].destroy = function(self)
+        if self.fixtures then
+            for _, v in pairs(self.fixtures) do
+                if not v:isDestroyed() then v:destroy() end
+            end
+        end
+        if self.body and not self.body:isDestroyed() then
+            self.body:destroy()
+        end
+        self.base.destroy(self)
     end
 
     slime[sc].type = 'slime'
@@ -22,46 +76,7 @@ for _, sc in ipairs{'server', 'client'} do
     slime[sc].enemy = true
 end
 
-function slime.server:new(o)
-    o = o or {}
-    for k, v in pairs(self.newDefaults()) do
-        if o[k] == nil then o[k] = v end
-    end
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
 
-function slime.server:spawn()
-    self.body = love.physics.newBody(serverRealm.physics.world, self.x, self.y, 'dynamic')
-    self.polys = {
-        {0.36, 0.64, 0.08, 0.36, 0.08, 0.2, 0.2, 0.08, 0.8, 0.08, 0.92, 0.2, 0.92, 0.36, 0.64, 0.64}
-    }
-    -- transform - todo: load from file already transformed
-    local img = gfx.enemies.slime1
-    for _, v in pairs(self.polys) do
-        for i2, v2 in pairs(v) do
-            if (i2-1) % 2 == 0 then -- x
-                v[i2] = v2*img:getWidth() - img:getWidth()/2
-            else
-                v[i2] = v2*img:getWidth()*-1
-            end
-        end
-    end
-    self.shapes = {}
-    self.fixtures = {}
-    for _, v in pairs(self.polys) do
-        local shape = love.physics.newPolygonShape(unpack(v))
-        table.insert(self.shapes, shape)
-        local fixture = love.physics.newFixture(self.body, shape, 1)
-        table.insert(self.fixtures, fixture)
-        fixture:setUserData(self)
-        fixture:setCategory(3)
-    end
-    self.body:setFixedRotation(true)
-    self.body:setLinearDamping(10)
-    return base.server.spawn(self)
-end
 
 function slime.server:serialize()
     local t = {}
@@ -120,18 +135,6 @@ function slime.server:damage(d, clientId)
     end
 end
 
-function slime.server:destroy()
-    if self.fixtures then
-        for _, v in pairs(self.fixtures) do
-            if not v:isDestroyed() then v:destroy() end
-        end
-    end
-    if self.body and not self.body:isDestroyed() then
-        self.body:destroy()
-    end
-    base.server.destroy(self)
-end
-
 
 
 function slime.client:new(o)
@@ -145,39 +148,6 @@ function slime.client:new(o)
     setmetatable(o, self)
     self.__index = self
     return o
-end
-
-
-function slime.client:spawn()
-    self.body = love.physics.newBody(clientRealm.physics.world, self.x, self.y, 'dynamic')
-    self.polys = {
-        {0.36, 0.64, 0.08, 0.36, 0.08, 0.2, 0.2, 0.08, 0.8, 0.08, 0.92, 0.2, 0.92, 0.36, 0.64, 0.64}
-    }
-    -- transform - todo: load from file already transformed
-    local img = gfx.enemies.slime1
-    for _, v in pairs(self.polys) do
-        for i2, v2 in pairs(v) do
-            if (i2-1) % 2 == 0 then -- x
-                v[i2] = v2*img:getWidth() - img:getWidth()/2
-            else
-                v[i2] = v2*img:getWidth()*-1
-            end
-        end
-    end
-    self.shapes = {}
-    self.fixtures = {}
-    for _, v in pairs(self.polys) do
-        local shape = love.physics.newPolygonShape(unpack(v))
-        table.insert(self.shapes, shape)
-        local fixture = love.physics.newFixture(self.body, shape, 1)
-        table.insert(self.fixtures, fixture)
-        fixture:setUserData(self)
-        fixture:setCategory(3)
-        fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-    end
-    self.body:setFixedRotation(true)
-    self.body:setLinearDamping(10)
-    return base.client.spawn(self)
 end
 
 function slime.client:setState(state)
@@ -249,18 +219,6 @@ function slime.client:draw()
     love.graphics.translate(lume.round(vx), lume.round(vy))
     love.graphics.draw(canvases.hpBar, lume.round(-canvases.hpBar:getWidth()/2), 2)
     love.graphics.pop()
-end
-
-function slime.client:destroy()
-    if self.fixtures then
-        for _, v in pairs(self.fixtures) do
-            if not v:isDestroyed() then v:destroy() end
-        end
-    end
-    if self.body and not self.body:isDestroyed() then
-        self.body:destroy()
-    end
-    base.client.destroy(self)
 end
 
 

@@ -51,6 +51,38 @@ for _, sc in ipairs{'server', 'client'} do
         return t
     end
 
+    player[sc].spawn = function(self)
+        self.body = love.physics.newBody(self.realm.physics.world, self.x, self.y, 'dynamic')
+        self.shapes = {
+            love.physics.newCircleShape(6)
+        }
+        self.fixtures = {
+            love.physics.newFixture(self.body, self.shapes[1], 1)
+        }
+        local fix = self.fixtures[1]
+        fix:setUserData(self)
+        fix:setCategory(1)
+        if sc == 'client' then
+            if self.isLocalPlayer then
+                fix:setMask(1, 2)
+            else
+                fix:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+            end
+        end
+        self.body:setFixedRotation(true)
+        self.body:setLinearDamping(10)
+        return self.base.spawn(self)
+    end
+
+    player[sc].setInputState = function(self, state)
+        for _, v in ipairs{'w', 'a', 's', 'd', 'lshift'} do
+            self.inputState.keyboard[v] = state.keyboard[v]
+        end
+        for _, v in ipairs{'lmb', 'x', 'y'} do
+            self.inputState.mouse[v] = state.mouse[v]
+        end
+    end
+
     player[sc].update = function(self, dt)
         local dx, dy = 0, 0
         dx = dx + (self.inputState.keyboard.d and 1 or 0)
@@ -94,9 +126,22 @@ for _, sc in ipairs{'server', 'client'} do
         self.base.update(self, dt)
     end
 
+    player[sc].destroy = function(self)
+        if self.fixtures then
+            for _, v in pairs(self.fixtures) do
+                if not v:isDestroyed() then v:destroy() end
+            end
+        end
+        if self.body and not self.body:isDestroyed() then
+            self.body:destroy()
+        end
+        self.base.destroy(self)
+    end
+
     player[sc].type = 'player'
     player[sc].static = false
 end
+
 
 
 function player.server:new(o)
@@ -108,22 +153,6 @@ function player.server:new(o)
     setmetatable(o, self)
     self.__index = self
     return o
-end
-
-function player.server:spawn()
-    self.body = love.physics.newBody(serverRealm.physics.world, self.x, self.y, 'dynamic')
-    self.shapes = {
-        love.physics.newCircleShape(6)
-    }
-    self.fixtures = {
-        love.physics.newFixture(self.body, self.shapes[1], 1)
-    }
-    local fix = self.fixtures[1]
-    fix:setUserData(self)
-    fix:setCategory(1)
-    self.body:setFixedRotation(true)
-    self.body:setLinearDamping(10)
-    return base.server.spawn(self)
 end
 
 function player.server:serialize()
@@ -140,15 +169,6 @@ function player.server:serialize()
     return t
 end
 
-function player.server:setInputState(state)
-    for _, v in ipairs{'w', 'a', 's', 'd', 'lshift'} do
-        self.inputState[v] = state.keyboard[v]
-    end
-    for _, v in ipairs{'lmb', 'x', 'y'} do
-        self.inputState[v] = state.mouse[v]
-    end
-end
-
 function player.server:setState(state)
     for _, v in ipairs{
         'x', 'y', 'xv', 'yv',
@@ -163,72 +183,7 @@ function player.server:setState(state)
     end
 end
 
-function player.server:swing()
-    local mx, my = self.inputState.mouse.x, self.inputState.mouse.y
-    if not self.automaticSwing and not self.swinging then
-        self.direction = mx < gsx/2 and -1 or 1
-        self.swinging = true
-        self.swingTimer = 0
-        local dx = mx - gsx/2
-        local dy = my - gsy/2
-        local a = math.atan2(dx, dy) - math.pi/2
-        local px, py = self.body:getPosition()
-        --[[
-        client.spawnProjectile{
-            x = px, y = py - 14,
-            angle = a,
-            speed = 2e2,
-            life = 3,
-            pierce = 2
-        }
-        ]]
-    end
-end
 
-function player.server:destroy()
-    if self.fixtures then
-        for _, v in pairs(self.fixtures) do
-            if not v:isDestroyed() then v:destroy() end
-        end
-    end
-    if self.body and not self.body:isDestroyed() then
-        self.body:destroy()
-    end
-    base.server.destroy(self)
-end
-
-
-
-function player.client:new(o)
-    o = o or {}
-    for k, v in pairs(self.newDefaults()) do
-        if o[k] == nil then o[k] = v end
-    end
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
-
-function player.client:spawn()
-    self.body = love.physics.newBody(clientRealm.physics.world, self.x, self.y, 'dynamic')
-    self.shapes = {
-        love.physics.newCircleShape(6)
-    }
-    self.fixtures = {
-        love.physics.newFixture(self.body, self.shapes[1], 1)
-    }
-    local fix = self.fixtures[1]
-    fix:setUserData(self)
-    fix:setCategory(1)
-    if self.isLocalPlayer then
-        fix:setMask(1, 2)
-    else
-        fix:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-    end
-    self.body:setFixedRotation(true)
-    self.body:setLinearDamping(10)
-    return base.client.spawn(self)
-end
 
 function player.client:serialize()
     local t = {}
@@ -240,15 +195,6 @@ function player.client:serialize()
         t[v] = self[v]
     end
     return t
-end
-
-function player.client:setInputState(state)
-    for _, v in ipairs{'w', 'a', 's', 'd', 'lshift'} do
-        self.inputState.keyboard[v] = state.keyboard[v]
-    end
-    for _, v in ipairs{'lmb', 'x', 'y'} do
-        self.inputState.mouse[v] = state.mouse[v]
-    end
 end
 
 function player.client:setState(state)
@@ -462,18 +408,6 @@ function player.client:draw()
     end
 
     love.graphics.pop()
-end
-
-function player.client:destroy()
-    if self.fixtures then
-        for _, v in pairs(self.fixtures) do
-            if not v:isDestroyed() then v:destroy() end
-        end
-    end
-    if self.body and not self.body:isDestroyed() then
-        self.body:destroy()
-    end
-    base.client.destroy(self)
 end
 
 
