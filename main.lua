@@ -30,6 +30,9 @@ require 'portals'
 require 'realm'
 require 'chat'
 
+-- todo: better sword check
+isSword = {['sword0']=true, ['sword1']=true, ['sword2']=true, ['sword3']=true, ['sword4']=true}
+
 function love.load()
     camera = Camera{ssx=gsx, ssy=gsy}
     gameState = 'menu'

@@ -101,19 +101,25 @@ function slime.server:damage(d, clientId)
     self.hp = self.hp - d
     if self.hp <= 0 and not self.destroyed then
         server.addXP(clientId, math.random(3, 5))
-        for _=1, math.random(1, 2) do
-            local x = self.x + lume.random(-64, 64)
-            local y = self.y + lume.random(-64, 64)
-            self:new{x=x, y=y}:spawn()
-        end
         local bagItems = {}
-        local choices = {none=50, sword=15, shield=15, apple=20}
+        local choices = {
+            none=50, shield=15, apple=20,
+            sword0=3, sword1=3, sword2=3, sword3=3, sword4=3
+        }
         for _=1, 3 do
             choice = lume.weightedchoice(choices)
             if choice ~= 'none' then
                 local itemData = {imageId=choice}
-                if choice == 'sword' then
+                if choice == 'sword0' then
                     itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+10))
+                elseif choice =='sword1' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+12))
+                elseif choice =='sword2' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+14))
+                elseif choice =='sword3' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+16))
+                elseif choice =='sword4' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+18))
                 end
                 local itemId = items.server.newItem(itemData)
                 table.insert(bagItems, itemId)

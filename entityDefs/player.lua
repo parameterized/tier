@@ -116,7 +116,7 @@ for _, sc in ipairs{'server', 'client'} do
                 end
             end
             if self.automaticSwing and self.inputState.mouse.lmb
-            and attackItem and attackItem.imageId == 'sword' then
+            and attackItem and isSword[attackItem.imageId] then
                 self:swing()
             end
         end
@@ -149,7 +149,7 @@ function player.server:new(o)
     for k, v in pairs(self.newDefaults()) do
         if o[k] == nil then o[k] = v end
     end
-    o.inventory.items[2] = items.server.newItem{imageId='sword', atk=10}
+    o.inventory.items[2] = items.server.newItem{imageId='sword0', atk=10}
     setmetatable(o, self)
     self.__index = self
     return o
@@ -318,10 +318,10 @@ function player.client:draw()
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 23, h)
-            if attackItem and attackItem.imageId == 'sword' then
-                local quad = anims.player.swing.sword.quads[swingFrameIdx]
+            if attackItem and isSword[attackItem.imageId] then
+                local quad = anims.player.swords[attackItem.imageId].swing.quads[swingFrameIdx]
                 local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.swing.sword.sheet, quad,
+                love.graphics.draw(anims.player.swords[attackItem.imageId].swing.sheet, quad,
                     lume.round(px), lume.round(py),
                     0, self.direction, 1,
                     23, h)
@@ -351,10 +351,10 @@ function player.client:draw()
                 23, h)
             love.graphics.pop()
             -- sword
-            if attackItem and attackItem.imageId == 'sword' then
-                local quad = anims.player.walkAndSwing.sword.quads[swingFrameIdx]
+            if attackItem and isSword[attackItem.imageId] then
+                local quad = anims.player.swords[attackItem.imageId].swing.quads[swingFrameIdx]
                 local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.walkAndSwing.sword.sheet, quad,
+                love.graphics.draw(anims.player.swords[attackItem.imageId].swing.sheet, quad,
                     lume.round(px), lume.round(py),
                     0, self.direction, 1,
                     23, h)
@@ -369,10 +369,10 @@ function player.client:draw()
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 23, h)
-            if attackItem and attackItem.imageId == 'sword' then
-                local quad = anims.player.swing.sword.quads[1]
+            if attackItem and isSword[attackItem.imageId] then
+                local quad = anims.player.swords[attackItem.imageId].swing.quads[1]
                 local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.swing.sword.sheet, quad,
+                love.graphics.draw(anims.player.swords[attackItem.imageId].swing.sheet, quad,
                     lume.round(px), lume.round(py),
                     0, self.direction, 1,
                     23, h)
@@ -385,10 +385,10 @@ function player.client:draw()
                 lume.round(px), lume.round(py),
                 0, self.direction, 1,
                 8, h)
-            if attackItem and attackItem.imageId == 'sword' then
-                local quad = anims.player.walk.sword.quads[walkFrameIdx]
+            if attackItem and isSword[attackItem.imageId] then
+                local quad = anims.player.swords[attackItem.imageId].walk.quads[walkFrameIdx]
                 local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.walk.sword.sheet, quad,
+                love.graphics.draw(anims.player.swords[attackItem.imageId].walk.sheet, quad,
                     lume.round(px), lume.round(py),
                     0, self.direction, 1,
                     8, h)

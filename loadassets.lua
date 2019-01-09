@@ -56,17 +56,36 @@ gfx = {
     },
     player = {
         walk = {
-            body = love.graphics.newImage('gfx/player/walk/body.png'),
-            sword = love.graphics.newImage('gfx/player/walk/sword.png')
+            body = love.graphics.newImage('gfx/player/walk/body.png')
         },
         swing = {
-            body = love.graphics.newImage('gfx/player/swing/body.png'),
-            sword = love.graphics.newImage('gfx/player/swing/sword.png')
+            body = love.graphics.newImage('gfx/player/swing/body.png')
         },
         walkAndSwing = {
             upperBody = love.graphics.newImage('gfx/player/walk_and_swing/upper_body.png'),
-            lowerBody = love.graphics.newImage('gfx/player/walk_and_swing/lower_body.png'),
-            sword = love.graphics.newImage('gfx/player/walk_and_swing/sword.png')
+            lowerBody = love.graphics.newImage('gfx/player/walk_and_swing/lower_body.png')
+        },
+        swords = {
+            sword0 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword0/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword0/swing.png')
+            },
+            sword1 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword1/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword1/swing.png')
+            },
+            sword2 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword2/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword2/swing.png')
+            },
+            sword3 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword3/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword3/swing.png')
+            },
+            sword4 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword4/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword4/swing.png')
+            }
         }
     },
     enemies = {
@@ -77,7 +96,11 @@ gfx = {
         lootBag = love.graphics.newImage('gfx/items/loot.png'),
         lootBag1 = love.graphics.newImage('gfx/items/loot1.png'),
         lootBagFuse = love.graphics.newImage('gfx/items/loot-fuse.png'),
-        sword = love.graphics.newImage('gfx/items/sword.png'),
+        sword0 = love.graphics.newImage('gfx/items/sword0.png'),
+        sword1 = love.graphics.newImage('gfx/items/sword1.png'),
+        sword2 = love.graphics.newImage('gfx/items/sword2.png'),
+        sword3 = love.graphics.newImage('gfx/items/sword3.png'),
+        sword4 = love.graphics.newImage('gfx/items/sword4.png'),
         shield = love.graphics.newImage('gfx/items/shield.png'),
         apple = love.graphics.newImage('gfx/items/apple.png')
     },
@@ -102,17 +125,36 @@ end
 anims.logo = newAnim(gfx.logoAnim, 54, 41, 1, 8)
 anims.player = {
     walk = {
-        body = newAnim(gfx.player.walk.body, 20, 29, 1, 5),
-        sword = newAnim(gfx.player.walk.sword, 20, 29, 1, 5)
+        body = newAnim(gfx.player.walk.body, 20, 29, 1, 5)
     },
     swing = {
-        body = newAnim(gfx.player.swing.body, 43, 34, 1, 5),
-        sword = newAnim(gfx.player.swing.sword, 43, 34, 1, 5)
+        body = newAnim(gfx.player.swing.body, 43, 34, 1, 5)
     },
     walkAndSwing = {
         upperBody = newAnim(gfx.player.walkAndSwing.upperBody, 43, 34, 1, 5),
-        lowerBody = newAnim(gfx.player.walkAndSwing.lowerBody, 43, 34, 1, 5),
-        sword = newAnim(gfx.player.walkAndSwing.sword, 43, 34, 1, 5)
+        lowerBody = newAnim(gfx.player.walkAndSwing.lowerBody, 43, 34, 1, 5)
+    },
+    swords = {
+        sword0 = {
+            walk = newAnim(gfx.player.swords.sword0.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword0.swing, 43, 34, 1, 5)
+        },
+        sword1 = {
+            walk = newAnim(gfx.player.swords.sword1.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword1.swing, 43, 34, 1, 5)
+        },
+        sword2 = {
+            walk = newAnim(gfx.player.swords.sword2.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword2.swing, 43, 34, 1, 5)
+        },
+        sword3 = {
+            walk = newAnim(gfx.player.swords.sword3.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword3.swing, 43, 34, 1, 5)
+        },
+        sword4 = {
+            walk = newAnim(gfx.player.swords.sword4.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword4.swing, 43, 34, 1, 5)
+        }
     }
 }
 

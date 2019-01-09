@@ -434,7 +434,7 @@ function hud.draw()
         font = fonts.stats
         love.graphics.setFont(font)
         local playerWeapon = items.client.getItem(playerController.player.inventory.items[2])
-        if item.imageId == 'sword' and item.atk then
+        if isSword[item.imageId] and item.atk then
             if playerWeapon and playerWeapon.atk then
                 if item.atk < playerWeapon.atk then
                     love.graphics.setColor(1, 0, 0)
