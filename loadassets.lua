@@ -94,7 +94,18 @@ gfx = {
         sorcerer = love.graphics.newImage('gfx/enemies/sorcerer.png'),
         spoder = love.graphics.newImage('gfx/enemies/spoder.png'),
         stingy = love.graphics.newImage('gfx/enemies/stingy.png'),
-        zombie = love.graphics.newImage('gfx/enemies/zombie.png')
+        zombie = love.graphics.newImage('gfx/enemies/zombie.png'),
+        ant = love.graphics.newImage('gfx/enemies/ant.png'),
+        newMonster1 = love.graphics.newImage('gfx/enemies/new_monster_1.png'),
+        newMonster2 = love.graphics.newImage('gfx/enemies/new_monster_2.png'),
+        mudskipper = love.graphics.newImage('gfx/enemies/mudskipper.png'),
+        mudskipperEvolved = love.graphics.newImage('gfx/enemies/mudskipper_evolved.png'),
+        godex = {
+            body1 = love.graphics.newImage('gfx/enemies/godex/body1.png'),
+            body2 = love.graphics.newImage('gfx/enemies/godex/body2.png'),
+            aura = love.graphics.newImage('gfx/enemies/godex/aura.png'),
+            flame = love.graphics.newImage('gfx/enemies/godex/godexFlame.png')
+        }
     },
     items = {
         lootBag = love.graphics.newImage('gfx/items/loot.png'),
@@ -125,6 +136,8 @@ function newAnim(sheet, w, h, pad, num)
     end
     return t
 end
+
+-- for procedural outline - 1px pad in quad (w,h +2) for outline, 1px pad between frames
 
 anims.logo = newAnim(gfx.logoAnim, 54, 41, 1, 8)
 anims.player = {
@@ -160,6 +173,11 @@ anims.player = {
             swing = newAnim(gfx.player.swords.sword4.swing, 43, 34, 1, 5)
         }
     }
+}
+anims.enemies = {
+    mudskipper = newAnim(gfx.enemies.mudskipper, 31, 16, 1, 2),
+    mudskipperEvolved = newAnim(gfx.enemies.mudskipperEvolved, 55, 31, 1, 2),
+    godexFlame = newAnim(gfx.enemies.godex.flame, 8, 19, 1, 5)
 }
 
 tileSheets = {}

@@ -15,7 +15,8 @@ entities.activeRadius = 500
 entities.chunkSize = 8
 
 local entityDefs = {}
-for _, v in ipairs{'player', 'slime', 'tree', 'sorcerer', 'spoder', 'stingy', 'zombie'} do
+for _, v in ipairs{'player', 'slime', 'tree', 'sorcerer', 'spoder', 'stingy', 'zombie', 'ant',
+'newMonster1', 'newMonster2', 'mudskipper', 'mudskipperEvolved', 'godex'} do
     table.insert(entityDefs, require('entityDefs.' .. v))
 end
 
@@ -25,16 +26,6 @@ for _, sc in ipairs{'server', 'client'} do
         entities[sc].defs[v.server.type] = v[sc]
     end
 end
-
---[[
-function entities.server.load()
-    -- todo: load chunks
-    for i=1, 8 do
-        local x, y = (math.random()*2-1)*256, (math.random()*2-1)*256
-        entities.server.defs.slime:new{x=x, y=y}:spawn()
-    end
-end
-]]
 
 function entities.server.reset()
     for etype, _ in pairs(entities.server.defs) do
@@ -57,8 +48,9 @@ function entities.server.update(dt)
                 if newActiveChunks[cx] == nil then newActiveChunks[cx] = {} end
                 newActiveChunks[cx][cy] = true
                 if not entities.server.activeChunks[cx] or not entities.server.activeChunks[cx][cy] then
-                    -- spawn slimes
-                    local choices = {none=84, slime=4, sorcerer=2, spoder=2, stingy=2, zombie=2}
+                    -- spawn enemies
+                    local choices = {none=80, slime=2, sorcerer=2, spoder=2, stingy=2, zombie=2, ant=2,
+                    newMonster1=2, newMonster2=2, mudskipper=1, mudskipperEvolved=1, godex=2}
                     for _=1, 3 do
                         choice = lume.weightedchoice(choices)
                         if choice ~= 'none' then
