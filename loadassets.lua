@@ -90,7 +90,11 @@ gfx = {
     },
     enemies = {
         slime1 = love.graphics.newImage('gfx/enemies/slime1.png'),
-        slime2 = love.graphics.newImage('gfx/enemies/slime2.png')
+        slime2 = love.graphics.newImage('gfx/enemies/slime2.png'),
+        sorcerer = love.graphics.newImage('gfx/enemies/sorcerer.png'),
+        spoder = love.graphics.newImage('gfx/enemies/spoder.png'),
+        stingy = love.graphics.newImage('gfx/enemies/stingy.png'),
+        zombie = love.graphics.newImage('gfx/enemies/zombie.png')
     },
     items = {
         lootBag = love.graphics.newImage('gfx/items/loot.png'),

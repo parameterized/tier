@@ -14,11 +14,10 @@ entities = {
 entities.activeRadius = 500
 entities.chunkSize = 8
 
-local entityDefs = {
-    require 'entityDefs.player',
-    require 'entityDefs.slime',
-    require 'entityDefs.tree'
-}
+local entityDefs = {}
+for _, v in ipairs{'player', 'slime', 'tree', 'sorcerer', 'spoder', 'stingy', 'zombie'} do
+    table.insert(entityDefs, require('entityDefs.' .. v))
+end
 
 for _, sc in ipairs{'server', 'client'} do
     -- entities.server.defs.slime = slime.server
@@ -59,7 +58,7 @@ function entities.server.update(dt)
                 newActiveChunks[cx][cy] = true
                 if not entities.server.activeChunks[cx] or not entities.server.activeChunks[cx][cy] then
                     -- spawn slimes
-                    local choices = {none=90, slime=10}
+                    local choices = {none=84, slime=4, sorcerer=2, spoder=2, stingy=2, zombie=2}
                     for _=1, 3 do
                         choice = lume.weightedchoice(choices)
                         if choice ~= 'none' then
