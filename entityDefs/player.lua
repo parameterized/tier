@@ -91,8 +91,9 @@ for _, sc in ipairs{'server', 'client'} do
         dy = dy + (self.inputState.keyboard.s and 1 or 0)
         dd = math.sqrt(dx^2 + dy^2)
         local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
-        if self.realm.world:getTile(self.x, self.y) == 5 then spd = spd * 1.5 end -- platform
-        if self.realm.world:getTile(self.x, self.y) == 4 then spd = spd / 2 end -- water
+        local tile = self.realm.world:getTile(self.x, self.y)
+        if tile == 5 or tile == 6 then spd = spd * 1.5 end -- platform, path
+        if tile == 4 then spd = spd / 2 end -- water
         local attackItem = self.items.getItem(self.inventory.items[2])
         if dd ~= 0 then
             self.body:applyForce(dx/dd*spd, dy/dd*spd)
@@ -275,8 +276,9 @@ function player.client:draw()
     local _shader = love.graphics.getShader()
     love.graphics.push()
 
-    -- offset if on platform
-    if clientRealm.world:getTile(self.x, self.y) == 5 then
+    -- offset if on platform or path
+    local tile = clientRealm.world:getTile(self.x, self.y)
+    if tile == 5 or tile == 6 then
         love.graphics.translate(0, -2)
     end
 
@@ -297,7 +299,7 @@ function player.client:draw()
     love.graphics.clear()
 
     -- offset/clip feet if in water
-    if clientRealm.world:getTile(self.x, self.y) == 4 then
+    if tile == 4 then
         love.graphics.translate(0, 4)
         love.graphics.stencil(function()
             love.graphics.rectangle('fill', self.x - 50, self.y - 4, 100, 100)

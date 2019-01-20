@@ -49,7 +49,8 @@ gfx = {
     },
     tiles = {
         tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png'),
-        platformSheet = love.graphics.newImage('gfx/tiles/platformSheet.png')
+        platformSheet = love.graphics.newImage('gfx/tiles/platformSheet.png'),
+        tileSheet2 = love.graphics.newImage('gfx/tiles/tilesheet2.png')
     },
     environment = {
         tree = love.graphics.newImage('gfx/environment/tree.png')
@@ -198,6 +199,7 @@ end
 
 tileSheets.ts1 = newTileSheet(gfx.tiles.tileSheet1, 15, 15, 1, 4, {'grass', 'sand', 'rock', 'water'})
 tileSheets.platform = newTileSheet(gfx.tiles.platformSheet, 15, 15, 1, 2)
+tileSheets.ts2 = newTileSheet(gfx.tiles.tileSheet2, 15, 15, 1, 3, {'path', 'floor', 'wall'})
 
 fonts = {
     f10 = love.graphics.newFont(10),
@@ -240,7 +242,7 @@ end
 shaders.mapRender:send('tiles', unpack(tileImgs))
 
 local platformFrames = {}
-for _, quad in pairs(tileSheets.platform.quads) do
+for _, quad in ipairs(tileSheets.platform.quads) do
     love.graphics.setCanvas(tileCanv)
     love.graphics.clear()
     love.graphics.draw(tileSheets.platform.sheet, quad, 0, 0)
@@ -248,5 +250,15 @@ for _, quad in pairs(tileSheets.platform.quads) do
     table.insert(platformFrames, love.graphics.newImage(tileCanv:newImageData()))
 end
 shaders.mapRender:send('platformFrames', unpack(platformFrames))
+
+local tileImgs2 = {}
+for _, v in ipairs{'path', 'floor', 'wall'} do
+    love.graphics.setCanvas(tileCanv)
+    love.graphics.clear()
+    love.graphics.draw(tileSheets.ts2.sheet, tileSheets.ts2.quads[v], 0, 0)
+    love.graphics.setCanvas()
+    table.insert(tileImgs2, love.graphics.newImage(tileCanv:newImageData()))
+end
+shaders.mapRender:send('tiles2', unpack(tileImgs2))
 
 shaders.lifemana:send('lifemanaEmpty', gfx.hud.lifemanaEmpty)
