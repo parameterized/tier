@@ -109,11 +109,11 @@ for _, sc in ipairs{'server', 'client'} do
                 self.swinging = false
             end
         else
-            if math.abs(vd) > 10 then
+            if math.abs(xv) > 10 then
                 if self.direction == 1 then
-                    if xv < 0 then self.direction = -1 end
+                    if xv < -10 then self.direction = -1 end
                 else
-                    if xv > 0 then self.direction = 1 end
+                    if xv > 10 then self.direction = 1 end
                 end
             end
             if self.automaticSwing and self.inputState.mouse.lmb

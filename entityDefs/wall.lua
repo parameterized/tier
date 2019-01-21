@@ -1,12 +1,12 @@
 
 local base = require 'entityDefs._base'
-local tree = {
+local wall = {
     server = base.server:new(),
     client = base.client:new()
 }
 
 for _, sc in ipairs{'server', 'client'} do
-    tree[sc].newDefaults = function()
+    wall[sc].newDefaults = function()
         local t = {
             id = lume.uuid(),
             x = 0, y = 0
@@ -21,11 +21,11 @@ for _, sc in ipairs{'server', 'client'} do
         return t
     end
 
-    tree[sc].spawn = function(self)
+    wall[sc].spawn = function(self)
         self.body = love.physics.newBody(self.realm.physics.world, self.x, self.y, 'static')
         self.shapes = {}
         self.fixtures = {}
-        local shape = love.physics.newCircleShape(6)
+        local shape = love.physics.newRectangleShape(15/2, 15/2, 15, 15)
         table.insert(self.shapes, shape)
         local fixture = love.physics.newFixture(self.body, shape, 1)
         table.insert(self.fixtures, fixture)
@@ -34,7 +34,7 @@ for _, sc in ipairs{'server', 'client'} do
         return self.base.spawn(self)
     end
 
-    tree[sc].destroy = function(self)
+    wall[sc].destroy = function(self)
         if self.fixtures then
             for _, v in pairs(self.fixtures) do
                 if not v:isDestroyed() then v:destroy() end
@@ -46,27 +46,27 @@ for _, sc in ipairs{'server', 'client'} do
         self.base.destroy(self)
     end
 
-    tree[sc].type = 'tree'
+    wall[sc].type = 'wall'
 end
 
 
 
-function tree.client:draw()
+function wall.client:draw()
     local _shader = love.graphics.getShader()
     love.graphics.setColor(1, 1, 1)
     love.graphics.setShader(shaders.outline)
-    local img = gfx.environment.tree
+    local img = gfx.environment.wall
     shaders.outline:send('stepSize', {1/img:getWidth(), 1/img:getHeight()})
     shaders.outline:send('outlineColor', {0, 0, 0, 1})
     love.graphics.push()
     local vx, vy = self.body:getPosition()
     love.graphics.translate(lume.round(vx), lume.round(vy))
     love.graphics.draw(img, 0, 0, 0, 1, 1,
-        lume.round(img:getWidth()/2 + 1), img:getHeight() - 4)
+        2, img:getHeight() - 17)
     love.graphics.pop()
     love.graphics.setShader(_shader)
 end
 
 
 
-return tree
+return wall

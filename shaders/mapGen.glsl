@@ -122,7 +122,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
     }
 
     // paths
-    float d = distance(p, vec2(0.0));
+    float d = length(p);
     float angle = atan(p.y, p.x);
     angle += snoise(2000.0 + p/64.0)/d*4.0;
     if (distance(mod(angle/(2.0*M_PI)*8.0, 1.0), 0.5) < 0.3/(d/8.0)) {

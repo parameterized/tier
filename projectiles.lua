@@ -37,6 +37,7 @@ function projectiles.server.spawn(data)
     end
     data.shapes = {}
     data.fixtures = {}
+    -- main
     for _, v in pairs(data.polys) do
         local shape = love.physics.newPolygonShape(unpack(v))
         table.insert(data.shapes, shape)
@@ -47,6 +48,17 @@ function projectiles.server.spawn(data)
         fixture:setSensor(true)
         table.insert(data.fixtures, fixture)
     end
+    -- for collision with walls
+    local shape = love.physics.newCircleShape(1)
+    table.insert(data.shapes, shape)
+    local fixture = love.physics.newFixture(data.body, shape, 1)
+    fixture:setUserData{type='playerSwingSmall', data=data}
+    fixture:setCategory(2)
+    fixture:setMask(1, 2)
+    fixture:setSensor(true)
+    table.insert(data.fixtures, fixture)
+
+    data.body:setBullet(true)
     data.body:setAngle(-data.angle)
     data.body:setFixedRotation(true)
     data.body:setLinearVelocity(math.cos(data.angle)*data.speed, -math.sin(data.angle)*data.speed)

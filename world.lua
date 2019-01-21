@@ -25,7 +25,7 @@ defaults.client.tileColors = function()
         {73/255, 73/255, 73/255},
         {205/255, 140/255, 79/255},
         {183/255, 163/255, 43/255},
-        {117/255, 99/255, 0/255}
+        {104/255, 88/255, 0/255}
     }
 end
 -- max tiles visible (ceil(x)+1) + sides for blending (+2)
@@ -260,7 +260,8 @@ function world.client:drawMinimap()
     love.graphics.setCanvas(canvases.tempGame)
     love.graphics.clear()
     for _, v in pairs(client.currentState.entities) do
-        if not v.destroyed and v.id ~= playerController.serverId and v.id ~= playerController.player.id then
+        if not v.destroyed and v.id ~= playerController.serverId and v.id ~= playerController.player.id
+        and (v.type == 'player' or v.enemy) then
             if v.type == 'player' then
                 love.graphics.setColor(255/255, 216/255, 0/255)
             else

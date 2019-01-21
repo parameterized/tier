@@ -206,20 +206,10 @@ function love.draw()
         prof.push('draw debug')
         if drawDebug then
             if server.running then
-                local serverBodies = serverRealm.physics.world:getBodies()
-                love.graphics.setColor(1, 0, 0, 0.5)
-                for _, v in pairs(serverBodies) do
-                    local x, y = v:getPosition()
-                    love.graphics.circle('fill', x, y, 8)
-                end
+                serverRealm.physics:draw()
             end
             if client.connected then
-                local clientBodies = clientRealm.physics.world:getBodies()
-                love.graphics.setColor(0, 1, 0, 0.5)
-                for _, v in pairs(clientBodies) do
-                    local x, y = v:getPosition()
-                    love.graphics.circle('fill', x, y, 6)
-                end
+                clientRealm.physics:draw()
             end
         end
         prof.pop('draw debug')
