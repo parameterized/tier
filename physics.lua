@@ -6,7 +6,7 @@ physics = {
 
 love.physics.setMeter(16)
 
--- categories: 1=player, 2=projectile, 3=enemy, 4=object
+-- categories: 1=player, 2=projectile, 3=enemy, 4=obstacle
 
 local defaults = {server={}, client={}}
 for _, sc in ipairs{'server', 'client'} do
@@ -85,9 +85,8 @@ function physics.server:load()
                         end
                     end)
                 end
-            elseif uda.type == 'playerSwingSmall' then
-                -- check if first category is wall
-                -- todo: smaller hitbox
+            elseif uda.type == 'playerSwingObstacleCollider' then
+                -- check if first category is obstacle
                 if fixb:getCategory() == 4 then
                     self:postUpdatePush(function()
                         local swing = projectiles.server.container[uda.data.id]

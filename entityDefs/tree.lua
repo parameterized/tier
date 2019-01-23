@@ -62,7 +62,7 @@ function tree.client:draw()
     local vx, vy = self.body:getPosition()
     love.graphics.translate(lume.round(vx), lume.round(vy))
     love.graphics.draw(img, 0, 0, 0, 1, 1,
-        lume.round(img:getWidth()/2 + 1), img:getHeight() - 4)
+        lume.round(img:getWidth()/2 + 1), img:getHeight() - 6)
     love.graphics.pop()
     love.graphics.setShader(_shader)
 end

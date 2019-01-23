@@ -329,7 +329,7 @@ function hud.draw()
     love.graphics.rectangle('fill', 11, 18, 131, 25)
     love.graphics.setShader(_shader)
 
-    clientRealm.world:drawMinimap()
+    clientRealm.world:drawMap('mini')
 
     -- panels/buttons
     love.graphics.setColor(1, 1, 1)

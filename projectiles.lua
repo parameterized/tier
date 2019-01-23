@@ -49,10 +49,11 @@ function projectiles.server.spawn(data)
         table.insert(data.fixtures, fixture)
     end
     -- for collision with walls
-    local shape = love.physics.newCircleShape(1)
+    local a = -data.angle - math.pi/2
+    local shape = love.physics.newCircleShape(math.cos(a)*14, -math.sin(a)*14, 1)
     table.insert(data.shapes, shape)
     local fixture = love.physics.newFixture(data.body, shape, 1)
-    fixture:setUserData{type='playerSwingSmall', data=data}
+    fixture:setUserData{type='playerSwingObstacleCollider', data=data}
     fixture:setCategory(2)
     fixture:setMask(1, 2)
     fixture:setSensor(true)
@@ -141,7 +142,7 @@ function projectiles.client.draw()
                     love.graphics.pop()
                     love.graphics.setShader(_shader)
                 end,
-                y = v.y
+                y = v.y + 14
             }
         end
     end

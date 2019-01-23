@@ -193,6 +193,7 @@ function love.draw()
 
         prof.push('draw scene')
         scene.reset()
+        -- world and loot bags
         clientRealm:draw()
 
         entities.client.draw()
@@ -220,6 +221,11 @@ function love.draw()
         hud.draw()
         chat.draw()
         prof.pop('draw hud/chat')
+
+        if love.keyboard.isScancodeDown('g') then
+            clientRealm.world:drawMap('full')
+        end
+
         prof.pop('draw playing')
     end
 
