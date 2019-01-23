@@ -22,6 +22,7 @@ If you're on Windows, the easiest way to run is to drag the folder containing ma
 - Shift-click or double-click to use item
 - E to interact
 - Enter to open chat
+- G to show fullscreen map
 - Tab to toggle inventory
 - M to toggle map
 - L to toggle levels/stats

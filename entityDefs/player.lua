@@ -160,10 +160,10 @@ function player.server:serialize()
     local t = {}
     for _, v in ipairs{
         'id', 'type', 'name',
-        'x', 'y', 'xv', 'yv',
+        'inputState', 'x', 'y', 'xv', 'yv',
         'walkTimer', 'swingTimer', 'swinging', 'automaticSwing',
-        'direction', 'spd', 'xp',
-        'stats', 'inventory'
+        'direction', 'spd',
+        'xp', 'stats', 'inventory'
     } do
         t[v] = self[v]
     end
@@ -172,9 +172,9 @@ end
 
 function player.server:setState(state)
     for _, v in ipairs{
-        'x', 'y', 'xv', 'yv',
+        'inputState', 'x', 'y', 'xv', 'yv',
         'walkTimer', 'swingTimer', 'swinging',
-        'direction'
+        'direction', 'spd'
     } do
         self[v] = state[v]
     end
@@ -184,14 +184,18 @@ function player.server:setState(state)
     end
 end
 
+function player.server:swing()
+    -- todo
+end
+
 
 
 function player.client:serialize()
     local t = {}
     for _, v in ipairs{
-        'x', 'y', 'xv', 'yv',
+        'inputState', 'x', 'y', 'xv', 'yv',
         'walkTimer', 'swingTimer', 'swinging',
-        'direction', 'inputState'
+        'direction', 'spd'
     } do
         t[v] = self[v]
     end
@@ -200,10 +204,10 @@ end
 
 function player.client:setState(state)
     for _, v in ipairs{
-        'x', 'y', 'xv', 'yv',
+        'inputState', 'x', 'y', 'xv', 'yv',
         'walkTimer', 'swingTimer', 'automaticSwing', 'swinging',
-        'direction', 'spd', 'xp',
-        'stats', 'inventory'
+        'direction', 'spd',
+        'xp', 'stats', 'inventory'
     } do
         self[v] = state[v]
     end
@@ -223,7 +227,7 @@ function player.client:lerpState(a, b, t)
     for _, v in ipairs{'walkTimer', 'swingTimer'} do
         if b[v] < a[v] then state[v] = b[v] end
     end
-    for _, v in ipairs{'automaticSwing', 'swinging',
+    for _, v in ipairs{'inputState', 'automaticSwing', 'swinging',
     'direction', 'spd', 'xp', 'stats', 'inventory'} do
         state[v] = b[v]
     end
@@ -244,14 +248,16 @@ function player.client:swing()
     if attackItem and attackItem.atk then
         playerDamage = attackItem.atk
     end
-    client.spawnProjectile{
-        x = px, y = py - 14,
-        angle = a,
-        speed = 2e2,
-        life = 3,
-        pierce = 2,
-        damage = playerDamage
-    }
+    if self.isLocalPlayer then
+        client.spawnProjectile{
+            x = px, y = py - 14,
+            angle = a,
+            speed = 2e2,
+            life = 3,
+            pierce = 2,
+            damage = playerDamage
+        }
+    end
 end
 
 function player.client:damage(dmg)
