@@ -92,8 +92,8 @@ for _, sc in ipairs{'server', 'client'} do
         dd = math.sqrt(dx^2 + dy^2)
         local spd = self.spd*(self.inputState.keyboard.lshift and 2.5 or 1)
         local tile = self.realm.world:getTile(self.x, self.y)
-        if tile == 5 or tile == 6 then spd = spd * 1.5 end -- platform, path
-        if tile == 4 then spd = spd / 2 end -- water
+        if tile == tile2id['platform'] or tile == tile2id['path'] then spd = spd * 1.5 end
+        if tile == tile2id['water'] then spd = spd / 2 end
         local attackItem = self.items.getItem(self.inventory.items[2])
         if dd ~= 0 then
             self.body:applyForce(dx/dd*spd, dy/dd*spd)
@@ -284,7 +284,7 @@ function player.client:draw()
 
     -- offset if on platform or path
     local tile = clientRealm.world:getTile(self.x, self.y)
-    if tile == 5 or tile == 6 then
+    if tile == tile2id['platform'] or tile == tile2id['path'] then
         love.graphics.translate(0, -2)
     end
 
@@ -305,7 +305,7 @@ function player.client:draw()
     love.graphics.clear()
 
     -- offset/clip feet if in water
-    if tile == 4 then
+    if tile == tile2id['water'] then
         love.graphics.translate(0, 4)
         love.graphics.stencil(function()
             love.graphics.rectangle('fill', self.x - 50, self.y - 4, 100, 100)

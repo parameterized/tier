@@ -82,14 +82,16 @@ float snoise(vec2 v)
 }
 
 
+// 1: water, 2: sand, 3: grass, 4: rock, 5: path, 6: floor, 7: wall, 8: platform
+
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
 {
 	vec2 uv = screen_coords;
     uv += camPos;
     vec2 p = floor(uv);
 
-    // grass/sand/rock/water
-    int tileChoices[3] = int[](1, 2, 4);
+    // grass/sand/water
+    int tileChoices[3] = int[](3, 2, 1);
     float r1 = snoise(p/32.0)*0.5 + 0.5;
     int choice = 0;
     for (int i=0; i < 3; i++) {
@@ -98,9 +100,10 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
             break;
         }
     }
+	// rock
     float r2 = snoise(1000.0 + p/64.0)*0.5 + 0.5;
     if (r1 < 0.2 && r2 < 0.5) {
-        choice = 3;
+        choice = 4;
     }
 
     // buildings
@@ -109,16 +112,18 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
     vec4 vpts = voronoi(vp, 0.5);
     vec2 vd = vec2(floor(abs(vp.x - vpts.x)*freq), floor(abs(vp.y - vpts.y)*freq));
     // inside
+	// floor
     if (vd.x <= 4.0 && vd.y <= 6.0) {
-        choice = 7;
-    }
-    if (distance(vp, vpts.xy)*freq < 2.0) {
         choice = 6;
+    }
+	// path
+    if (distance(vp, vpts.xy)*freq < 2.0) {
+        choice = 5;
     }
     // walls
     if ((vd.x == 4.0 && vd.y <= 6.0 || vd.y == 6.0 && vd.x <= 4.0)
     && vd.x > 1.0  && vd.y > 1.0) {
-        choice = 8;
+        choice = 7;
     }
 
     // paths
@@ -126,13 +131,21 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
     float angle = atan(p.y, p.x);
     angle += snoise(2000.0 + p/64.0)/d*4.0;
     if (distance(mod(angle/(2.0*M_PI)*8.0, 1.0), 0.5) < 0.3/(d/8.0)) {
-        choice = 6;
+        choice = 5;
     }
 
     // platform
     if (length(p) < 8.0) {
-        choice = 5;
+        choice = 8;
     }
+
+	// test
+	if (p == vec2(0.0) || p == vec2(1.0, 0.0) || p == vec2(0.0, 1.0) || p == vec2(1.0, 2.0)) {
+		choice = 5;
+	}
+	if (p == vec2(0.0)+vec2(18.0, 0.0) || p == vec2(1.0, 0.0)+vec2(18.0, 0.0) || p == vec2(0.0, 1.0)+vec2(18.0, 0.0) || p == vec2(1.0, 2.0)+vec2(18.0, 0.0)) {
+		choice = 5;
+	}
 
 
     return vec4(choice/255.0, 0.0, 0.0, 1.0);

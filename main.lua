@@ -32,6 +32,10 @@ require 'chat'
 
 -- todo: better sword check
 isSword = {['sword0']=true, ['sword1']=true, ['sword2']=true, ['sword3']=true, ['sword4']=true}
+tile2id = {}
+for i, v in ipairs{'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'} do
+    tile2id[v] = i
+end
 
 function love.load()
     camera = Camera{ssx=gsx, ssy=gsy}
@@ -106,6 +110,8 @@ function love.update(dt)
     manual_gc(1e-3, 64)
     prof.pop('update gc')
     prof.pop('update')
+
+    shaders.mapRender:send('drawDebug', drawDebug)
 end
 
 function love.mousepressed(x, y, btn, isTouch, presses)

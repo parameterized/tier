@@ -48,9 +48,8 @@ gfx = {
         }
     },
     tiles = {
-        tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png'),
-        platformSheet = love.graphics.newImage('gfx/tiles/platformSheet.png'),
-        tileSheet2 = love.graphics.newImage('gfx/tiles/tilesheet2.png')
+        allTiles = love.graphics.newImage('gfx/tiles/all_tiles.png'),
+        smoothTiles = love.graphics.newImage('gfx/tiles/smooth_tiles.png')
     },
     environment = {
         tree = love.graphics.newImage('gfx/environment/tree.png'),
@@ -193,14 +192,18 @@ function newTileSheet(sheet, w, h, pad, num, names)
         local x = (i-1)*(w + pad*2) + 1
         local y = 1
         local sw, sh = sheet:getDimensions()
-        t.quads[names[i] or i] = love.graphics.newQuad(x, y, w, h, sw, sh)
+        local quad = love.graphics.newQuad(x, y, w, h, sw, sh)
+        t.quads[i] = quad
+        if names[i] then
+            t.quads[names[i]] = quad
+        end
     end
     return t
 end
 
-tileSheets.ts1 = newTileSheet(gfx.tiles.tileSheet1, 15, 15, 1, 4, {'grass', 'sand', 'rock', 'water'})
-tileSheets.platform = newTileSheet(gfx.tiles.platformSheet, 15, 15, 1, 2)
-tileSheets.ts2 = newTileSheet(gfx.tiles.tileSheet2, 15, 15, 1, 3, {'path', 'floor', 'wall'})
+tileSheets.allTiles = newTileSheet(gfx.tiles.allTiles, 15, 15, 1, 9,
+    {'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'})
+tileSheets.smoothTiles = newTileSheet(gfx.tiles.smoothTiles, 15, 15, 1, 16)
 
 fonts = {
     f10 = love.graphics.newFont(10),
@@ -233,33 +236,23 @@ love.graphics.clear(0, 0, 0)
 love.graphics.setCanvas()
 -- black tile
 table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
-for _, v in ipairs{'grass', 'sand', 'rock', 'water'} do
+for i=1, 9 do
     love.graphics.setCanvas(tileCanv)
     love.graphics.clear()
-    love.graphics.draw(tileSheets.ts1.sheet, tileSheets.ts1.quads[v], 0, 0)
+    love.graphics.draw(tileSheets.allTiles.sheet, tileSheets.allTiles.quads[i], 0, 0)
     love.graphics.setCanvas()
     table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
 end
 shaders.mapRender:send('tiles', unpack(tileImgs))
 
-local platformFrames = {}
-for _, quad in ipairs(tileSheets.platform.quads) do
+smoothTileImgs = {}
+for i=1, 16 do
     love.graphics.setCanvas(tileCanv)
     love.graphics.clear()
-    love.graphics.draw(tileSheets.platform.sheet, quad, 0, 0)
+    love.graphics.draw(tileSheets.smoothTiles.sheet, tileSheets.smoothTiles.quads[i], 0, 0)
     love.graphics.setCanvas()
-    table.insert(platformFrames, love.graphics.newImage(tileCanv:newImageData()))
+    table.insert(smoothTileImgs, love.graphics.newImage(tileCanv:newImageData()))
 end
-shaders.mapRender:send('platformFrames', unpack(platformFrames))
-
-local tileImgs2 = {}
-for _, v in ipairs{'path', 'floor', 'wall'} do
-    love.graphics.setCanvas(tileCanv)
-    love.graphics.clear()
-    love.graphics.draw(tileSheets.ts2.sheet, tileSheets.ts2.quads[v], 0, 0)
-    love.graphics.setCanvas()
-    table.insert(tileImgs2, love.graphics.newImage(tileCanv:newImageData()))
-end
-shaders.mapRender:send('tiles2', unpack(tileImgs2))
+shaders.mapRender:send('smoothTiles', unpack(smoothTileImgs))
 
 shaders.lifemana:send('lifemanaEmpty', gfx.hud.lifemanaEmpty)

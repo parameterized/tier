@@ -56,8 +56,8 @@ function entities.server.update(dt)
                         if choice ~= 'none' then
                             local x = (cx*entities.chunkSize + math.random()*entities.chunkSize)*15
                             local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
-                            -- if not in spawn area
-                            if not (x^2 + y^2 < 192^2) then
+                            -- if not in spawn area or wall
+                            if x^2 + y^2 > 192^2 and serverRealm.world:getTile(x, y) ~= tile2id['wall'] then
                                 entities.server.defs[choice]:new{x=x, y=y}:spawn()
                             end
                         end
@@ -67,7 +67,7 @@ function entities.server.update(dt)
                         local x = (cx*entities.chunkSize + math.random()*entities.chunkSize)*15
                         local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
                         -- if on grass
-                        if serverRealm.world:getTile(x, y) == 1 then
+                        if serverRealm.world:getTile(x, y) == tile2id['grass'] then
                             entities.server.defs.tree:new{x=x, y=y}:spawn()
                         end
                     end
@@ -76,7 +76,7 @@ function entities.server.update(dt)
                         for j=1, entities.chunkSize do
                             local x = (cx*entities.chunkSize + (i-1))*15
                             local y = (cy*entities.chunkSize + (j-1))*15
-                            if serverRealm.world:getTile(x, y) == 8 then
+                            if serverRealm.world:getTile(x, y) == tile2id['wall'] then
                                 entities.server.defs.wall:new{x=x, y=y}:spawn()
                             end
                         end
