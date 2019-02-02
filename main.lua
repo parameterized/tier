@@ -27,6 +27,7 @@ require 'playerController'
 require 'items'
 require 'lootBag'
 require 'portals'
+require 'damageText'
 require 'realm'
 require 'chat'
 
@@ -208,6 +209,7 @@ function love.draw()
         portals.client.draw()
 
         scene.draw()
+        damageText.draw()
         prof.pop('draw scene')
 
         prof.push('draw debug')

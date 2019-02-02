@@ -313,16 +313,18 @@ function hud.keypressed(k, scancode, isrepeat)
 end
 
 function hud.draw()
+    local _canvas = love.graphics.getCanvas()
     local _shader = love.graphics.getShader()
 
     local mx, my = window2game(love.mouse.getPosition())
     mx, my = lume.round(mx), lume.round(my)
 
+    local p = playerController.player
+
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(gfx.hud.frame, 0, 0)
 
     -- hp/mana
-    local p = playerController.player
     love.graphics.setShader(shaders.lifemana)
     shaders.lifemana:send('hp', p.hp/p.hpMax)
     shaders.lifemana:send('mana', 1)
@@ -350,7 +352,7 @@ function hud.draw()
     end
 
     -- level bar
-    local l = playerController.player.xp2level(playerController.player.xp)
+    local l = p.xp2level(p.xp)
     local x, y = hud.statsPanel.x, hud.statsPanel.y
     love.graphics.setColor(221/255, 217/255, 0)
     local t = l - math.floor(l)
@@ -363,7 +365,7 @@ function hud.draw()
     text.print(level, lume.round(240 - font:getWidth(level)/2), lume.round(y))
 
     -- stats
-    font = fonts.stats
+    local font = fonts.stats
     love.graphics.setFont(font)
     local stats_x, stats_y = 202, 227
     local stats_dx, stats_dy = 20, 11
@@ -379,15 +381,30 @@ function hud.draw()
             local sy = stats_y + stats_dy*(j-1)
             sx = x + (sx - hud.statsPanel.openPos.x)
             sy = y + (sy - hud.statsPanel.openPos.y)
-            local txt = tostring(playerController.player.stats[col][row])
+            local txt = tostring(p.stats[col][row])
             text.print(txt, lume.round(sx - font:getWidth(txt)/2), lume.round(sy - font:getHeight()/2))
         end
     end
 
+    love.graphics.setCanvas(canvases.tempGame)
+    love.graphics.clear()
+    local hpHovered = mx > 39 and mx < 141 and my > 23 and my < 31
+    local txt = string.format('%i / %i', p.hp, p.hpMax)
+    love.graphics.setColor(0, 0, 0)
+    text.print(txt, lume.round(90 - font:getWidth(txt)/2 - 1), lume.round(27 - font:getHeight()/2 + 1))
+    love.graphics.setColor(1, 1, 1)
+    text.print(txt, lume.round(90 - font:getWidth(txt)/2), lume.round(27 - font:getHeight()/2))
+    love.graphics.setCanvas(_canvas)
+    if hpHovered then
+        love.graphics.setColor(1, 1, 1, 0.8)
+    else
+        love.graphics.setColor(1, 1, 1, 0.4)
+    end
+    love.graphics.draw(canvases.tempGame, 0, 0)
+
     love.graphics.setColor(1, 1, 1)
     love.graphics.setFont(fonts.c17)
-    text.print(playerController.player.name, 44, 5)
-
+    text.print(p.name, 44, 5)
 
     -- inventory items
     love.graphics.push()
@@ -396,7 +413,7 @@ function hud.draw()
     local pmx = mx - lume.round(panel.x)
     local pmy = my - lume.round(panel.y)
     for slotId, slot in ipairs(hud.inventorySlots) do
-        local item = items.client.getItem(playerController.player.inventory.items[slotId])
+        local item = items.client.getItem(p.inventory.items[slotId])
         if pmx >= slot.x and pmx <= slot.x + slot.w
         and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
             if item then
@@ -433,7 +450,7 @@ function hud.draw()
         love.graphics.draw(gfx.ui.itemInfo, 0, 0)
         font = fonts.stats
         love.graphics.setFont(font)
-        local playerWeapon = items.client.getItem(playerController.player.inventory.items[2])
+        local playerWeapon = items.client.getItem(p.inventory.items[2])
         if isSword[item.imageId] and item.atk then
             if playerWeapon and playerWeapon.atk then
                 if item.atk < playerWeapon.atk then
@@ -454,7 +471,7 @@ function hud.draw()
     if heldItem.bagId then
         local bag = client.currentState.lootBags[heldItem.bagId]
         if heldItem.bagId == 'inventory' then
-            bag = playerController.player.inventory
+            bag = p.inventory
         end
         if bag then
             local item = items.client.getItem(bag.items[heldItem.slotId])

@@ -39,7 +39,7 @@ for _, sc in ipairs{'server', 'client'} do
     player[sc].newStats = function()
         local t = {
             vit = {base = 100, arm = 14},
-            atk = {base = 80, arm = 25},
+            atk = {base = 10, arm = 5},
             spd = {base = 50, arm = 9},
             wis = {base = 100, arm = 8},
             def = {base = 20, arm = 25},
@@ -121,6 +121,10 @@ for _, sc in ipairs{'server', 'client'} do
                 self:swing()
             end
         end
+
+        local _hpMax = self.hpMax
+        self.hpMax = self.stats.vit.total
+        self.hp = self.hp + (self.hpMax - _hpMax)
 
         self.x, self.y = self.body:getPosition()
         self.xv, self.yv = self.body:getLinearVelocity()
@@ -246,7 +250,7 @@ function player.client:swing()
     local playerDamage = 5
     local attackItem = items.client.getItem(self.inventory.items[2])
     if attackItem and attackItem.atk then
-        playerDamage = attackItem.atk
+        playerDamage = attackItem.atk + self.stats.atk.total
     end
     if self.isLocalPlayer then
         client.spawnProjectile{

@@ -76,6 +76,8 @@ function physics.server:load()
                         local swing = projectiles.server.container[uda.id]
                         local enemy = udb
                         if swing and enemy and not enemy.hitBy[swing.id] then
+                            server.nutServer:sendRPC('damageText', bitser.dumps{
+                                v=swing.damage, x=enemy.x, y=enemy.y-26})
                             enemy.hitBy[swing.id] = true
                             enemy:damage(swing.damage, swing.playerId)
                             swing.pierce = swing.pierce - 1
@@ -119,6 +121,7 @@ function physics.client:load()
             local udb = fixb:getUserData() or {}
             if uda.type == 'slimeBall' and udb.id == playerController.player.id then
                 self:postUpdatePush(function()
+                    damageText.add{v=uda.damage, x=udb.x, y=udb.y-24}
                     udb:damage(uda.damage)
                     slimeBalls.destroy(uda.id)
                 end)

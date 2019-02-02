@@ -273,7 +273,7 @@ function server.addXP(playerId, xp)
             local l = entities.server.defs.player.xp2level(p.xp)
             if math.floor(_l) ~= math.floor(l) then -- level increased
                 p.stats.vit.base = math.floor(l*10 + 100)
-                p.stats.atk.base = math.floor(l*8 + 80)
+                p.stats.atk.base = math.floor(l*2 + 10)
                 p.stats.spd.base = math.floor(l*5 + 50)
                 p.stats.wis.base = math.floor(l*8 + 100)
                 p.stats.def.base = math.floor(l*4 + 20)

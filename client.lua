@@ -87,6 +87,9 @@ function client.connect(ip, port)
         healPlayer = function(self, data)
             local p = playerController.player
             p.hp = math.min(p.hp + data.hp, p.hpMax)
+        end,
+        damageText = function(self, data)
+            damageText.add(data)
         end
     }
     for k, v in pairs(bitserRPCs) do
@@ -119,6 +122,7 @@ function client.connect(ip, port)
         clientRealm:destroy()
         slimeBalls.reset()
         items.client.reset()
+        damageText.reset()
         collectgarbage()
     end
     client.currentState = client.newState()
@@ -222,6 +226,7 @@ function client.update(dt)
         playerController.update(dt)
         entities.client.update(dt)
         slimeBalls.update(dt)
+        damageText.update(dt)
     end
 end
 
