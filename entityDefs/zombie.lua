@@ -30,6 +30,8 @@ for _, sc in ipairs{'server', 'client'} do
         self.body = love.physics.newBody(self.realm.physics.world, self.x, self.y, 'dynamic')
         self.shapes = {}
         self.fixtures = {}
+
+        -- collision
         local shape = love.physics.newCircleShape(8)
         table.insert(self.shapes, shape)
         local fixture = love.physics.newFixture(self.body, shape, 1)
@@ -39,6 +41,21 @@ for _, sc in ipairs{'server', 'client'} do
         if sc == 'client' then
             fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
         end
+
+        -- projectile damage
+        local img = gfx.enemies.zombie
+        local shape = love.physics.newRectangleShape(
+            0, -img:getHeight()/2, img:getWidth(), img:getHeight())
+        table.insert(self.shapes, shape)
+        local fixture = love.physics.newFixture(self.body, shape, 1)
+        table.insert(self.fixtures, fixture)
+        fixture:setUserData(self)
+        fixture:setCategory(3)
+        if sc == 'client' then
+            fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+        end
+        fixture:setSensor(true)
+
         self.body:setFixedRotation(true)
         self.body:setLinearDamping(10)
         return self.base.spawn(self)

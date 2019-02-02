@@ -30,6 +30,8 @@ for _, sc in ipairs{'server', 'client'} do
         self.body = love.physics.newBody(self.realm.physics.world, self.x, self.y, 'dynamic')
         self.shapes = {}
         self.fixtures = {}
+
+        -- collision
         local shape = love.physics.newCircleShape(8)
         table.insert(self.shapes, shape)
         local fixture = love.physics.newFixture(self.body, shape, 1)
@@ -39,6 +41,21 @@ for _, sc in ipairs{'server', 'client'} do
         if sc == 'client' then
             fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
         end
+
+        -- projectile damage
+        local img = gfx.enemies.godex.body1
+        local shape = love.physics.newRectangleShape(
+            0, -img:getHeight()/2, img:getWidth(), img:getHeight())
+        table.insert(self.shapes, shape)
+        local fixture = love.physics.newFixture(self.body, shape, 1)
+        table.insert(self.fixtures, fixture)
+        fixture:setUserData(self)
+        fixture:setCategory(3)
+        if sc == 'client' then
+            fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+        end
+        fixture:setSensor(true)
+
         self.body:setFixedRotation(true)
         self.body:setLinearDamping(10)
         return self.base.spawn(self)
@@ -185,7 +202,7 @@ function godex.client:draw()
 
     local img = gfx.enemies.godex.aura
     love.graphics.draw(img, 1, -19, 0, 1, 1,
-    lume.round(img:getWidth()/2), lume.round(img:getHeight()/2))
+        lume.round(img:getWidth()/2), lume.round(img:getHeight()/2))
     local bodyFrame = (time/3) % 1 < 0.1 and 1 or 2
     local img = gfx.enemies.godex['body' .. bodyFrame]
     love.graphics.draw(img, 0, 0, 0, 1, 1, 11, 30)

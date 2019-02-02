@@ -3,7 +3,7 @@
 
 Open World RPG
 
-*Current version: 0.1.1-dev*<br>
+*Current version: 0.2.0*<br>
 *Uses Love2D version 11.2.0*
 
 ![](https://i.imgur.com/rF9idF9.png)
@@ -26,4 +26,4 @@ If you're on Windows, the easiest way to run is to drag the folder containing ma
 - Tab to toggle inventory
 - M to toggle map
 - L to toggle levels/stats
-- F1 to toggle debug info
+- F1 to toggle debug view
