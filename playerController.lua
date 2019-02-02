@@ -64,7 +64,7 @@ end
 function playerController.mousepressed(x, y, btn)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
-    wmx, wmy = camera:screen2world(mx, my)
+    local wmx, wmy = camera:screen2world(mx, my)
 
     -- lootBags
     local closestBag = playerController.closestBag
@@ -117,7 +117,7 @@ end
 function playerController.mousereleased(x, y, btn)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
-    wmx, wmy = camera:screen2world(mx, my)
+    local wmx, wmy = camera:screen2world(mx, my)
 
     -- lootBags
     local closestBag = playerController.closestBag

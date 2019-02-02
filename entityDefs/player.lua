@@ -428,7 +428,9 @@ function player.client:draw()
     -- name
     local font = fonts.c17
     love.graphics.setFont(font)
-    text.printSmall(self.name, lume.round(px) - font:getWidth(self.name)/4, lume.round(py) - 40)
+    text.printSmall(self.name,
+        lume.round(px) - lume.round(font:getWidth(self.name)/4),
+        lume.round(py) - 40)
 
     if drawDebug then
         love.graphics.setColor(1, 0, 0, 0.5)

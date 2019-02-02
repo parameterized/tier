@@ -12,9 +12,11 @@ for _, sc in ipairs{'server', 'client'} do
             x = 0, y = 0,
             xv = 0, yv = 0,
             slimeType = math.random() < 0.5 and 'slime1' or 'slime2',
-            hpMax = 25, hp = math.random(20, 25),
             hitBy = {}
         }
+        t.level = math.random(1, 5)
+        t.hpMax = 20 + 50*t.level
+        t.hp = t.hpMax
         if sc == 'server' then
             t.base = base.server
             t.realm = serverRealm
@@ -83,7 +85,7 @@ function slime.server:serialize()
     for _, v in ipairs{
         'id', 'type',
         'x', 'y', 'xv', 'yv',
-        'slimeType', 'hpMax', 'hp'
+        'slimeType', 'level', 'hpMax', 'hp'
     } do
         t[v] = self[v]
     end
@@ -223,6 +225,22 @@ function slime.client:draw()
     love.graphics.translate(lume.round(vx), lume.round(vy))
     love.graphics.draw(canvases.hpBar, lume.round(-canvases.hpBar:getWidth()/2), 2)
     love.graphics.pop()
+
+    -- name, level
+    local mx, my = love.mouse.getPosition()
+    mx, my = window2game(mx, my)
+    mx, my = lume.round(mx), lume.round(my)
+    local wmx, wmy = camera:screen2world(mx, my)
+    if wmx > vx - img:getWidth()/2 and wmx < vx + img:getWidth()/2
+    and wmy > vy - img:getHeight() and wmy < vy then
+        love.graphics.setColor(1, 1, 1)
+        local font = fonts.c17
+        love.graphics.setFont(font)
+        local name = string.format('Slime [Level %i]', self.level)
+        text.printSmall(name,
+            lume.round(vx) - lume.round(font:getWidth(name)/4),
+            lume.round(vy) - img:getHeight() - 12)
+    end
 end
 
 
