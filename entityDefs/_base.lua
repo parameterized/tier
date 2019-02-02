@@ -8,8 +8,18 @@ for _, sc in ipairs{'server', 'client'} do
     base[sc].newDefaults = function()
         return {
             id = lume.uuid(),
-            x = 0, y
+            x = 0, y = 0
         }
+    end
+
+    base[sc].new = function(self, o)
+        o = o or {}
+        for k, v in pairs(self.newDefaults()) do
+            if o[k] == nil then o[k] = v end
+        end
+        setmetatable(o, self)
+        self.__index = self
+        return o
     end
 
     -- entities.server.defs[type]
@@ -17,15 +27,7 @@ for _, sc in ipairs{'server', 'client'} do
     base[sc].static = true
 end
 
-function base.server:new(o)
-    o = o or {}
-    for k, v in pairs(self.newDefaults()) do
-        if o[k] == nil then o[k] = v end
-    end
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
+
 
 function base.server:spawn()
     self.destroyed = false
@@ -69,16 +71,6 @@ function base.server:destroy()
 end
 
 
-
-function base.client:new(o)
-    o = o or {}
-    for k, v in pairs(self.newDefaults()) do
-        if o[k] == nil then o[k] = v end
-    end
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
 
 function base.client:spawn()
     self.destroyed = false

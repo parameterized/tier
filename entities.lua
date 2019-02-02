@@ -14,10 +14,11 @@ entities = {
 entities.activeRadius = 500
 entities.chunkSize = 8
 
-local entityDefs = {
-    require 'entityDefs.player',
-    require 'entityDefs.slime'
-}
+local entityDefs = {}
+for _, v in ipairs{'player', 'slime', 'tree', 'wall', 'sorcerer', 'spoder', 'stingy', 'zombie', 'ant',
+'newMonster1', 'newMonster2', 'mudskipper', 'mudskipperEvolved', 'godex'} do
+    table.insert(entityDefs, require('entityDefs.' .. v))
+end
 
 for _, sc in ipairs{'server', 'client'} do
     -- entities.server.defs.slime = slime.server
@@ -25,16 +26,6 @@ for _, sc in ipairs{'server', 'client'} do
         entities[sc].defs[v.server.type] = v[sc]
     end
 end
-
---[[
-function entities.server.load()
-    -- todo: load chunks
-    for i=1, 8 do
-        local x, y = (math.random()*2-1)*256, (math.random()*2-1)*256
-        entities.server.defs.slime:new{x=x, y=y}:spawn()
-    end
-end
-]]
 
 function entities.server.reset()
     for etype, _ in pairs(entities.server.defs) do
@@ -57,15 +48,36 @@ function entities.server.update(dt)
                 if newActiveChunks[cx] == nil then newActiveChunks[cx] = {} end
                 newActiveChunks[cx][cy] = true
                 if not entities.server.activeChunks[cx] or not entities.server.activeChunks[cx][cy] then
-                    local choices = {none=90, slime=10}
+                    -- spawn enemies
+                    local choices = {none=80, slime=2, sorcerer=2, spoder=2, stingy=2, zombie=2, ant=2,
+                    newMonster1=2, newMonster2=2, mudskipper=1, mudskipperEvolved=1, godex=2}
                     for _=1, 3 do
                         choice = lume.weightedchoice(choices)
                         if choice ~= 'none' then
-                            local x = cx*entities.chunkSize*15 + math.random()*entities.chunkSize*15
-                            local y = cy*entities.chunkSize*15 + math.random()*entities.chunkSize*15
-                            -- if not in spawn area
-                            if not (x^2 + y^2 < 192^2) then
+                            local x = (cx*entities.chunkSize + math.random()*entities.chunkSize)*15
+                            local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
+                            -- if not in spawn area or wall
+                            if x^2 + y^2 > 192^2 and serverRealm.world:getTile(x, y) ~= tile2id['wall'] then
                                 entities.server.defs[choice]:new{x=x, y=y}:spawn()
+                            end
+                        end
+                    end
+                    -- spawn trees
+                    if math.random() < 0.5 then
+                        local x = (cx*entities.chunkSize + math.random()*entities.chunkSize)*15
+                        local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
+                        -- if on grass
+                        if serverRealm.world:getTile(x, y) == tile2id['grass'] then
+                            entities.server.defs.tree:new{x=x, y=y}:spawn()
+                        end
+                    end
+                    -- spawn walls
+                    for i=1, entities.chunkSize do
+                        for j=1, entities.chunkSize do
+                            local x = (cx*entities.chunkSize + (i-1))*15
+                            local y = (cy*entities.chunkSize + (j-1))*15
+                            if serverRealm.world:getTile(x, y) == tile2id['wall'] then
+                                entities.server.defs.wall:new{x=x, y=y}:spawn()
                             end
                         end
                     end

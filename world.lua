@@ -6,43 +6,54 @@ world = {
 
 local chunkSize = 8
 
-local defaults = {server={}, client={}}
-for _, sc in ipairs{'server', 'client'} do
-    defaults[sc].chunks = function() return {} end
-    defaults[sc].chunkSize = function() return chunkSize end
-end
-defaults.server.chunkCanvas = function()
-    return love.graphics.newCanvas(chunkSize, chunkSize)
-end
-defaults.client.chunkImages = function() return {} end
-defaults.client.chunkIdImages = function() return {} end
-defaults.client.tileColors = function()
-    return {
-        {98/255, 195/255, 116/255},
-        {251/255, 228/255, 125/255},
-        {98/255, 98/255, 98/255},
-        {41/255, 137/255, 214/255},
-        {73/255, 73/255, 73/255}
-    }
-end
 -- max tiles visible (ceil(x)+1) + sides for blending (+2)
-local w, h = math.ceil(gsx/15) + 1 + 2, math.ceil(gsy/15) + 1 + 2
-defaults.client.tileIdCanvas = function()
-    return love.graphics.newCanvas(w, h)
-end
-shaders.mapRender:send('tileIdRes', {w, h})
+local tileIdW, tileIdH = math.ceil(gsx/15) + 1 + 2, math.ceil(gsy/15) + 1 + 2
+shaders.mapRender:send('tileIdRes', {tileIdW, tileIdH})
 
-
-
-function world.server:new(o)
-    o = o or {}
-    for k, v in pairs(defaults.server) do
-        if o[k] == nil then o[k] = v() end
+for _, sc in ipairs{'server', 'client'} do
+    world[sc].newDefaults = function()
+        local t = {
+            chunks = {},
+            chunkSize = chunkSize
+        }
+        if sc == 'server' then
+            t.chunkCanvas = love.graphics.newCanvas(chunkSize, chunkSize)
+        elseif sc == 'client' then
+            t.chunkImages = {}
+            t.chunkIdImages = {}
+            t.tileColors = {
+                {41, 137, 214}, -- water
+                {251, 228, 125}, -- sand
+                {98, 195, 116}, -- grass
+                {98, 98, 98}, -- rock
+                {205, 140, 79}, -- path
+                {183, 163, 43}, -- floor
+                {104, 88, 0}, -- wall
+                {73, 73, 73}, -- platform
+                {73, 73, 73} -- platform
+            }
+            for _, color in ipairs(t.tileColors) do
+                for i=1, 3 do
+                    color[i] = color[i]/255
+                end
+            end
+            t.tileIdCanvas = love.graphics.newCanvas(tileIdW, tileIdH)
+        end
+        return t
     end
-    setmetatable(o, self)
-    self.__index = self
-    return o
+
+    world[sc].new = function(self, o)
+        o = o or {}
+        for k, v in pairs(self.newDefaults()) do
+            if o[k] == nil then o[k] = v end
+        end
+        setmetatable(o, self)
+        self.__index = self
+        return o
+    end
 end
+
+
 
 function world.server:getChunk(x, y)
     if self.chunks[x] and self.chunks[x][y] then
@@ -88,9 +99,7 @@ function world.server:getTile(x, y)
     local cy = math.floor(ty/self.chunkSize)
     tx = tx - cx*self.chunkSize + 1
     ty = ty - cy*self.chunkSize + 1
-    if self.chunks[cx] and self.chunks[cx][cy] then
-        return self.chunks[cx][cy][tx][ty]
-    end
+    return self:getChunk(cx, cy)[tx][ty]
 end
 
 function world.server:destroy()
@@ -98,16 +107,6 @@ function world.server:destroy()
 end
 
 
-
-function world.client:new(o)
-    o = o or {}
-    for k, v in pairs(defaults.client) do
-        if o[k] == nil then o[k] = v() end
-    end
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
 
 function world.client:setChunk(x, y, chunk)
     if self.chunks[x] == nil then self.chunks[x] = {} end
@@ -137,6 +136,7 @@ function world.client:getTile(x, y)
     if self.chunks[cx] and self.chunks[cx][cy] then
         return self.chunks[cx][cy][tx][ty]
     end
+    -- have to wait for server to send
 end
 
 function world.client:destroy()
@@ -220,35 +220,43 @@ function world.client:draw()
     end
 end
 
-function world.client:drawMinimap()
+function world.client:drawMap(mapSize)
     local _canvas = love.graphics.getCanvas()
     local _shader = love.graphics.getShader()
     -- todo: 2x
 
+    if mapSize == nil then mapSize = 'full' end
+
+    local x, y = 0, 0
+    local w, h = gsx, gsy
     love.graphics.setCanvas{canvases.game, stencil=true}
-    local x = hud.mapPanel.x + 7
-    local y = hud.mapPanel.y + 8
+    if mapSize == 'mini' then
+        x = hud.mapPanel.x + 7
+        y = hud.mapPanel.y + 8
+        w, h = 60, 62
+    end
     local p = playerController.player
     local px = math.floor(lume.round(p.body:getX())/15)
     local py = math.floor(lume.round(p.body:getY())/15)
 
     -- bg
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle('fill', x, y, 60, 62)
+    love.graphics.setColor(0.1, 0.1, 0.1)
+    love.graphics.rectangle('fill', x, y, w, h)
 
     -- tiles
     love.graphics.stencil(function()
-        love.graphics.rectangle('fill', x, y, 60, 62)
+        love.graphics.rectangle('fill', x, y, w, h)
     end, 'replace', 1)
     love.graphics.setStencilTest('greater', 0)
     love.graphics.setColor(1, 1, 1)
-    for cx, chunkCol in pairs(self.chunkImages) do
-        for cy, img in pairs(chunkCol) do
-            local dx = cx*self.chunkSize - px
-            local dy = cy*self.chunkSize - py
-            if dx + self.chunkSize >= -30 and dx <= 30
-            and dy + self.chunkSize >= -31 and dy < 31 then
-                love.graphics.draw(img, x + 30 + dx, y + 31 + dy)
+    local cs = self.chunkSize
+    for cx=math.floor((px - w/2)/cs), math.floor((px + w/2)/cs) do
+        for cy=math.floor((py - h/2)/cs), math.floor((py + h/2)/cs) do
+            local img = safeIndex(self.chunkImages, cx, cy)
+            if img then
+                local dx = cx*cs - px
+                local dy = cy*cs - py
+                love.graphics.draw(img, x + math.floor(w/2) + dx, y + math.floor(h/2) + dy)
             end
         end
     end
@@ -258,7 +266,8 @@ function world.client:drawMinimap()
     love.graphics.setCanvas(canvases.tempGame)
     love.graphics.clear()
     for _, v in pairs(client.currentState.entities) do
-        if not v.destroyed and v.id ~= playerController.serverId and v.id ~= playerController.player.id then
+        if not v.destroyed and v.id ~= playerController.serverId and v.id ~= playerController.player.id
+        and (v.type == 'player' or v.enemy) then
             if v.type == 'player' then
                 love.graphics.setColor(255/255, 216/255, 0/255)
             else
@@ -268,15 +277,15 @@ function world.client:drawMinimap()
             local ey = math.floor(lume.round(v.y)/15)
             local dx = ex - px
             local dy = ey - py
-            if math.abs(dx) <= 30 and math.abs(dy) <= 31 then
-                love.graphics.rectangle('fill', x + 30 + dx, y + 31 + dy, 1, 1)
+            if math.abs(dx) <= math.floor(w/2) and math.abs(dy) <= math.floor(h/2) then
+                love.graphics.rectangle('fill', x + math.floor(w/2) + dx, y + math.floor(h/2) + dy, 1, 1)
             end
         end
     end
 
     -- local player
     love.graphics.setColor(1, 1, 0)
-    love.graphics.rectangle('fill', x + 30, y + 31, 1, 1)
+    love.graphics.rectangle('fill', x + math.floor(w/2), y + math.floor(h/2), 1, 1)
 
     -- ent/player outline
     love.graphics.setCanvas(_canvas)

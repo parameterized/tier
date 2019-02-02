@@ -58,6 +58,7 @@ end
 
 function slimeBalls.update(dt)
     for k, v in pairs(slimeBalls.container) do
+        v.x, v.y = v.body:getPosition()
         if gameTime - v.spawnTime > v.life then
             slimeBalls.destroy(k)
         end

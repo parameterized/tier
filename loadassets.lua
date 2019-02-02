@@ -48,28 +48,75 @@ gfx = {
         }
     },
     tiles = {
-        tileSheet1 = love.graphics.newImage('gfx/tiles/tilesheet1.png'),
-        platformSheet = love.graphics.newImage('gfx/tiles/platformSheet.png')
+        allTiles = love.graphics.newImage('gfx/tiles/all_tiles.png'),
+        smoothTiles = love.graphics.newImage('gfx/tiles/smooth_tiles.png')
+    },
+    environment = {
+        tree = love.graphics.newImage('gfx/environment/tree.png'),
+        wall = love.graphics.newImage('gfx/environment/wall.png')
     },
     player = {
         walk = {
-            body = love.graphics.newImage('gfx/player/walk/body.png'),
-            sword = love.graphics.newImage('gfx/player/walk/sword.png')
+            body = love.graphics.newImage('gfx/player/walk/body.png')
         },
         swing = {
-            body = love.graphics.newImage('gfx/player/swing/body.png'),
-            sword = love.graphics.newImage('gfx/player/swing/sword.png')
+            body = love.graphics.newImage('gfx/player/swing/body.png')
+        },
+        walkAndSwing = {
+            upperBody = love.graphics.newImage('gfx/player/walk_and_swing/upper_body.png'),
+            lowerBody = love.graphics.newImage('gfx/player/walk_and_swing/lower_body.png')
+        },
+        swords = {
+            sword0 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword0/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword0/swing.png')
+            },
+            sword1 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword1/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword1/swing.png')
+            },
+            sword2 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword2/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword2/swing.png')
+            },
+            sword3 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword3/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword3/swing.png')
+            },
+            sword4 = {
+                walk = love.graphics.newImage('gfx/player/swords/sword4/walk.png'),
+                swing = love.graphics.newImage('gfx/player/swords/sword4/swing.png')
+            }
         }
     },
     enemies = {
         slime1 = love.graphics.newImage('gfx/enemies/slime1.png'),
-        slime2 = love.graphics.newImage('gfx/enemies/slime2.png')
+        slime2 = love.graphics.newImage('gfx/enemies/slime2.png'),
+        sorcerer = love.graphics.newImage('gfx/enemies/sorcerer.png'),
+        spoder = love.graphics.newImage('gfx/enemies/spoder.png'),
+        stingy = love.graphics.newImage('gfx/enemies/stingy.png'),
+        zombie = love.graphics.newImage('gfx/enemies/zombie.png'),
+        ant = love.graphics.newImage('gfx/enemies/ant.png'),
+        newMonster1 = love.graphics.newImage('gfx/enemies/new_monster_1.png'),
+        newMonster2 = love.graphics.newImage('gfx/enemies/new_monster_2.png'),
+        mudskipper = love.graphics.newImage('gfx/enemies/mudskipper.png'),
+        mudskipperEvolved = love.graphics.newImage('gfx/enemies/mudskipper_evolved.png'),
+        godex = {
+            body1 = love.graphics.newImage('gfx/enemies/godex/body1.png'),
+            body2 = love.graphics.newImage('gfx/enemies/godex/body2.png'),
+            aura = love.graphics.newImage('gfx/enemies/godex/aura.png'),
+            flame = love.graphics.newImage('gfx/enemies/godex/godexFlame.png')
+        }
     },
     items = {
         lootBag = love.graphics.newImage('gfx/items/loot.png'),
         lootBag1 = love.graphics.newImage('gfx/items/loot1.png'),
         lootBagFuse = love.graphics.newImage('gfx/items/loot-fuse.png'),
-        sword = love.graphics.newImage('gfx/items/sword.png'),
+        sword0 = love.graphics.newImage('gfx/items/sword0.png'),
+        sword1 = love.graphics.newImage('gfx/items/sword1.png'),
+        sword2 = love.graphics.newImage('gfx/items/sword2.png'),
+        sword3 = love.graphics.newImage('gfx/items/sword3.png'),
+        sword4 = love.graphics.newImage('gfx/items/sword4.png'),
         shield = love.graphics.newImage('gfx/items/shield.png'),
         apple = love.graphics.newImage('gfx/items/apple.png')
     },
@@ -91,16 +138,47 @@ function newAnim(sheet, w, h, pad, num)
     return t
 end
 
+-- for procedural outline - 1px pad in quad (w,h +2) for outline, 1px pad between frames
+
 anims.logo = newAnim(gfx.logoAnim, 54, 41, 1, 8)
 anims.player = {
     walk = {
-        body = newAnim(gfx.player.walk.body, 20, 29, 1, 5),
-        sword = newAnim(gfx.player.walk.sword, 20, 29, 1, 5)
+        body = newAnim(gfx.player.walk.body, 20, 29, 1, 5)
     },
     swing = {
-        body = newAnim(gfx.player.swing.body, 43, 34, 1, 5),
-        sword = newAnim(gfx.player.swing.sword, 43, 34, 1, 5)
+        body = newAnim(gfx.player.swing.body, 43, 34, 1, 5)
+    },
+    walkAndSwing = {
+        upperBody = newAnim(gfx.player.walkAndSwing.upperBody, 43, 34, 1, 5),
+        lowerBody = newAnim(gfx.player.walkAndSwing.lowerBody, 43, 34, 1, 5)
+    },
+    swords = {
+        sword0 = {
+            walk = newAnim(gfx.player.swords.sword0.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword0.swing, 43, 34, 1, 5)
+        },
+        sword1 = {
+            walk = newAnim(gfx.player.swords.sword1.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword1.swing, 43, 34, 1, 5)
+        },
+        sword2 = {
+            walk = newAnim(gfx.player.swords.sword2.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword2.swing, 43, 34, 1, 5)
+        },
+        sword3 = {
+            walk = newAnim(gfx.player.swords.sword3.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword3.swing, 43, 34, 1, 5)
+        },
+        sword4 = {
+            walk = newAnim(gfx.player.swords.sword4.walk, 20, 29, 1, 5),
+            swing = newAnim(gfx.player.swords.sword4.swing, 43, 34, 1, 5)
+        }
     }
+}
+anims.enemies = {
+    mudskipper = newAnim(gfx.enemies.mudskipper, 31, 16, 1, 2),
+    mudskipperEvolved = newAnim(gfx.enemies.mudskipperEvolved, 55, 31, 1, 2),
+    godexFlame = newAnim(gfx.enemies.godex.flame, 8, 19, 1, 5)
 }
 
 tileSheets = {}
@@ -114,13 +192,18 @@ function newTileSheet(sheet, w, h, pad, num, names)
         local x = (i-1)*(w + pad*2) + 1
         local y = 1
         local sw, sh = sheet:getDimensions()
-        t.quads[names[i] or i] = love.graphics.newQuad(x, y, w, h, sw, sh)
+        local quad = love.graphics.newQuad(x, y, w, h, sw, sh)
+        t.quads[i] = quad
+        if names[i] then
+            t.quads[names[i]] = quad
+        end
     end
     return t
 end
 
-tileSheets.ts1 = newTileSheet(gfx.tiles.tileSheet1, 15, 15, 1, 4, {'grass', 'sand', 'rock', 'water'})
-tileSheets.platform = newTileSheet(gfx.tiles.platformSheet, 15, 15, 1, 2)
+tileSheets.allTiles = newTileSheet(gfx.tiles.allTiles, 15, 15, 1, 9,
+    {'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'})
+tileSheets.smoothTiles = newTileSheet(gfx.tiles.smoothTiles, 15, 15, 1, 16)
 
 fonts = {
     f10 = love.graphics.newFont(10),
@@ -130,7 +213,7 @@ fonts = {
 
     c13 = love.graphics.newImageFont('gfx/fonts/small_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
     c17 = love.graphics.newImageFont('gfx/fonts/big_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
-    stats = love.graphics.newImageFont('gfx/fonts/stat_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+    stats = love.graphics.newImageFont('gfx/fonts/stat_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/')
 }
 -- todo: test
 -- love.graphics.newFont([filename, ] size, "mono")
@@ -153,23 +236,23 @@ love.graphics.clear(0, 0, 0)
 love.graphics.setCanvas()
 -- black tile
 table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
-for _, v in ipairs{'grass', 'sand', 'rock', 'water'} do
+for i=1, 9 do
     love.graphics.setCanvas(tileCanv)
     love.graphics.clear()
-    love.graphics.draw(tileSheets.ts1.sheet, tileSheets.ts1.quads[v], 0, 0)
+    love.graphics.draw(tileSheets.allTiles.sheet, tileSheets.allTiles.quads[i], 0, 0)
     love.graphics.setCanvas()
     table.insert(tileImgs, love.graphics.newImage(tileCanv:newImageData()))
 end
 shaders.mapRender:send('tiles', unpack(tileImgs))
 
-local platformFrames = {}
-for _, quad in pairs(tileSheets.platform.quads) do
+smoothTileImgs = {}
+for i=1, 16 do
     love.graphics.setCanvas(tileCanv)
     love.graphics.clear()
-    love.graphics.draw(tileSheets.platform.sheet, quad, 0, 0)
+    love.graphics.draw(tileSheets.smoothTiles.sheet, tileSheets.smoothTiles.quads[i], 0, 0)
     love.graphics.setCanvas()
-    table.insert(platformFrames, love.graphics.newImage(tileCanv:newImageData()))
+    table.insert(smoothTileImgs, love.graphics.newImage(tileCanv:newImageData()))
 end
-shaders.mapRender:send('platformFrames', unpack(platformFrames))
+shaders.mapRender:send('smoothTiles', unpack(smoothTileImgs))
 
 shaders.lifemana:send('lifemanaEmpty', gfx.hud.lifemanaEmpty)

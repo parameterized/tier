@@ -27,8 +27,16 @@ require 'playerController'
 require 'items'
 require 'lootBag'
 require 'portals'
+require 'damageText'
 require 'realm'
 require 'chat'
+
+-- todo: better sword check
+isSword = {['sword0']=true, ['sword1']=true, ['sword2']=true, ['sword3']=true, ['sword4']=true}
+tile2id = {}
+for i, v in ipairs{'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'} do
+    tile2id[v] = i
+end
 
 function love.load()
     camera = Camera{ssx=gsx, ssy=gsy}
@@ -103,6 +111,8 @@ function love.update(dt)
     manual_gc(1e-3, 64)
     prof.pop('update gc')
     prof.pop('update')
+
+    shaders.mapRender:send('drawDebug', drawDebug)
 end
 
 function love.mousepressed(x, y, btn, isTouch, presses)
@@ -190,6 +200,7 @@ function love.draw()
 
         prof.push('draw scene')
         scene.reset()
+        -- world and loot bags
         clientRealm:draw()
 
         entities.client.draw()
@@ -198,25 +209,16 @@ function love.draw()
         portals.client.draw()
 
         scene.draw()
+        damageText.draw()
         prof.pop('draw scene')
 
         prof.push('draw debug')
         if drawDebug then
             if server.running then
-                local serverBodies = serverRealm.physics.world:getBodies()
-                love.graphics.setColor(1, 0, 0, 0.5)
-                for _, v in pairs(serverBodies) do
-                    local x, y = v:getPosition()
-                    love.graphics.circle('fill', x, y, 8)
-                end
+                serverRealm.physics:draw()
             end
             if client.connected then
-                local clientBodies = clientRealm.physics.world:getBodies()
-                love.graphics.setColor(0, 1, 0, 0.5)
-                for _, v in pairs(clientBodies) do
-                    local x, y = v:getPosition()
-                    love.graphics.circle('fill', x, y, 6)
-                end
+                clientRealm.physics:draw()
             end
         end
         prof.pop('draw debug')
@@ -227,6 +229,11 @@ function love.draw()
         hud.draw()
         chat.draw()
         prof.pop('draw hud/chat')
+
+        if love.keyboard.isScancodeDown('g') then
+            clientRealm.world:drawMap('full')
+        end
+
         prof.pop('draw playing')
     end
 
