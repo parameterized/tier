@@ -87,6 +87,7 @@ function client.connect(ip, port)
         healPlayer = function(self, data)
             local p = playerController.player
             p.hp = math.min(p.hp + data.hp, p.hpMax)
+            sound.play('heal')
         end,
         damageText = function(self, data)
             damageText.add(data)

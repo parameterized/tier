@@ -11,6 +11,7 @@ Camera = require 'lib.camera'
 
 require 'utils'
 require 'loadassets'
+require 'sound'
 require 'server'
 require 'client'
 require 'cursor'
@@ -36,6 +37,54 @@ isSword = {['sword0']=true, ['sword1']=true, ['sword2']=true, ['sword3']=true, [
 tile2id = {}
 for i, v in ipairs{'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'} do
     tile2id[v] = i
+end
+
+-- todo: enemy inheritance
+function serverEnemyDamage(self, d, clientId)
+    self.hp = self.hp - d
+    if self.hp <= 0 and not self.destroyed then
+        sound.play('scream')
+        server.addXP(clientId, math.random(3, 5))
+        local bagItems = {}
+        local choices = {
+            none=50, shield=15, apple=20,
+            sword0=3, sword1=3, sword2=3, sword3=3, sword4=3
+        }
+        for _=1, 3 do
+            choice = lume.weightedchoice(choices)
+            if choice ~= 'none' then
+                local itemData = {imageId=choice}
+                if choice == 'sword0' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+10))
+                elseif choice =='sword1' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+12))
+                elseif choice =='sword2' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+14))
+                elseif choice =='sword3' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+16))
+                elseif choice =='sword4' then
+                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+18))
+                end
+                local itemId = items.server.newItem(itemData)
+                table.insert(bagItems, itemId)
+            end
+        end
+        local numItems = #bagItems
+        if numItems ~= 0 then
+            local type = lume.randomchoice{'lootBag', 'lootBag1', 'lootBagFuse'}
+            lootBag.server:new{
+                realm = serverRealm,
+                x = self.x, y = self.y,
+                items = bagItems,
+                type = type,
+                life = 30
+            }:spawn()
+        end
+        --if math.random() < 0.5 then portals.server.spawn{x=self.x, y=self.y, life=10} end
+        self:destroy()
+    else
+        sound.play('spider')
+    end
 end
 
 function love.load()

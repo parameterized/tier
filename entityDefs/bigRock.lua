@@ -1,12 +1,12 @@
 
 local base = require 'entityDefs._base'
-local tree = {
+local bigRock = {
     server = base.server:new(),
     client = base.client:new()
 }
 
 for _, sc in ipairs{'server', 'client'} do
-    tree[sc].newDefaults = function()
+    bigRock[sc].newDefaults = function()
         local t = {
             id = lume.uuid(),
             x = 0, y = 0
@@ -21,13 +21,13 @@ for _, sc in ipairs{'server', 'client'} do
         return t
     end
 
-    tree[sc].spawn = function(self)
+    bigRock[sc].spawn = function(self)
         self.body = love.physics.newBody(self.realm.physics.world, self.x, self.y, 'static')
         self.polys = {
-            {0.75, 0.125, 0.475, 0.2, 0.25, 0.125, 0.475, 0.05}
+            {0.075, 0.05, 0.875, 0.05, 0.975, 0.15, 0.025, 0.15}
         }
         -- transform - todo: load from file already transformed
-        local img = gfx.environment.tree
+        local img = gfx.environment.bigRock
         for _, v in pairs(self.polys) do
             for i2, v2 in pairs(v) do
                 if (i2-1) % 2 == 0 then -- x
@@ -50,7 +50,7 @@ for _, sc in ipairs{'server', 'client'} do
         return self.base.spawn(self)
     end
 
-    tree[sc].destroy = function(self)
+    bigRock[sc].destroy = function(self)
         if self.fixtures then
             for _, v in pairs(self.fixtures) do
                 if not v:isDestroyed() then v:destroy() end
@@ -62,13 +62,13 @@ for _, sc in ipairs{'server', 'client'} do
         self.base.destroy(self)
     end
 
-    tree[sc].type = 'tree'
+    bigRock[sc].type = 'bigRock'
 end
 
 
 
-function tree.client:draw()
-    local img = gfx.environment.tree
+function bigRock.client:draw()
+    local img = gfx.environment.bigRock
     local vx, vy = self.body:getPosition()
     vx, vy = lume.round(vx), lume.round(vy)
     local p = playerController.player
@@ -88,4 +88,4 @@ end
 
 
 
-return tree
+return bigRock

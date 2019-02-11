@@ -267,11 +267,14 @@ end
 function player.client:damage(dmg)
     self.hp = self.hp - dmg
     if self.hp <= 0 then
+        sound.play('death')
         self.hp = self.hpMax
         local a = math.random()*2*math.pi
         local dist = math.random()*128
         self.x, self.y = math.cos(a)*dist, -math.sin(a)*dist
         self.body:setPosition(self.x, self.y)
+    else
+        sound.play('hurt')
     end
 end
 

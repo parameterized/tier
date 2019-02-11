@@ -52,8 +52,11 @@ gfx = {
         smoothTiles = love.graphics.newImage('gfx/tiles/smooth_tiles.png')
     },
     environment = {
+        wall = love.graphics.newImage('gfx/environment/wall.png'),
         tree = love.graphics.newImage('gfx/environment/tree.png'),
-        wall = love.graphics.newImage('gfx/environment/wall.png')
+        bush = love.graphics.newImage('gfx/environment/bush.png'),
+        bigRock = love.graphics.newImage('gfx/environment/bigRock.png'),
+        smallRock = love.graphics.newImage('gfx/environment/smallRock.png')
     },
     player = {
         walk = {
@@ -256,3 +259,13 @@ end
 shaders.mapRender:send('smoothTiles', unpack(smoothTileImgs))
 
 shaders.lifemana:send('lifemanaEmpty', gfx.hud.lifemanaEmpty)
+
+sfx = {
+    select = love.audio.newSource('sfx/Select.wav', 'static'),
+    select2 = love.audio.newSource('sfx/Select2.wav', 'static'),
+    death = love.audio.newSource('sfx/Death.wav', 'static'),
+    heal = love.audio.newSource('sfx/Heal2.wav', 'static'),
+    hurt = love.audio.newSource('sfx/Hurt.wav', 'static'),
+    scream = love.audio.newSource('sfx/Scream.wav', 'static'),
+    spider = love.audio.newSource('sfx/Spider.wav', 'static')
+}
