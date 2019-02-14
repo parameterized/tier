@@ -56,7 +56,8 @@ gfx = {
         tree = love.graphics.newImage('gfx/environment/tree.png'),
         bush = love.graphics.newImage('gfx/environment/bush.png'),
         bigRock = love.graphics.newImage('gfx/environment/bigRock.png'),
-        smallRock = love.graphics.newImage('gfx/environment/smallRock.png')
+        smallRock = love.graphics.newImage('gfx/environment/smallRock.png'),
+        questBlock = love.graphics.newImage('gfx/environment/questBlock.png')
     },
     player = {
         walk = {

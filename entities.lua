@@ -17,7 +17,7 @@ entities.chunkSize = 8
 local entityDefs = {}
 for _, v in ipairs{'player', 'slime', 'sorcerer', 'spoder', 'stingy', 'zombie', 'ant',
 'newMonster1', 'newMonster2', 'mudskipper', 'mudskipperEvolved', 'godex',
-'tree', 'wall', 'bush', 'bigRock', 'smallRock'} do
+'tree', 'wall', 'bush', 'bigRock', 'smallRock', 'questBlock'} do
     table.insert(entityDefs, require('entityDefs.' .. v))
 end
 
@@ -63,12 +63,14 @@ function entities.server.update(dt)
                             end
                         end
                     end
-                    -- spawn walls
+                    -- spawn walls, quest block
                     for i=1, entities.chunkSize do
                         for j=1, entities.chunkSize do
                             local x = (cx*entities.chunkSize + (i-1))*15
                             local y = (cy*entities.chunkSize + (j-1))*15
-                            if serverRealm.world:getTile(x, y) == tile2id['wall'] then
+                            if x == 0 and y == 0 then
+                                entities.server.defs.questBlock:new{x=x, y=y}:spawn()
+                            elseif serverRealm.world:getTile(x, y) == tile2id['wall'] then
                                 entities.server.defs.wall:new{x=x, y=y}:spawn()
                             end
                         end
