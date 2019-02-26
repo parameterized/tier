@@ -365,7 +365,7 @@ function menu.load()
     end}
     menu.masterVolumeSlider = menu.addSlider{state='options_audio', text='Master Volume',
     w=120, value=menu.defaults.masterVolume, action=function(v)
-        sound.play('select')
+        --sound.play('select')
         love.audio.setVolume(v)
     end}
     menu.addButton{state='options_audio', text='Back', y=exitY, action=function()

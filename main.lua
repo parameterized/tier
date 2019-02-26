@@ -9,6 +9,7 @@ json = require 'lib.json'
 bitser = require 'lib.bitser'
 Camera = require 'lib.camera'
 
+require 'tempCommon'
 require 'utils'
 require 'loadassets'
 require 'sound'
@@ -18,6 +19,7 @@ require 'cursor'
 require 'text'
 require 'menu'
 require 'hud'
+require 'chat'
 require 'physics'
 require 'scene'
 require 'world'
@@ -30,62 +32,7 @@ require 'lootBag'
 require 'portals'
 require 'damageText'
 require 'realm'
-require 'chat'
-
--- todo: better sword check
-isSword = {['sword0']=true, ['sword1']=true, ['sword2']=true, ['sword3']=true, ['sword4']=true}
-tile2id = {}
-for i, v in ipairs{'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'} do
-    tile2id[v] = i
-end
-
--- todo: enemy inheritance
-function serverEnemyDamage(self, d, clientId)
-    self.hp = self.hp - d
-    if self.hp <= 0 and not self.destroyed then
-        sound.play('scream')
-        server.addXP(clientId, math.random(3, 5))
-        local bagItems = {}
-        local choices = {
-            none=50, shield=15, apple=20,
-            sword0=3, sword1=3, sword2=3, sword3=3, sword4=3
-        }
-        for _=1, 3 do
-            choice = lume.weightedchoice(choices)
-            if choice ~= 'none' then
-                local itemData = {imageId=choice}
-                if choice == 'sword0' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+10))
-                elseif choice =='sword1' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+12))
-                elseif choice =='sword2' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+14))
-                elseif choice =='sword3' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+16))
-                elseif choice =='sword4' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+18))
-                end
-                local itemId = items.server.newItem(itemData)
-                table.insert(bagItems, itemId)
-            end
-        end
-        local numItems = #bagItems
-        if numItems ~= 0 then
-            local type = lume.randomchoice{'lootBag', 'lootBag1', 'lootBagFuse'}
-            lootBag.server:new{
-                realm = serverRealm,
-                x = self.x, y = self.y,
-                items = bagItems,
-                type = type,
-                life = 30
-            }:spawn()
-        end
-        --if math.random() < 0.5 then portals.server.spawn{x=self.x, y=self.y, life=10} end
-        self:destroy()
-    else
-        sound.play('spider')
-    end
-end
+require 'quests'
 
 function love.load()
     camera = Camera{ssx=gsx, ssy=gsy}
@@ -107,34 +54,6 @@ function love.resize(w, h)
 	ssx = w
 	ssy = h
 	gameScale = math.min(ssx/gsx, ssy/gsy)
-end
-
--- window to game canvas
-function window2game(x, y)
-	x = x - (ssx-gameScale*gsx)/2
-	x = x / gameScale
-	y = y - (ssy-gameScale*gsy)/2
-	y = y / gameScale
-	return x, y
-end
-
-function setGameCanvas2x()
-    local _shader = love.graphics.getShader()
-    local _color = {love.graphics.getColor()}
-    love.graphics.setShader()
-    love.graphics.setCanvas(canvases.game2x)
-    love.graphics.setBlendMode('alpha', 'premultiplied')
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.push()
-    love.graphics.origin()
-    love.graphics.draw(canvases.game, 0, 0, 0, 2, 2)
-    love.graphics.pop()
-    love.graphics.setCanvas(canvases.game)
-    love.graphics.setBlendMode('alpha')
-    love.graphics.clear()
-    love.graphics.setCanvas(canvases.game2x)
-    love.graphics.setShader(_shader)
-    love.graphics.setColor(_color)
 end
 
 function love.update(dt)
@@ -169,6 +88,7 @@ function love.mousepressed(x, y, btn, isTouch, presses)
     if gameState == 'playing' then
         hud.mousepressed(x, y, btn, isTouch, presses)
         playerController.mousepressed(x, y, btn, isTouch, presses)
+        items.client.mousepressed(x, y, btn, isTouch, presses)
     end
 end
 
@@ -177,12 +97,16 @@ function love.mousereleased(x, y, btn, isTouch, presses)
     if gameState == 'playing' then
         hud.mousereleased(x, y, btn, isTouch, presses)
         playerController.mousereleased(x, y, btn, isTouch, presses)
+        items.client.mousereleased(x, y, btn, isTouch, presses)
     end
 
-    uiMouseDown = false
-    local heldItem = playerController.heldItem
-    heldItem.bagId = nil
-    heldItem.slotId = nil
+    if not love.mouse.isDown(1) and not love.mouse.isDown(2) then
+        uiMouseDown = false
+        local heldItem = playerController.heldItem
+        heldItem.itemId = nil
+        heldItem.bagId = nil
+        heldItem.slotId = nil
+    end
 end
 
 function love.textinput(t)
@@ -213,6 +137,27 @@ function love.keypressed(k, scancode, isrepeat)
             hud.keypressed(k, scancode, isrepeat)
             playerController.keypressed(k, scancode, isrepeat)
             portals.client.keypressed(k, scancode, isrepeat)
+            if k == 'q' then
+                local p = playerController.player
+                for _, costItemId in ipairs(quests.current.cost) do
+                    local costItem = items.client.getItem(costItemId)
+                    if costItem then
+                        -- duplicates costItem
+                        for invSlotId, _ in ipairs(hud.inventorySlots) do
+                            local slotType = slot2type[invSlotId]
+                            if p.inventory.items[invSlotId] == nil
+                            and (slotType == nil or slotType == costItem.type) then
+                                client.setInventorySlot{
+                                    slotId = invSlotId,
+                                    itemId = costItemId
+                                }
+                                p.inventory.items[invSlotId] = costItemId
+                                break
+                            end
+                        end
+                    end
+                end
+            end
         end
         if not isrepeat then
             if k == 'escape' and not chatPanelOpen then

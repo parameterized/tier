@@ -168,7 +168,7 @@ function hud.update(dt)
 end
 
 function hud.mousepressed(x, y, btn, isTouch, presses)
-    mx, my = window2game(x, y)
+    local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
 
     -- deactivate chat if click outside field
@@ -183,120 +183,11 @@ function hud.mousepressed(x, y, btn, isTouch, presses)
     if chat.active and not chatFieldPressed then
         chat.active = false
     end
-
-    -- inventory management
-    local bag = playerController.player.inventory
-    local panel = hud.inventoryPanel
-    local pmx = mx - lume.round(panel.x)
-    local pmy = my - lume.round(panel.y)
-    for slotId, slot in ipairs(hud.inventorySlots) do
-        if pmx >= slot.x and pmx <= slot.x + slot.w
-        and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
-            uiMouseDown = true
-            if bag.items[slotId] then
-                -- use item
-                if btn == 1 and (love.keyboard.isScancodeDown('lshift') or presses > 1) then
-                    client.useItem{
-                        bagId = bag.id,
-                        slotId = slotId
-                    }
-                end
-                -- move items
-                if btn == 1 then
-                    local heldItem = playerController.heldItem
-                    heldItem.bagId = bag.id
-                    heldItem.slotId = slotId
-                    heldItem.offset.x = slot.x - pmx
-                    heldItem.offset.y = slot.y - pmy
-                elseif btn == 2 then
-                    local closestBag = playerController.closestBag
-                    if closestBag.id and closestBag.open then
-                        local bagTo = client.currentState.lootBags[closestBag.id]
-                        for bagSlotId, _ in ipairs(lootBagSlots) do
-                            if bagTo.items[bagSlotId] == nil then
-                                client.moveItem{
-                                    from = {
-                                        bagId = bag.id,
-                                        slotId = slotId
-                                    },
-                                    to = {
-                                        bagId = bagTo.id,
-                                        slotId = bagSlotId
-                                    }
-                                }
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
 end
 
 function hud.mousereleased(x, y, btn, isTouch, presses)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
-    local heldItem = playerController.heldItem
-    if heldItem.bagId then
-        local bagFrom = client.currentState.lootBags[heldItem.bagId]
-        if heldItem.bagId == 'inventory' then
-            bagFrom = playerController.player.inventory
-        end
-        local bagTo = playerController.player.inventory
-        local panel = hud.inventoryPanel
-        local pmx = mx - lume.round(panel.x)
-        local pmy = my - lume.round(panel.y)
-        local itemHeld = true
-        if pmx > 0 and pmx < panel.img:getWidth()
-        and pmy > 0 and pmy < panel.img:getHeight() then
-            for slotId, slot in ipairs(hud.inventorySlots) do
-                if pmx >= slot.x and pmx <= slot.x + slot.w
-                and pmy >= slot.y and pmy <= slot.y + slot.h then
-                    client.moveItem{
-                        from = {
-                            bagId = bagFrom.id,
-                            slotId = heldItem.slotId
-                        },
-                        to = {
-                            bagId = bagTo.id,
-                            slotId = slotId
-                        }
-                    }
-                    itemHeld = false
-                    -- move clientside before response (will be corrected/affirmed)
-                    local temp = bagTo.items[slotId]
-                    bagTo.items[slotId] = bagFrom.items[heldItem.slotId]
-                    bagFrom.items[heldItem.slotId] = temp
-                    break
-                end
-            end
-            -- move to open slot if dropped in inventory panel
-            if itemHeld then
-                for invSlotId, _ in ipairs(hud.inventorySlots) do
-                    if bagTo.items[invSlotId] == nil then
-                        client.moveItem{
-                            from = {
-                                bagId = bagFrom.id,
-                                slotId = heldItem.slotId
-                            },
-                            to = {
-                                bagId = bagTo.id,
-                                slotId = invSlotId
-                            }
-                        }
-                        itemHeld = false
-                        break
-                    end
-                end
-            end
-        elseif bagFrom.id == 'inventory' then
-            client.dropItem{
-                slotId = heldItem.slotId
-            }
-            itemHeld = false
-        end
-    end
 end
 
 function hud.keypressed(k, scancode, isrepeat)
@@ -468,18 +359,12 @@ function hud.draw()
 
     -- held item
     local heldItem = playerController.heldItem
-    if heldItem.bagId then
-        local bag = client.currentState.lootBags[heldItem.bagId]
-        if heldItem.bagId == 'inventory' then
-            bag = p.inventory
-        end
-        if bag then
-            local item = items.client.getItem(bag.items[heldItem.slotId])
-            if item then
-                cursor.cursor = cursor.hand
-                love.graphics.setColor(1, 1, 1)
-                love.graphics.draw(gfx.items[item.imageId], mx + heldItem.offset.x, my + heldItem.offset.y)
-            end
+    if heldItem.itemId then
+        local item = items.client.getItem(heldItem.itemId)
+        if item then
+            cursor.cursor = cursor.hand
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.draw(gfx.items[item.imageId], mx + heldItem.offset.x, my + heldItem.offset.y)
         end
     end
 end

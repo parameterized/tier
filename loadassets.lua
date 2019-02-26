@@ -28,7 +28,8 @@ gfx = {
             right = love.graphics.newImage('gfx/ui/buttons/right.png')
         },
         bag = love.graphics.newImage('gfx/ui/bagui.png'),
-        itemInfo = love.graphics.newImage('gfx/ui/item_info.png')
+        itemInfo = love.graphics.newImage('gfx/ui/item_info.png'),
+        quest = love.graphics.newImage('gfx/ui/questui.png')
     },
     hud = {
         frame = love.graphics.newImage('gfx/ui/hud/frame.png'),
@@ -69,6 +70,25 @@ gfx = {
         walkAndSwing = {
             upperBody = love.graphics.newImage('gfx/player/walk_and_swing/upper_body.png'),
             lowerBody = love.graphics.newImage('gfx/player/walk_and_swing/lower_body.png')
+        },
+        armor = {
+            armor0 = {
+                chest = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor0/chest/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor0/chest/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor0/chest/walk_and_swing.png')
+                },
+                helmet = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor0/helmet/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor0/helmet/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor0/helmet/walk_and_swing.png')
+                },
+                pants = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor0/pants/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor0/pants/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor0/pants/walk_and_swing.png')
+                }
+            }
         },
         swords = {
             sword0 = {
@@ -122,7 +142,10 @@ gfx = {
         sword3 = love.graphics.newImage('gfx/items/sword3.png'),
         sword4 = love.graphics.newImage('gfx/items/sword4.png'),
         shield = love.graphics.newImage('gfx/items/shield.png'),
-        apple = love.graphics.newImage('gfx/items/apple.png')
+        apple = love.graphics.newImage('gfx/items/apple.png'),
+        helmet = love.graphics.newImage('gfx/items/helmet.png'),
+        chest = love.graphics.newImage('gfx/items/chest.png'),
+        pants = love.graphics.newImage('gfx/items/pants.png')
     },
     slimeBall = love.graphics.newImage('gfx/slime_ball.png')
 }
@@ -155,6 +178,25 @@ anims.player = {
     walkAndSwing = {
         upperBody = newAnim(gfx.player.walkAndSwing.upperBody, 43, 34, 1, 5),
         lowerBody = newAnim(gfx.player.walkAndSwing.lowerBody, 43, 34, 1, 5)
+    },
+    armor = {
+        armor0 = {
+            chest = {
+                walk = newAnim(gfx.player.armor.armor0.chest.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor0.chest.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor0.chest.walkAndSwing, 43, 34, 1, 5)
+            },
+            helmet = {
+                walk = newAnim(gfx.player.armor.armor0.helmet.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor0.helmet.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor0.helmet.walkAndSwing, 43, 34, 1, 5)
+            },
+            pants = {
+                walk = newAnim(gfx.player.armor.armor0.pants.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor0.pants.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor0.pants.walkAndSwing, 43, 34, 1, 5)
+            }
+        }
     },
     swords = {
         sword0 = {

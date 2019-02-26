@@ -3,7 +3,8 @@ playerController = {
     interactRange = 30,
     closestBag = {id=nil, dist=nil, open=false},
     hoveredItem = nil,
-    heldItem = {bagId=nil, slotId=nil, offset={x=0, y=0}}
+    heldItem = {itemId=nil, bagId=nil, slotId=nil, offset={x=0, y=0}},
+    closestQuestBlock = {id=nil, dist=nil, open=false}
 }
 
 function playerController.load()
@@ -42,7 +43,7 @@ function playerController.update(dt)
     closestBag.id = nil
     closestBag.dist = nil
     for _, bag in pairs(client.currentState.lootBags) do
-        local dist = math.sqrt((bag.x - px)^2 + (bag.y - py)^2)
+        local dist = lume.distance(bag.x, bag.y, px, py)
         if not closestBag.dist or dist < closestBag.dist then
             closestBag.id = bag.id
             closestBag.dist = dist
@@ -53,60 +54,37 @@ function playerController.update(dt)
         closestBag.open = false
     end
     local heldItem = playerController.heldItem
-    if heldItem.bagId ~= 'inventory' and (not closestBag.id
+    if heldItem.bagId ~= 'inventory' and heldItem.bagId ~= 'quest' and (not closestBag.id
     or closestBag.id ~= heldItem.bagId or closestBag.dist > playerController.interactRange) then
+        heldItem.itemId = nil
         heldItem.bagId = nil
         heldItem.slotId = nil
     end
     playerController.hoveredItem = nil
+
+    -- update closest questBlock
+    local cqb = playerController.closestQuestBlock
+    local lastId = cqb.id
+    cqb.id = nil
+    cqb.dist = nil
+    for _, v in pairs(client.currentState.entities) do
+        if not v.destroyed and v.type == 'questBlock' then
+            local dist = math.max(math.abs(v.x + 8 - px), math.abs(v.y + 8 - py))
+            if not cqb.dist or dist < cqb.dist then
+                cqb.id = v.id
+                cqb.dist = dist
+            end
+        end
+    end
+    if not cqb.id or cqb.id ~= lastId or cqb.dist > playerController.interactRange then
+        cqb.open = false
+    end
 end
 
 function playerController.mousepressed(x, y, btn)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
     local wmx, wmy = camera:screen2world(mx, my)
-
-    -- lootBags
-    local closestBag = playerController.closestBag
-    if closestBag.id and closestBag.open then
-        local bag = client.currentState.lootBags[closestBag.id]
-        local img = gfx.ui.bag
-        local bmx = wmx - (lume.round(bag.x) - lume.round(img:getWidth()/2))
-        local bmy = wmy - (lume.round(bag.y) - img:getHeight() - 20)
-        for slotId, slot in ipairs(lootBagSlots) do
-            if bmx >= slot.x and bmx <= slot.x + slot.w
-            and bmy >= slot.y and bmy <= slot.y + slot.h then
-                uiMouseDown = true
-                if bag.items[slotId] then
-                    if btn == 1 then
-                        local heldItem = playerController.heldItem
-                        heldItem.bagId = bag.id
-                        heldItem.slotId = slotId
-                        heldItem.offset.x = slot.x - bmx
-                        heldItem.offset.y = slot.y - bmy
-                    elseif btn == 2 then
-                        local p = playerController.player
-                        for invSlotId, _ in ipairs(hud.inventorySlots) do
-                            if p.inventory.items[invSlotId] == nil then
-                                client.moveItem{
-                                    from = {
-                                        bagId = bag.id,
-                                        slotId = slotId
-                                    },
-                                    to = {
-                                        bagId = p.inventory.id,
-                                        slotId = invSlotId
-                                    }
-                                }
-                                break
-                            end
-                        end
-                    end
-                end
-                break
-            end
-        end
-    end
 
     -- player attack
     if not uiMouseDown then
@@ -118,40 +96,6 @@ function playerController.mousereleased(x, y, btn)
     local mx, my = window2game(x, y)
     mx, my = lume.round(mx), lume.round(my)
     local wmx, wmy = camera:screen2world(mx, my)
-
-    -- lootBags
-    local closestBag = playerController.closestBag
-    local heldItem = playerController.heldItem
-    if closestBag.id and closestBag.open and heldItem.bagId then
-        local bagFrom = client.currentState.lootBags[heldItem.bagId]
-        if heldItem.bagId == 'inventory' then
-            bagFrom = playerController.player.inventory
-        end
-        local bagTo = client.currentState.lootBags[closestBag.id]
-        local img = gfx.ui.bag
-        local bmx = wmx - (lume.round(bagTo.x) - lume.round(img:getWidth()/2))
-        local bmy = wmy - (lume.round(bagTo.y) - img:getHeight() - 20)
-        for slotId, slot in ipairs(lootBagSlots) do
-            if bmx >= slot.x and bmx <= slot.x + slot.w
-            and bmy >= slot.y and bmy <= slot.y + slot.h then
-                client.moveItem{
-                    from = {
-                        bagId = bagFrom.id,
-                        slotId = heldItem.slotId
-                    },
-                    to = {
-                        bagId = bagTo.id,
-                        slotId = slotId
-                    }
-                }
-                -- move clientside before response (will be corrected/affirmed)
-                local temp = bagTo.items[slotId]
-                bagTo.items[slotId] = bagFrom.items[heldItem.slotId]
-                bagFrom.items[heldItem.slotId] = temp
-                break
-            end
-        end
-    end
 end
 
 function playerController.keypressed(k, scancode, isrepeat)
@@ -159,6 +103,10 @@ function playerController.keypressed(k, scancode, isrepeat)
         local closestBag = playerController.closestBag
         if closestBag.id and closestBag.dist < playerController.interactRange then
             closestBag.open = not closestBag.open
+        end
+        local cqb = playerController.closestQuestBlock
+        if cqb.id and cqb.dist < playerController.interactRange then
+            cqb.open = not cqb.open
         end
     end
 end
