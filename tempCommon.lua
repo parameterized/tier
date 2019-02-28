@@ -25,7 +25,9 @@ function serverEnemyDamage(self, d, clientId)
         server.addXP(clientId, math.random(3, 5))
         local bagItems = {}
         local choices = {
-            none=20, apple=10, helmet=16, chest=16, pants=16, shield=5,
+            none=20, apple=10, shield=5,
+            armor0Helmet=8, armor0Chest=8, armor0Pants=8,
+            armor1Helmet=8, armor1Chest=8, armor1Pants=8,
             sword0=4, sword1=4, sword2=3, sword3=3, sword4=3
         }
         for _=1, 3 do

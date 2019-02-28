@@ -342,18 +342,33 @@ function player.client:draw()
                 lume.round(px), lume.round(py), 23)
             -- pants
             if pantsItem then
-                self:drawFrame(anims.player.armor.armor0.pants.swing, swingFrameIdx,
-                lume.round(px), lume.round(py), 23)
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- chest
             if chestItem then
-                self:drawFrame(anims.player.armor.armor0.chest.swing, swingFrameIdx,
-                    lume.round(px), lume.round(py), 23)
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- helmet
             if helmetItem then
-                self:drawFrame(anims.player.armor.armor0.helmet.swing, swingFrameIdx,
-                    lume.round(px), lume.round(py), 23)
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- sword
             if attackItem and isSword[attackItem.imageId] then
@@ -371,8 +386,13 @@ function player.client:draw()
                 lume.round(px), lume.round(py), 23)
             -- pants
             if pantsItem then
-                self:drawFrame(anims.player.armor.armor0.pants.walkAndSwing, walkFrameIdx,
-                    lume.round(px), lume.round(py), 23)
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.walkAndSwing, walkFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.walkAndSwing, walkFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- upper body
             love.graphics.push()
@@ -382,13 +402,23 @@ function player.client:draw()
                 lume.round(px), lume.round(py), 23)
             -- chest
             if chestItem then
-                self:drawFrame(anims.player.armor.armor0.chest.walkAndSwing, swingFrameIdx,
-                    lume.round(px), lume.round(py), 23)
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- helmet
             if helmetItem then
-                self:drawFrame(anims.player.armor.armor0.helmet.walkAndSwing, swingFrameIdx,
-                    lume.round(px), lume.round(py), 23)
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             love.graphics.pop()
             -- sword
@@ -405,18 +435,33 @@ function player.client:draw()
                 lume.round(px), lume.round(py), 23)
             -- pants
             if pantsItem then
-                self:drawFrame(anims.player.armor.armor0.pants.swing, 1,
-                lume.round(px), lume.round(py), 23)
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- chest
             if chestItem then
-                self:drawFrame(anims.player.armor.armor0.chest.swing, 1,
-                    lume.round(px), lume.round(py), 23)
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- helmet
             if helmetItem then
-                self:drawFrame(anims.player.armor.armor0.helmet.swing, 1,
-                    lume.round(px), lume.round(py), 23)
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                end
             end
             -- sword
             if attackItem and isSword[attackItem.imageId] then
@@ -430,18 +475,33 @@ function player.client:draw()
                 lume.round(px), lume.round(py), 8)
             -- pants
             if pantsItem then
-                self:drawFrame(anims.player.armor.armor0.pants.walk, walkFrameIdx,
-                lume.round(px), lume.round(py), 8)
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                end
             end
             -- chest
             if chestItem then
-                self:drawFrame(anims.player.armor.armor0.chest.walk, walkFrameIdx,
-                    lume.round(px), lume.round(py), 8)
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                end
             end
             -- helmet
             if helmetItem then
-                self:drawFrame(anims.player.armor.armor0.helmet.walk, walkFrameIdx,
-                    lume.round(px), lume.round(py), 8)
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                end
             end
             -- sword
             if attackItem and isSword[attackItem.imageId] then

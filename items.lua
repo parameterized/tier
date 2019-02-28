@@ -11,11 +11,21 @@ items = {
 
 function items.server.newItem(data)
     data.id = lume.uuid()
+
+    data.type = data.imageId
     if isSword[data.imageId] then
         data.type = 'sword'
-    else
-        data.type = data.imageId
     end
+    if data.imageId == 'armor0Helmet' or data.imageId == 'armor1Helmet' then
+        data.type = 'helmet'
+    end
+    if data.imageId == 'armor0Chest' or data.imageId == 'armor1Chest' then
+        data.type = 'chest'
+    end
+    if data.imageId == 'armor0Pants' or data.imageId == 'armor1Pants' then
+        data.type = 'pants'
+    end
+
     items.server.container[data.id] = data
     return data.id
 end
