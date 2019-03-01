@@ -124,7 +124,6 @@ function client.connect(ip, port)
         slimeBalls.reset()
         items.client.reset()
         damageText.reset()
-        quests.refresh()
         collectgarbage()
     end
     client.currentState = client.newState()
@@ -133,6 +132,7 @@ function client.connect(ip, port)
 
     clientRealm:load()
     playerController.load()
+    quests.refresh()
 end
 
 function client.newState()

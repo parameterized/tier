@@ -169,6 +169,9 @@ function server.start(port, singleplayer)
         setInventorySlot = function(self, data, clientId)
             local p = server.currentState.players[clientId]
             p.inventory.items[data.slotId] = data.itemId
+        end,
+        newItem = function(self, data, clientId)
+            items.server.newItem(data)
         end
     }
     for k, v in pairs(bitserRPCs) do

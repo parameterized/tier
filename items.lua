@@ -10,22 +10,27 @@ items = {
 }
 
 function items.server.newItem(data)
-    data.id = lume.uuid()
-
-    data.type = data.imageId
-    if isSword[data.imageId] then
-        data.type = 'sword'
+    if not data.id then
+        data.id = lume.uuid()
     end
-    if data.imageId == 'armor0Helmet' or data.imageId == 'armor1Helmet' then
-        data.type = 'helmet'
+    if not data.imageId then
+        data.imageId = 'apple'
     end
-    if data.imageId == 'armor0Chest' or data.imageId == 'armor1Chest' then
-        data.type = 'chest'
+    if not data.type then
+        data.type = data.imageId
+        if isSword[data.imageId] then
+            data.type = 'sword'
+        end
+        if data.imageId == 'armor0Helmet' or data.imageId == 'armor1Helmet' then
+            data.type = 'helmet'
+        end
+        if data.imageId == 'armor0Chest' or data.imageId == 'armor1Chest' then
+            data.type = 'chest'
+        end
+        if data.imageId == 'armor0Pants' or data.imageId == 'armor1Pants' then
+            data.type = 'pants'
+        end
     end
-    if data.imageId == 'armor0Pants' or data.imageId == 'armor1Pants' then
-        data.type = 'pants'
-    end
-
     items.server.container[data.id] = data
     return data.id
 end
@@ -94,6 +99,7 @@ function items.client.mousepressed(x, y, btn, isTouch, presses)
                     heldItem.offset.y = slot.y - pmy
                 elseif btn == 2 then
                     local closestBag = playerController.closestBag
+                    local cqb = playerController.closestQuestBlock
                     if closestBag.id and closestBag.open then
                         local bagTo = client.currentState.lootBags[closestBag.id]
                         for bagSlotId, _ in ipairs(lootBagSlots) do
@@ -109,6 +115,25 @@ function items.client.mousepressed(x, y, btn, isTouch, presses)
                                     }
                                 }
                                 break
+                            end
+                        end
+                    elseif cqb.id and cqb.open then
+                        local qb = client.currentState.entities[cqb.id]
+                        if qb then
+                            local item = items.client.getItem(bag.items[slotId])
+                            if not item then break end
+                            for questSlotId, questItemId in pairs(quests.current.cost) do
+                                local questItem = items.client.getItem(questItemId)
+                                if not questItem then break end
+                                if quests.current.heldItems[questSlotId] == nil
+                                and item.imageId == questItem.imageId then
+                                    quests.current.heldItems[questSlotId] = bag.items[slotId]
+                                    client.setInventorySlot{
+                                        slotId = slotId,
+                                        itemId = nil
+                                    }
+                                    break
+                                end
                             end
                         end
                     end
@@ -165,113 +190,60 @@ function items.client.mousepressed(x, y, btn, isTouch, presses)
     end
 
     -- quest
-    if btn == 1 then
-        local cqb = playerController.closestQuestBlock
-        if cqb.id and cqb.open then
-            local qb = client.currentState.entities[cqb.id]
-            if qb then
-                local img = gfx.ui.quest
-                local bmx = wmx - (lume.round(qb.x + 8) - lume.round(img:getWidth()/2))
-                local bmy = wmy - (lume.round(qb.y + 8) - img:getHeight() - 20)
-                for slotId, slot in ipairs(questBlockSlots) do
-                    local exists = true
-                    local item = items.client.getItem(quests.current.heldItems[slotId])
-                    if not item then
-                        exists = false
-                        if slotId <= 4 then
-                            item = items.client.getItem(quests.current.cost[slotId])
-                        else
-                            item = items.client.getItem(quests.current.reward[slotId - 4])
+    local cqb = playerController.closestQuestBlock
+    if cqb.id and cqb.open then
+        local qb = client.currentState.entities[cqb.id]
+        if qb then
+            local img = gfx.ui.quest
+            local bmx = wmx - (lume.round(qb.x + 8) - lume.round(img:getWidth()/2))
+            local bmy = wmy - (lume.round(qb.y + 8) - img:getHeight() - 20)
+            for slotId, slot in ipairs(questBlockSlots) do
+                local exists = true
+                local item = items.client.getItem(quests.current.heldItems[slotId])
+                if not item then
+                    exists = false
+                    if slotId <= 4 then
+                        item = items.client.getItem(quests.current.cost[slotId])
+                    else
+                        item = items.client.getItem(quests.current.reward[slotId - 4])
+                    end
+                end
+                if slotId >= 5 then
+                    local allExist = true
+                    for i, item in ipairs(quests.current.cost) do
+                        if not quests.current.heldItems[i] then
+                            allExist = false
+                            break
                         end
                     end
-                    if slotId >= 5 then
-                        local allExist = true
-                        for i, item in ipairs(quests.current.cost) do
-                            if not quests.current.heldItems[i] then
-                                allExist = false
-                                break
-                            end
-                        end
-                        exists = allExist
-                    end
-                    if bmx >= slot.x and bmx <= slot.x + slot.w
-                    and bmy >= slot.y and bmy <= slot.y + slot.h then
-                        uiMouseDown = true
-                        if item and exists then
+                    exists = allExist
+                end
+                if bmx >= slot.x and bmx <= slot.x + slot.w
+                and bmy >= slot.y and bmy <= slot.y + slot.h then
+                    uiMouseDown = true
+                    if item and exists then
+                        if btn == 1 then
                             local heldItem = playerController.heldItem
                             heldItem.itemId = item.id
                             heldItem.bagId = 'quest'
                             heldItem.slotId = slotId
                             heldItem.offset.x = slot.x - bmx
                             heldItem.offset.y = slot.y - bmy
-                        end
-                    end
-                end
-            end
-        end
-    elseif btn == 2 then
-        local cqb = playerController.closestQuestBlock
-        if cqb.id and cqb.open then
-            local qb = client.currentState.entities[cqb.id]
-            if qb then
-                -- give items
-                local bag = playerController.player.inventory
-                local panel = hud.inventoryPanel
-                local pmx = mx - lume.round(panel.x)
-                local pmy = my - lume.round(panel.y)
-                for slotId, slot in ipairs(hud.inventorySlots) do
-                    if pmx >= slot.x and pmx <= slot.x + slot.w
-                    and pmy >= slot.y and pmy <= slot.y + slot.h and panel.open then
-                        uiMouseDown = true
-                        if bag.items[slotId] then
-                            local item = items.client.getItem(bag.items[slotId])
-                            if not item then break end
-                            for questSlotId, questItemId in pairs(quests.current.cost) do
-                                local questItem = items.client.getItem(questItemId)
-                                if not questItem then break end
-                                if quests.current.heldItems[questSlotId] == nil
-                                and item.imageId == questItem.imageId then
-                                    quests.current.heldItems[questSlotId] = bag.items[slotId]
-                                    client.setInventorySlot{
-                                        slotId = slotId,
-                                        itemId = nil
-                                    }
-                                    break
-                                end
-                            end
-                        end
-                    end
-                end
-
-                -- take reward
-                local allExist = true
-                for i, item in ipairs(quests.current.cost) do
-                    if not quests.current.heldItems[i] then
-                        allExist = false
-                        break
-                    end
-                end
-                if allExist then
-                    local img = gfx.ui.quest
-                    local bmx = wmx - (lume.round(qb.x + 8) - lume.round(img:getWidth()/2))
-                    local bmy = wmy - (lume.round(qb.y + 8) - img:getHeight() - 20)
-                    local slot = questBlockSlots[5]
-                    if bmx >= slot.x and bmx <= slot.x + slot.w
-                    and bmy >= slot.y and bmy <= slot.y + slot.h then
-                        uiMouseDown = true
-                        local itemId = quests.current.reward[1]
-                        local item = items.client.getItem(itemId)
-                        if item then
+                        elseif btn == 2 then
+                            local bag = playerController.player.inventory
                             for invSlotId, _ in ipairs(hud.inventorySlots) do
                                 local slotType = slot2type[invSlotId]
-                                -- bag = player inventory
                                 if bag.items[invSlotId] == nil
                                 and (slotType == nil or slotType == item.type) then
                                     client.setInventorySlot{
                                         slotId = invSlotId,
-                                        itemId = itemId
+                                        itemId = item.id
                                     }
-                                    quests.refresh()
+                                    if slot.type == 'cost' then
+                                        quests.current.heldItems[slotId] = nil
+                                    elseif slot.type == 'reward' then
+                                        quests.refresh()
+                                    end
                                     break
                                 end
                             end
