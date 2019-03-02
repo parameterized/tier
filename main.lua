@@ -137,22 +137,24 @@ function love.keypressed(k, scancode, isrepeat)
             hud.keypressed(k, scancode, isrepeat)
             playerController.keypressed(k, scancode, isrepeat)
             portals.client.keypressed(k, scancode, isrepeat)
-            if k == 'q' then
-                local p = playerController.player
-                for _, costItemId in ipairs(quests.current.cost) do
-                    local costItem = items.client.getItem(costItemId)
-                    if costItem then
-                        -- duplicates costItem
-                        for invSlotId, _ in ipairs(hud.inventorySlots) do
-                            local slotType = slot2type[invSlotId]
-                            if p.inventory.items[invSlotId] == nil
-                            and (slotType == nil or slotType == costItem.type) then
-                                client.setInventorySlot{
-                                    slotId = invSlotId,
-                                    itemId = costItemId
-                                }
-                                p.inventory.items[invSlotId] = costItemId
-                                break
+            if false then
+                if k == 'q' then
+                    local p = playerController.player
+                    for _, costItemId in ipairs(quests.current.cost) do
+                        local costItem = items.client.getItem(costItemId)
+                        if costItem then
+                            -- duplicates costItem
+                            for invSlotId, _ in ipairs(hud.inventorySlots) do
+                                local slotType = slot2type[invSlotId]
+                                if p.inventory.items[invSlotId] == nil
+                                and (slotType == nil or slotType == costItem.type) then
+                                    client.setInventorySlot{
+                                        slotId = invSlotId,
+                                        itemId = costItemId
+                                    }
+                                    p.inventory.items[invSlotId] = costItemId
+                                    break
+                                end
                             end
                         end
                     end

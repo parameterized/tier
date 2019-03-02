@@ -3,7 +3,7 @@
 
 Open World RPG
 
-*Current version: 0.2.0*<br>
+*Current version: 0.3.0*<br>
 *Uses Love2D version 11.2.0*
 
 ![](https://i.imgur.com/rF9idF9.png)
