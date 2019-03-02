@@ -21,6 +21,14 @@ gfx = {
     logo = love.graphics.newImage('gfx/logo.png'),
     logoAnim = love.graphics.newImage('gfx/logo_anim.png'),
     ui = {
+        icons = {
+            vit = love.graphics.newImage('gfx/ui/icons/vit.png'),
+            atk = love.graphics.newImage('gfx/ui/icons/atk.png'),
+            spd = love.graphics.newImage('gfx/ui/icons/spd.png'),
+            wis = love.graphics.newImage('gfx/ui/icons/wis.png'),
+            def = love.graphics.newImage('gfx/ui/icons/def.png'),
+            reg = love.graphics.newImage('gfx/ui/icons/reg.png')
+        },
         buttons = {
             up = love.graphics.newImage('gfx/ui/buttons/up.png'),
             down = love.graphics.newImage('gfx/ui/buttons/down.png'),
@@ -28,7 +36,11 @@ gfx = {
             right = love.graphics.newImage('gfx/ui/buttons/right.png')
         },
         bag = love.graphics.newImage('gfx/ui/bagui.png'),
-        itemInfo = love.graphics.newImage('gfx/ui/item_info.png'),
+        itemInfo = {
+            base = love.graphics.newImage('gfx/ui/item_info/base.png'),
+            tierColor = love.graphics.newImage('gfx/ui/item_info/tier_color.png'),
+            specialIcon = love.graphics.newImage('gfx/ui/item_info/special_icon.png')
+        },
         quest = love.graphics.newImage('gfx/ui/questui.png')
     },
     hud = {
@@ -296,7 +308,7 @@ fonts = {
 
     c13 = love.graphics.newImageFont('gfx/fonts/small_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
     c17 = love.graphics.newImageFont('gfx/fonts/big_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
-    stats = love.graphics.newImageFont('gfx/fonts/stat_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/')
+    stats = love.graphics.newImageFont('gfx/fonts/stat_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\'"%')
 }
 -- todo: test
 -- love.graphics.newFont([filename, ] size, "mono")

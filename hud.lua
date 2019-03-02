@@ -338,9 +338,22 @@ function hud.draw()
         love.graphics.setShader(_shader)
         love.graphics.push()
         love.graphics.translate(x, y)
-        love.graphics.draw(gfx.ui.itemInfo, 0, 0)
-        font = fonts.stats
+        love.graphics.draw(gfx.ui.itemInfo.base, 0, 0)
+        love.graphics.setColor(200/255, 88/255, 9/255)
+        love.graphics.draw(gfx.ui.itemInfo.tierColor, 5, 6)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.draw(gfx.items[item.imageId], 7, 8)
+        love.graphics.draw(gfx.ui.icons.atk, 14, 29)
+        love.graphics.draw(gfx.ui.icons.wis, 57, 29)
+        love.graphics.draw(gfx.ui.icons.spd, 14, 51)
+        love.graphics.draw(gfx.ui.icons.reg, 57, 51)
+        local font = fonts.stats
         love.graphics.setFont(font)
+        love.graphics.setColor(193/255, 193/255, 193/255)
+        text.print('"TOOLTIP WOULD GO\nHERE"', 26, 9)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.draw(gfx.ui.itemInfo.specialIcon, 9, 74)
+        text.print('25% CHANCE TO BURN', 16, 74)
         local playerWeapon = items.client.getItem(p.inventory.items[2])
         if isSword[item.imageId] and item.atk then
             if playerWeapon and playerWeapon.atk then
@@ -354,6 +367,10 @@ function hud.draw()
         else
             text.print('100', 35, 34)
         end
+        love.graphics.setColor(1, 1, 1)
+        text.print('100', 78, 34)
+        text.print('100', 35, 56)
+        text.print('100', 78, 56)
         love.graphics.pop()
     end
 

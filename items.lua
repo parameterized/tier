@@ -9,6 +9,15 @@ items = {
     }
 }
 
+local imageId2Type = {
+    armor0Helmet = 'helmet', armor1Helmet = 'helmet',
+    armor0Chest = 'chest', armor1Chest = 'chest',
+    armor0Pants = 'pants', armor1Pants = 'pants'
+}
+for _, v in ipairs{'sword0', 'sword1', 'sword2', 'sword3', 'sword4'} do
+    imageId2Type[v] = 'sword'
+end
+
 function items.server.newItem(data)
     if not data.id then
         data.id = lume.uuid()
@@ -17,19 +26,8 @@ function items.server.newItem(data)
         data.imageId = 'apple'
     end
     if not data.type then
-        data.type = data.imageId
-        if isSword[data.imageId] then
-            data.type = 'sword'
-        end
-        if data.imageId == 'armor0Helmet' or data.imageId == 'armor1Helmet' then
-            data.type = 'helmet'
-        end
-        if data.imageId == 'armor0Chest' or data.imageId == 'armor1Chest' then
-            data.type = 'chest'
-        end
-        if data.imageId == 'armor0Pants' or data.imageId == 'armor1Pants' then
-            data.type = 'pants'
-        end
+        data.type = imageId2Type[data.imageId]
+        data.type = data.type or data.imageId
     end
     items.server.container[data.id] = data
     return data.id
