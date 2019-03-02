@@ -87,6 +87,7 @@ function client.connect(ip, port)
         healPlayer = function(self, data)
             local p = playerController.player
             p.hp = math.min(p.hp + data.hp, p.hpMax)
+            sound.play('heal')
         end,
         damageText = function(self, data)
             damageText.add(data)
@@ -131,6 +132,7 @@ function client.connect(ip, port)
 
     clientRealm:load()
     playerController.load()
+    quests.refresh()
 end
 
 function client.newState()
@@ -236,7 +238,8 @@ function client.sendMessage(msg)
     end
 end
 
-for _, v in ipairs{'spawnProjectile', 'moveItem', 'dropItem', 'useItem', 'usePortal'} do
+for _, v in ipairs{'spawnProjectile', 'moveItem', 'dropItem', 'useItem', 'usePortal',
+'setInventorySlot', 'newItem'} do
     client[v] = function(data)
         client.nutClient:sendRPC(v, bitser.dumps(data))
     end

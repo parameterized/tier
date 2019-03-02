@@ -21,6 +21,14 @@ gfx = {
     logo = love.graphics.newImage('gfx/logo.png'),
     logoAnim = love.graphics.newImage('gfx/logo_anim.png'),
     ui = {
+        icons = {
+            vit = love.graphics.newImage('gfx/ui/icons/vit.png'),
+            atk = love.graphics.newImage('gfx/ui/icons/atk.png'),
+            spd = love.graphics.newImage('gfx/ui/icons/spd.png'),
+            wis = love.graphics.newImage('gfx/ui/icons/wis.png'),
+            def = love.graphics.newImage('gfx/ui/icons/def.png'),
+            reg = love.graphics.newImage('gfx/ui/icons/reg.png')
+        },
         buttons = {
             up = love.graphics.newImage('gfx/ui/buttons/up.png'),
             down = love.graphics.newImage('gfx/ui/buttons/down.png'),
@@ -28,7 +36,12 @@ gfx = {
             right = love.graphics.newImage('gfx/ui/buttons/right.png')
         },
         bag = love.graphics.newImage('gfx/ui/bagui.png'),
-        itemInfo = love.graphics.newImage('gfx/ui/item_info.png')
+        itemInfo = {
+            base = love.graphics.newImage('gfx/ui/item_info/base.png'),
+            tierColor = love.graphics.newImage('gfx/ui/item_info/tier_color.png'),
+            specialIcon = love.graphics.newImage('gfx/ui/item_info/special_icon.png')
+        },
+        quest = love.graphics.newImage('gfx/ui/questui.png')
     },
     hud = {
         frame = love.graphics.newImage('gfx/ui/hud/frame.png'),
@@ -52,8 +65,12 @@ gfx = {
         smoothTiles = love.graphics.newImage('gfx/tiles/smooth_tiles.png')
     },
     environment = {
+        wall = love.graphics.newImage('gfx/environment/wall.png'),
         tree = love.graphics.newImage('gfx/environment/tree.png'),
-        wall = love.graphics.newImage('gfx/environment/wall.png')
+        bush = love.graphics.newImage('gfx/environment/bush.png'),
+        bigRock = love.graphics.newImage('gfx/environment/bigRock.png'),
+        smallRock = love.graphics.newImage('gfx/environment/smallRock.png'),
+        questBlock = love.graphics.newImage('gfx/environment/questBlock.png')
     },
     player = {
         walk = {
@@ -65,6 +82,42 @@ gfx = {
         walkAndSwing = {
             upperBody = love.graphics.newImage('gfx/player/walk_and_swing/upper_body.png'),
             lowerBody = love.graphics.newImage('gfx/player/walk_and_swing/lower_body.png')
+        },
+        armor = {
+            armor0 = {
+                chest = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor0/chest/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor0/chest/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor0/chest/walk_and_swing.png')
+                },
+                helmet = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor0/helmet/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor0/helmet/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor0/helmet/walk_and_swing.png')
+                },
+                pants = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor0/pants/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor0/pants/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor0/pants/walk_and_swing.png')
+                }
+            },
+            armor1 = {
+                chest = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor1/chest/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor1/chest/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor1/chest/walk_and_swing.png')
+                },
+                helmet = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor1/helmet/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor1/helmet/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor1/helmet/walk_and_swing.png')
+                },
+                pants = {
+                    walk = love.graphics.newImage('gfx/player/armor/armor1/pants/walk.png'),
+                    swing = love.graphics.newImage('gfx/player/armor/armor1/pants/swing.png'),
+                    walkAndSwing = love.graphics.newImage('gfx/player/armor/armor1/pants/walk_and_swing.png')
+                }
+            }
         },
         swords = {
             sword0 = {
@@ -118,7 +171,13 @@ gfx = {
         sword3 = love.graphics.newImage('gfx/items/sword3.png'),
         sword4 = love.graphics.newImage('gfx/items/sword4.png'),
         shield = love.graphics.newImage('gfx/items/shield.png'),
-        apple = love.graphics.newImage('gfx/items/apple.png')
+        apple = love.graphics.newImage('gfx/items/apple.png'),
+        armor0Helmet = love.graphics.newImage('gfx/items/armor0_helmet.png'),
+        armor0Chest = love.graphics.newImage('gfx/items/armor0_chest.png'),
+        armor0Pants = love.graphics.newImage('gfx/items/armor0_pants.png'),
+        armor1Helmet = love.graphics.newImage('gfx/items/armor1_helmet.png'),
+        armor1Chest = love.graphics.newImage('gfx/items/armor1_chest.png'),
+        armor1Pants = love.graphics.newImage('gfx/items/armor1_pants.png')
     },
     slimeBall = love.graphics.newImage('gfx/slime_ball.png')
 }
@@ -151,6 +210,42 @@ anims.player = {
     walkAndSwing = {
         upperBody = newAnim(gfx.player.walkAndSwing.upperBody, 43, 34, 1, 5),
         lowerBody = newAnim(gfx.player.walkAndSwing.lowerBody, 43, 34, 1, 5)
+    },
+    armor = {
+        armor0 = {
+            chest = {
+                walk = newAnim(gfx.player.armor.armor0.chest.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor0.chest.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor0.chest.walkAndSwing, 43, 34, 1, 5)
+            },
+            helmet = {
+                walk = newAnim(gfx.player.armor.armor0.helmet.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor0.helmet.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor0.helmet.walkAndSwing, 43, 34, 1, 5)
+            },
+            pants = {
+                walk = newAnim(gfx.player.armor.armor0.pants.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor0.pants.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor0.pants.walkAndSwing, 43, 34, 1, 5)
+            }
+        },
+        armor1 = {
+            chest = {
+                walk = newAnim(gfx.player.armor.armor1.chest.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor1.chest.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor1.chest.walkAndSwing, 43, 34, 1, 5)
+            },
+            helmet = {
+                walk = newAnim(gfx.player.armor.armor1.helmet.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor1.helmet.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor1.helmet.walkAndSwing, 43, 34, 1, 5)
+            },
+            pants = {
+                walk = newAnim(gfx.player.armor.armor1.pants.walk, 20, 31, 1, 5),
+                swing = newAnim(gfx.player.armor.armor1.pants.swing, 43, 34, 1, 5),
+                walkAndSwing = newAnim(gfx.player.armor.armor1.pants.walkAndSwing, 43, 34, 1, 5)
+            }
+        }
     },
     swords = {
         sword0 = {
@@ -213,7 +308,7 @@ fonts = {
 
     c13 = love.graphics.newImageFont('gfx/fonts/small_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
     c17 = love.graphics.newImageFont('gfx/fonts/big_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`\'*#=[]"|~@$^_{}<>'),
-    stats = love.graphics.newImageFont('gfx/fonts/stat_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/')
+    stats = love.graphics.newImageFont('gfx/fonts/stat_font.png', ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\'"%')
 }
 -- todo: test
 -- love.graphics.newFont([filename, ] size, "mono")
@@ -256,3 +351,13 @@ end
 shaders.mapRender:send('smoothTiles', unpack(smoothTileImgs))
 
 shaders.lifemana:send('lifemanaEmpty', gfx.hud.lifemanaEmpty)
+
+sfx = {
+    select = love.audio.newSource('sfx/Select.wav', 'static'),
+    select2 = love.audio.newSource('sfx/Select2.wav', 'static'),
+    death = love.audio.newSource('sfx/Death.wav', 'static'),
+    heal = love.audio.newSource('sfx/Heal2.wav', 'static'),
+    hurt = love.audio.newSource('sfx/Hurt.wav', 'static'),
+    scream = love.audio.newSource('sfx/Scream.wav', 'static'),
+    spider = love.audio.newSource('sfx/Spider.wav', 'static')
+}

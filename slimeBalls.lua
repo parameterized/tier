@@ -9,13 +9,14 @@ slimeBalls.slimeType2color = {
     slime1 = {0/255, 101/255, 234/255, 174/255},
     slime2 = {0/255, 234/255, 101/255, 174/255}
 }
+slimeBalls.speed = 1.5e2
 
 function slimeBalls.spawn(t)
     local defaults = {
         slimeType = 'slime1',
         x = 0, y = 0,
         angle = 0,
-        speed = 1.5e2,
+        speed = slimeBalls.speed,
         life = 1,
         pierce = 0,
         damage = 5
@@ -59,6 +60,18 @@ end
 function slimeBalls.update(dt)
     for k, v in pairs(slimeBalls.container) do
         v.x, v.y = v.body:getPosition()
+        local d = math.sqrt(v.x^2 + v.y^2)
+        if d < 8*15 then
+            local f = math.min((8*15 - d)*50, slimeBalls.speed)
+            local fx = v.x/d*f
+            local fy = v.y/d*f
+            v.body:applyForce(fx, fy)
+            local lvx, lvy = v.body:getLinearVelocity()
+            local dv = math.sqrt(lvx^2 + lvy^2)
+            if dv > slimeBalls.speed then
+                v.body:setLinearVelocity(lvx/dv*slimeBalls.speed, lvy/dv*slimeBalls.speed)
+            end
+        end
         if gameTime - v.spawnTime > v.life then
             slimeBalls.destroy(k)
         end

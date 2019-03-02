@@ -15,8 +15,9 @@ entities.activeRadius = 500
 entities.chunkSize = 8
 
 local entityDefs = {}
-for _, v in ipairs{'player', 'slime', 'tree', 'wall', 'sorcerer', 'spoder', 'stingy', 'zombie', 'ant',
-'newMonster1', 'newMonster2', 'mudskipper', 'mudskipperEvolved', 'godex'} do
+for _, v in ipairs{'player', 'slime', 'sorcerer', 'spoder', 'stingy', 'zombie', 'ant',
+'newMonster1', 'newMonster2', 'mudskipper', 'mudskipperEvolved', 'godex',
+'tree', 'wall', 'bush', 'bigRock', 'smallRock', 'questBlock'} do
     table.insert(entityDefs, require('entityDefs.' .. v))
 end
 
@@ -62,22 +63,38 @@ function entities.server.update(dt)
                             end
                         end
                     end
-                    -- spawn trees
-                    if math.random() < 0.5 then
-                        local x = (cx*entities.chunkSize + math.random()*entities.chunkSize)*15
-                        local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
-                        -- if on grass
-                        if serverRealm.world:getTile(x, y) == tile2id['grass'] then
-                            entities.server.defs.tree:new{x=x, y=y}:spawn()
-                        end
-                    end
-                    -- spawn walls
+                    -- spawn walls, quest block
                     for i=1, entities.chunkSize do
                         for j=1, entities.chunkSize do
                             local x = (cx*entities.chunkSize + (i-1))*15
                             local y = (cy*entities.chunkSize + (j-1))*15
-                            if serverRealm.world:getTile(x, y) == tile2id['wall'] then
+                            if x == 0 and y == 0 then
+                                entities.server.defs.questBlock:new{x=x, y=y}:spawn()
+                            elseif serverRealm.world:getTile(x, y) == tile2id['wall'] then
                                 entities.server.defs.wall:new{x=x, y=y}:spawn()
+                            end
+                        end
+                    end
+                    -- spawn trees, bush, rocks
+                    for _=1, 3 do
+                        if math.random() < 0.5 then
+                            local x = (cx*entities.chunkSize + math.random()*entities.chunkSize)*15
+                            local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
+                            -- if on grass and grass surrounding
+                            local onGrass = true
+                            for i=-1, 1 do
+                                for j=-1, 1 do
+                                    if serverRealm.world:getTile(x + i*15, y + j*15) ~= tile2id['grass'] then
+                                        onGrass = false
+                                        break
+                                    end
+                                end
+                                if not onGrass then break end
+                            end
+                            if onGrass then
+                                local choices = {tree=40, bush=30, bigRock=10, smallRock=20}
+                                choice = lume.weightedchoice(choices)
+                                entities.server.defs[choice]:new{x=x, y=y}:spawn()
                             end
                         end
                     end

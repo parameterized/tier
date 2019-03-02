@@ -9,14 +9,17 @@ json = require 'lib.json'
 bitser = require 'lib.bitser'
 Camera = require 'lib.camera'
 
+require 'tempCommon'
 require 'utils'
 require 'loadassets'
+require 'sound'
 require 'server'
 require 'client'
 require 'cursor'
 require 'text'
 require 'menu'
 require 'hud'
+require 'chat'
 require 'physics'
 require 'scene'
 require 'world'
@@ -29,14 +32,7 @@ require 'lootBag'
 require 'portals'
 require 'damageText'
 require 'realm'
-require 'chat'
-
--- todo: better sword check
-isSword = {['sword0']=true, ['sword1']=true, ['sword2']=true, ['sword3']=true, ['sword4']=true}
-tile2id = {}
-for i, v in ipairs{'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'} do
-    tile2id[v] = i
-end
+require 'quests'
 
 function love.load()
     camera = Camera{ssx=gsx, ssy=gsy}
@@ -58,34 +54,6 @@ function love.resize(w, h)
 	ssx = w
 	ssy = h
 	gameScale = math.min(ssx/gsx, ssy/gsy)
-end
-
--- window to game canvas
-function window2game(x, y)
-	x = x - (ssx-gameScale*gsx)/2
-	x = x / gameScale
-	y = y - (ssy-gameScale*gsy)/2
-	y = y / gameScale
-	return x, y
-end
-
-function setGameCanvas2x()
-    local _shader = love.graphics.getShader()
-    local _color = {love.graphics.getColor()}
-    love.graphics.setShader()
-    love.graphics.setCanvas(canvases.game2x)
-    love.graphics.setBlendMode('alpha', 'premultiplied')
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.push()
-    love.graphics.origin()
-    love.graphics.draw(canvases.game, 0, 0, 0, 2, 2)
-    love.graphics.pop()
-    love.graphics.setCanvas(canvases.game)
-    love.graphics.setBlendMode('alpha')
-    love.graphics.clear()
-    love.graphics.setCanvas(canvases.game2x)
-    love.graphics.setShader(_shader)
-    love.graphics.setColor(_color)
 end
 
 function love.update(dt)
@@ -120,6 +88,7 @@ function love.mousepressed(x, y, btn, isTouch, presses)
     if gameState == 'playing' then
         hud.mousepressed(x, y, btn, isTouch, presses)
         playerController.mousepressed(x, y, btn, isTouch, presses)
+        items.client.mousepressed(x, y, btn, isTouch, presses)
     end
 end
 
@@ -128,12 +97,16 @@ function love.mousereleased(x, y, btn, isTouch, presses)
     if gameState == 'playing' then
         hud.mousereleased(x, y, btn, isTouch, presses)
         playerController.mousereleased(x, y, btn, isTouch, presses)
+        items.client.mousereleased(x, y, btn, isTouch, presses)
     end
 
-    uiMouseDown = false
-    local heldItem = playerController.heldItem
-    heldItem.bagId = nil
-    heldItem.slotId = nil
+    if not love.mouse.isDown(1) and not love.mouse.isDown(2) then
+        uiMouseDown = false
+        local heldItem = playerController.heldItem
+        heldItem.itemId = nil
+        heldItem.bagId = nil
+        heldItem.slotId = nil
+    end
 end
 
 function love.textinput(t)
@@ -164,6 +137,29 @@ function love.keypressed(k, scancode, isrepeat)
             hud.keypressed(k, scancode, isrepeat)
             playerController.keypressed(k, scancode, isrepeat)
             portals.client.keypressed(k, scancode, isrepeat)
+            if false then
+                if k == 'q' then
+                    local p = playerController.player
+                    for _, costItemId in ipairs(quests.current.cost) do
+                        local costItem = items.client.getItem(costItemId)
+                        if costItem then
+                            -- duplicates costItem
+                            for invSlotId, _ in ipairs(hud.inventorySlots) do
+                                local slotType = slot2type[invSlotId]
+                                if p.inventory.items[invSlotId] == nil
+                                and (slotType == nil or slotType == costItem.type) then
+                                    client.setInventorySlot{
+                                        slotId = invSlotId,
+                                        itemId = costItemId
+                                    }
+                                    p.inventory.items[invSlotId] = costItemId
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
         end
         if not isrepeat then
             if k == 'escape' and not chatPanelOpen then

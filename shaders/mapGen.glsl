@@ -139,14 +139,5 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
         choice = 8;
     }
 
-	// test
-	if (p == vec2(0.0) || p == vec2(1.0, 0.0) || p == vec2(0.0, 1.0) || p == vec2(1.0, 2.0)) {
-		choice = 5;
-	}
-	if (p == vec2(0.0)+vec2(18.0, 0.0) || p == vec2(1.0, 0.0)+vec2(18.0, 0.0) || p == vec2(0.0, 1.0)+vec2(18.0, 0.0) || p == vec2(1.0, 2.0)+vec2(18.0, 0.0)) {
-		choice = 5;
-	}
-
-
     return vec4(choice/255.0, 0.0, 0.0, 1.0);
 }

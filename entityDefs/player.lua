@@ -251,27 +251,31 @@ function player.client:swing()
     local attackItem = items.client.getItem(self.inventory.items[2])
     if attackItem and attackItem.atk then
         playerDamage = attackItem.atk + self.stats.atk.total
-    end
-    if self.isLocalPlayer then
-        client.spawnProjectile{
-            x = px, y = py - 14,
-            angle = a,
-            speed = 2e2,
-            life = 3,
-            pierce = 2,
-            damage = playerDamage
-        }
+        if self.isLocalPlayer then
+            client.spawnProjectile{
+                x = px, y = py - 14,
+                angle = a,
+                speed = 2e2,
+                life = 3,
+                pierce = 2,
+                damage = playerDamage,
+                color = sword2color[attackItem.imageId]
+            }
+        end
     end
 end
 
 function player.client:damage(dmg)
     self.hp = self.hp - dmg
     if self.hp <= 0 then
+        sound.play('death')
         self.hp = self.hpMax
         local a = math.random()*2*math.pi
         local dist = math.random()*128
         self.x, self.y = math.cos(a)*dist, -math.sin(a)*dist
         self.body:setPosition(self.x, self.y)
+    else
+        sound.play('hurt')
     end
 end
 
@@ -279,6 +283,12 @@ function player.client:mousepressed(x, y, btn)
     if not self.automaticSwing and not self.swinging then
         self:swing()
     end
+end
+
+function player.client:drawFrame(anim, frame, x, y, ox)
+    local quad = anim.quads[frame]
+    local _, _, w, h = quad:getViewport()
+    love.graphics.draw(anim.sheet, quad, x, y, 0, self.direction, 1, ox, h)
 end
 
 function player.client:draw()
@@ -319,24 +329,51 @@ function player.client:draw()
 
     love.graphics.setColor(1, 1, 1)
     local attackItem = items.client.getItem(self.inventory.items[2])
+    local helmetItem = items.client.getItem(self.inventory.items[1])
+    local chestItem = items.client.getItem(self.inventory.items[3])
+    local pantsItem = items.client.getItem(self.inventory.items[6])
     if self.swinging then
         local swingFrameIdx = math.floor(self.swingTimer*12) + 1
         swingFrameIdx = lume.clamp(swingFrameIdx, 1, 5)
         if vd < 10 then
             -- swinging and standing still
-            local quad = anims.player.swing.body.quads[swingFrameIdx]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.swing.body.sheet, quad,
-                lume.round(px), lume.round(py),
-                0, self.direction, 1,
-                23, h)
+            -- body
+            self:drawFrame(anims.player.swing.body, swingFrameIdx,
+                lume.round(px), lume.round(py), 23)
+            -- pants
+            if pantsItem then
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
+            -- chest
+            if chestItem then
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
+            -- helmet
+            if helmetItem then
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.swing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
+            -- sword
             if attackItem and isSword[attackItem.imageId] then
-                local quad = anims.player.swords[attackItem.imageId].swing.quads[swingFrameIdx]
-                local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.swords[attackItem.imageId].swing.sheet, quad,
-                    lume.round(px), lume.round(py),
-                    0, self.direction, 1,
-                    23, h)
+                self:drawFrame(anims.player.swords[attackItem.imageId].swing, swingFrameIdx,
+                    lume.round(px), lume.round(py), 23)
             end
         else
             -- swinging and walking
@@ -345,65 +382,131 @@ function player.client:draw()
             or xv < -10 and self.direction == 1 then
                 walkFrameIdx = math.floor(-self.walkTimer*12) % #anims.player.walk.body.quads + 1
             end
-            local quad = anims.player.walkAndSwing.lowerBody.quads[walkFrameIdx]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.walkAndSwing.lowerBody.sheet, quad,
-                lume.round(px), lume.round(py),
-                0, self.direction, 1,
-                23, h)
+            self:drawFrame(anims.player.walkAndSwing.lowerBody, walkFrameIdx,
+                lume.round(px), lume.round(py), 23)
+            -- pants
+            if pantsItem then
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.walkAndSwing, walkFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.walkAndSwing, walkFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
             -- upper body
             love.graphics.push()
             if swingFrameIdx == 4 then love.graphics.translate(0, 1) end
             if walkFrameIdx == 4 then love.graphics.translate(0, -1) end
-            local quad = anims.player.walkAndSwing.upperBody.quads[swingFrameIdx]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.walkAndSwing.upperBody.sheet, quad,
-                lume.round(px), lume.round(py),
-                0, self.direction, 1,
-                23, h)
+            self:drawFrame(anims.player.walkAndSwing.upperBody, swingFrameIdx,
+                lume.round(px), lume.round(py), 23)
+            -- chest
+            if chestItem then
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
+            -- helmet
+            if helmetItem then
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.walkAndSwing, swingFrameIdx,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
             love.graphics.pop()
             -- sword
             if attackItem and isSword[attackItem.imageId] then
-                local quad = anims.player.swords[attackItem.imageId].swing.quads[swingFrameIdx]
-                local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.swords[attackItem.imageId].swing.sheet, quad,
-                    lume.round(px), lume.round(py),
-                    0, self.direction, 1,
-                    23, h)
+                self:drawFrame(anims.player.swords[attackItem.imageId].swing, swingFrameIdx,
+                    lume.round(px), lume.round(py), 23)
             end
         end
     else
         if vd < 10 then
             -- standing still
-            local quad = anims.player.swing.body.quads[1]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.swing.body.sheet, quad,
-                lume.round(px), lume.round(py),
-                0, self.direction, 1,
-                23, h)
+            -- body
+            self:drawFrame(anims.player.swing.body, 1,
+                lume.round(px), lume.round(py), 23)
+            -- pants
+            if pantsItem then
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
+            -- chest
+            if chestItem then
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
+            -- helmet
+            if helmetItem then
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.swing, 1,
+                        lume.round(px), lume.round(py), 23)
+                end
+            end
+            -- sword
             if attackItem and isSword[attackItem.imageId] then
-                local quad = anims.player.swords[attackItem.imageId].swing.quads[1]
-                local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.swords[attackItem.imageId].swing.sheet, quad,
-                    lume.round(px), lume.round(py),
-                    0, self.direction, 1,
-                    23, h)
+                self:drawFrame(anims.player.swords[attackItem.imageId].swing, 1,
+                    lume.round(px), lume.round(py), 23)
             end
         else
             -- walking
-            local quad = anims.player.walk.body.quads[walkFrameIdx]
-            local _, _, w, h = quad:getViewport()
-            love.graphics.draw(anims.player.walk.body.sheet, quad,
-                lume.round(px), lume.round(py),
-                0, self.direction, 1,
-                8, h)
+            -- body
+            self:drawFrame(anims.player.walk.body, walkFrameIdx,
+                lume.round(px), lume.round(py), 8)
+            -- pants
+            if pantsItem then
+                if pantsItem.imageId == 'armor0Pants' then
+                    self:drawFrame(anims.player.armor.armor0.pants.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                elseif pantsItem.imageId == 'armor1Pants' then
+                    self:drawFrame(anims.player.armor.armor1.pants.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                end
+            end
+            -- chest
+            if chestItem then
+                if chestItem.imageId == 'armor0Chest' then
+                    self:drawFrame(anims.player.armor.armor0.chest.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                elseif chestItem.imageId == 'armor1Chest' then
+                    self:drawFrame(anims.player.armor.armor1.chest.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                end
+            end
+            -- helmet
+            if helmetItem then
+                if helmetItem.imageId == 'armor0Helmet' then
+                    self:drawFrame(anims.player.armor.armor0.helmet.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                elseif helmetItem.imageId == 'armor1Helmet' then
+                    self:drawFrame(anims.player.armor.armor1.helmet.walk, walkFrameIdx,
+                        lume.round(px), lume.round(py), 8)
+                end
+            end
+            -- sword
             if attackItem and isSword[attackItem.imageId] then
-                local quad = anims.player.swords[attackItem.imageId].walk.quads[walkFrameIdx]
-                local _, _, w, h = quad:getViewport()
-                love.graphics.draw(anims.player.swords[attackItem.imageId].walk.sheet, quad,
-                    lume.round(px), lume.round(py),
-                    0, self.direction, 1,
-                    8, h)
+                self:drawFrame(anims.player.swords[attackItem.imageId].walk, walkFrameIdx,
+                    lume.round(px), lume.round(py), 8)
             end
         end
     end

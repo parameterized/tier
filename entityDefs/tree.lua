@@ -23,14 +23,30 @@ for _, sc in ipairs{'server', 'client'} do
 
     tree[sc].spawn = function(self)
         self.body = love.physics.newBody(self.realm.physics.world, self.x, self.y, 'static')
+        self.polys = {
+            {0.75, 0.125, 0.475, 0.2, 0.25, 0.125, 0.475, 0.05}
+        }
+        -- transform - todo: load from file already transformed
+        local img = gfx.environment.tree
+        for _, v in pairs(self.polys) do
+            for i2, v2 in pairs(v) do
+                if (i2-1) % 2 == 0 then -- x
+                    v[i2] = v2*img:getWidth() - img:getWidth()/2
+                else
+                    v[i2] = v2*img:getWidth()*-1
+                end
+            end
+        end
         self.shapes = {}
         self.fixtures = {}
-        local shape = love.physics.newCircleShape(6)
-        table.insert(self.shapes, shape)
-        local fixture = love.physics.newFixture(self.body, shape, 1)
-        table.insert(self.fixtures, fixture)
-        fixture:setUserData(self)
-        fixture:setCategory(4)
+        for _, v in pairs(self.polys) do
+            local shape = love.physics.newPolygonShape(unpack(v))
+            table.insert(self.shapes, shape)
+            local fixture = love.physics.newFixture(self.body, shape, 1)
+            table.insert(self.fixtures, fixture)
+            fixture:setUserData(self)
+            fixture:setCategory(4)
+        end
         return self.base.spawn(self)
     end
 
@@ -52,19 +68,22 @@ end
 
 
 function tree.client:draw()
-    local _shader = love.graphics.getShader()
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.setShader(shaders.outline)
     local img = gfx.environment.tree
-    shaders.outline:send('stepSize', {1/img:getWidth(), 1/img:getHeight()})
-    shaders.outline:send('outlineColor', {0, 0, 0, 1})
-    love.graphics.push()
     local vx, vy = self.body:getPosition()
-    love.graphics.translate(lume.round(vx), lume.round(vy))
-    love.graphics.draw(img, 0, 0, 0, 1, 1,
-        lume.round(img:getWidth()/2 + 1), img:getHeight() - 6)
+    vx, vy = lume.round(vx), lume.round(vy)
+    local p = playerController.player
+    local px, py = lume.round(p.x), lume.round(p.y)
+    local pdx = px - vx
+    local pdy = py - vy
+    local a = 1
+    if math.abs(px - vx) < lume.round(img:getWidth()/2) and pdy > -img:getHeight() and pdy < 0 then
+        a = 0.5
+    end
+    love.graphics.setColor(1, 1, 1, a)
+    love.graphics.push()
+    love.graphics.translate(vx, vy)
+    love.graphics.draw(img, 0, 0, 0, 1, 1, lume.round(img:getWidth()/2), img:getHeight())
     love.graphics.pop()
-    love.graphics.setShader(_shader)
 end
 
 

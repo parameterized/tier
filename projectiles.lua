@@ -14,7 +14,8 @@ function projectiles.server.spawn(data)
         speed = 2e2,
         life = 3,
         pierce = 2,
-        damage = 5
+        damage = 5,
+        color = {192/255, 192/255, 192/255}
     }
     for k, v in pairs(defaults) do
         if data[k] == nil then data[k] = v end
@@ -69,7 +70,8 @@ function projectiles.server.spawn(data)
         id = data.id,
         x = data.x, y = data.y,
         angle = data.angle,
-        polys = data.polys
+        polys = data.polys,
+        color = data.color
     }
     server.currentState.projectiles[data.id] = state
     server.added.projectiles[data.id] = state
@@ -118,7 +120,7 @@ function projectiles.client.draw()
                     love.graphics.setCanvas(canvases.tempGame)
                     love.graphics.setShader()
                     love.graphics.clear()
-                    love.graphics.setColor(192/255, 192/255, 192/255)
+                    love.graphics.setColor(v.color)
                     love.graphics.push()
                     love.graphics.translate(lume.round(v.x), lume.round(v.y))
                     love.graphics.rotate(-v.angle)

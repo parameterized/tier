@@ -165,6 +165,13 @@ function server.start(port, singleplayer)
                 local ty = portal.y + lume.random(-128, 128)
                 server.nutServer:sendRPC('teleportPlayer', bitser.dumps{x=tx, y=ty}, clientId)
             end
+        end,
+        setInventorySlot = function(self, data, clientId)
+            local p = server.currentState.players[clientId]
+            p.inventory.items[data.slotId] = data.itemId
+        end,
+        newItem = function(self, data, clientId)
+            items.server.newItem(data)
         end
     }
     for k, v in pairs(bitserRPCs) do

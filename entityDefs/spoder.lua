@@ -100,46 +100,7 @@ function spoder.server:update(dt)
 end
 
 function spoder.server:damage(d, clientId)
-    self.hp = self.hp - d
-    if self.hp <= 0 and not self.destroyed then
-        server.addXP(clientId, math.random(3, 5))
-        local bagItems = {}
-        local choices = {
-            none=50, shield=15, apple=20,
-            sword0=3, sword1=3, sword2=3, sword3=3, sword4=3
-        }
-        for _=1, 3 do
-            choice = lume.weightedchoice(choices)
-            if choice ~= 'none' then
-                local itemData = {imageId=choice}
-                if choice == 'sword0' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+10))
-                elseif choice =='sword1' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+12))
-                elseif choice =='sword2' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+14))
-                elseif choice =='sword3' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+16))
-                elseif choice =='sword4' then
-                    itemData.atk = math.max(5, math.floor(love.math.randomNormal()*2+18))
-                end
-                local itemId = items.server.newItem(itemData)
-                table.insert(bagItems, itemId)
-            end
-        end
-        local numItems = #bagItems
-        if numItems ~= 0 then
-            local type = lume.randomchoice{'lootBag', 'lootBag1', 'lootBagFuse'}
-            lootBag.server:new{
-                realm = serverRealm,
-                x = self.x, y = self.y,
-                items = bagItems,
-                type = type,
-                life = 30
-            }:spawn()
-        end
-        self:destroy()
-    end
+    serverEnemyDamage(self, d, clientId)
 end
 
 
@@ -225,8 +186,7 @@ function spoder.client:draw()
     love.graphics.pop()
 
     -- name, level
-    local mx, my = love.mouse.getPosition()
-    mx, my = window2game(mx, my)
+    local mx, my = window2game(love.mouse.getPosition())
     mx, my = lume.round(mx), lume.round(my)
     local wmx, wmy = camera:screen2world(mx, my)
     if wmx > vx - img:getWidth()/2 and wmx < vx + img:getWidth()/2

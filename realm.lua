@@ -79,7 +79,7 @@ end
 function realm.client:draw()
     local mx, my = window2game(love.mouse.getPosition())
     mx, my = lume.round(mx), lume.round(my)
-    wmx, wmy = camera:screen2world(mx, my)
+    local wmx, wmy = camera:screen2world(mx, my)
 
     self.world:draw()
 
@@ -141,5 +141,70 @@ function realm.client:draw()
             end,
             y = bag.y
         }
+    end
+
+    local cqb = playerController.closestQuestBlock
+    if cqb.id and cqb.open then
+        local qb = client.currentState.entities[cqb.id]
+        if qb then
+            scene.add{
+                draw = function()
+                    local img = gfx.ui.quest
+                    love.graphics.push()
+                    love.graphics.translate(
+                    lume.round(qb.x + 8) - lume.round(img:getWidth()/2),
+                    lume.round(qb.y + 8) - img:getHeight() - 20)
+                    love.graphics.setColor(1, 1, 1)
+                    love.graphics.draw(img, 0, 0)
+                    local bmx = wmx - (lume.round(qb.x + 8) - lume.round(img:getWidth()/2))
+                    local bmy = wmy - (lume.round(qb.y + 8) - img:getHeight() - 20)
+
+                    for slotId, slot in ipairs(questBlockSlots) do
+                        local exists = true
+                        local item = items.client.getItem(quests.current.heldItems[slotId])
+                        if not item then
+                            exists = false
+                            if slotId <= 4 then
+                                item = items.client.getItem(quests.current.cost[slotId])
+                            else
+                                item = items.client.getItem(quests.current.reward[slotId - 4])
+                            end
+                        end
+                        if slotId >= 5 then
+                            local allExist = true
+                            for i, item in ipairs(quests.current.cost) do
+                                if not quests.current.heldItems[i] then
+                                    allExist = false
+                                    break
+                                end
+                            end
+                            exists = allExist
+                        end
+                        if bmx >= slot.x and bmx <= slot.x + slot.w
+                        and bmy >= slot.y and bmy <= slot.y + slot.h then
+                            if item then
+                                cursor.cursor = cursor.hand
+                                playerController.hoveredItem = item
+                            end
+                            love.graphics.setColor(1, 1, 1, 0.4)
+                            love.graphics.rectangle('fill', slot.x, slot.y, slot.w, slot.h)
+                        end
+                        local heldItem = playerController.heldItem
+                        if not (heldItem.bagId == 'quest' and heldItem.slotId == slotId) then
+                            if item then
+                                if exists then
+                                    love.graphics.setColor(1, 1, 1)
+                                else
+                                    love.graphics.setColor(1, 1, 1, 0.4)
+                                end
+                                love.graphics.draw(gfx.items[item.imageId], slot.x, slot.y)
+                            end
+                        end
+                    end
+                    love.graphics.pop()
+                end,
+                y = qb.y
+            }
+        end
     end
 end
