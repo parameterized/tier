@@ -308,6 +308,10 @@ function server.update(dt)
     end
 end
 
+function server.playSound(name)
+    server.nutServer:sendRPC('playSound', bitser.dumps{name=name})
+end
+
 function server.close()
     server.nutServer:sendRPC('serverClosed')
     server.nutServer:close()

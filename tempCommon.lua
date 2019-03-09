@@ -13,15 +13,25 @@ sword2color = {
 }
 slot2type = {'helmet', 'sword', 'chest', 'shield', 'accessory', 'pants', 'accessory'}
 tile2id = {}
+id2tile = {}
+--[[
 for i, v in ipairs{'water', 'sand', 'grass', 'rock', 'path', 'floor', 'wall', 'platform', 'platform2'} do
     tile2id[v] = i
+end
+]]
+for i, v in ipairs{
+    'water', 'sand1', 'sand2', 'grass1', 'grass2', 'grass3', 'grass4', 'grass5', 'snow', 'ice',
+    'path', 'floor', 'wall', 'platform', 'platform2'
+} do
+    tile2id[v] = i
+    id2tile[i] = v
 end
 
 -- todo: enemy inheritance
 function serverEnemyDamage(self, d, clientId)
     self.hp = self.hp - d
     if self.hp <= 0 and not self.destroyed then
-        sound.play('scream')
+        server.playSound('scream')
         server.addXP(clientId, math.random(3, 5))
         local bagItems = {}
         local choices = {
@@ -63,7 +73,7 @@ function serverEnemyDamage(self, d, clientId)
         --if math.random() < 0.5 then portals.server.spawn{x=self.x, y=self.y, life=10} end
         self:destroy()
     else
-        sound.play('spider')
+        server.playSound('spider')
     end
 end
 

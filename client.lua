@@ -91,6 +91,9 @@ function client.connect(ip, port)
         end,
         damageText = function(self, data)
             damageText.add(data)
+        end,
+        playSound = function(self, data)
+            sound.play(data.name)
         end
     }
     for k, v in pairs(bitserRPCs) do

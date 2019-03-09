@@ -119,9 +119,6 @@ float noiseMoist(vec2 uv)
 }
 
 
-// water: 1, sand1: 2, sand2: 3, grass1: 4, grass2: 5, grass3: 6, grass4: 7, grass5: 8,
-// snow: 9, ice: 10, path: 11, floor: 12, wall: 13, platform: 14, platform2: 15
-
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
 {
 	vec2 uv = screen_coords;
@@ -197,5 +194,30 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
         }
     }
 
-    return vec4(float(choice)/255.0, 0.0, 0.0, 1.0);
+    vec3 tileColors[16] = vec3[](
+        vec3(0.0, 0.0, 0.0),
+        vec3(10.0, 10.0, 149.0),
+        vec3(170.0, 135.0, 69.0),
+        vec3(190.0, 186.0, 141.0),
+        vec3(149.0, 153.0, 64.0),
+        vec3(51.0, 62.0, 33.0),
+        vec3(77.0, 93.0, 55.0),
+        vec3(64.0, 139.0, 71.0),
+        vec3(89.0, 131.0, 51.0),
+        vec3(247.0, 247.0, 247.0),
+        vec3(192.0, 207.0, 211.0),
+    	vec3(205.0, 140.0, 79.0),
+    	vec3(183.0, 163.0, 43.0),
+    	vec3(104.0, 88.0, 0.0),
+    	vec3(73.0, 73.0, 73.0),
+    	vec3(73.0, 73.0, 73.0)
+	);
+
+    float adx = alt - noiseAlt(p - vec2(1.0, 0.0));
+    float ady = alt - noiseAlt(p - vec2(0.0, 1.0));
+    vec3 normal = normalize(vec3(adx, ady, 0.1));
+    vec3 light = normalize(vec3(1.0, 1.0, 1.0));
+    float light_val = max(dot(normal, light), 0.0) + 0.4;
+
+    return vec4(tileColors[choice]/255.0*light_val, 1.0);
 }

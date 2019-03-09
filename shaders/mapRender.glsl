@@ -3,7 +3,7 @@ uniform vec2 tileIdRes;
 uniform vec2 camPos;
 uniform vec2 tilemapPos;
 uniform Image tileIds;
-uniform Image tiles[10];
+uniform Image tiles[15];
 uniform Image smoothTiles[16];
 uniform float time;
 uniform bool drawDebug;
@@ -88,7 +88,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
     }
 
     int smoothId = 0;
-    if (outId == 5 || outId == 6 || outId == 8) { // smooth path, floor, platform
+    if (outId == 11 || outId == 12 || outId == 14) { // smooth path, floor, platform
         if (corner.x == corner.y && corner.x == corner.z && corner.x == corner.w
         || (corner.x == corner.z || corner.x == corner.w) && corner.z != corner.w && corner.x != corner.y) {
             smoothId = 0;
@@ -118,11 +118,11 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
     }
 
 
-    if (outId == 5) { // path
+    if (outId == 11) { // path
         return Texel(smoothTiles[0 + smoothId], tileUV)*color;
-    } else if (outId == 6) { // floor
+    } else if (outId == 12) { // floor
         return Texel(smoothTiles[4 + smoothId], tileUV)*color;
-    } else if (outId == 8) { // platform
+    } else if (outId == 14) { // platform
         int frame = int(mod(floor(time - length(tilePos)/4.0), 2.0));
         return Texel(smoothTiles[8 + frame*4 + smoothId], tileUV)*color;
     } else {

@@ -58,7 +58,8 @@ function entities.server.update(dt)
                             local x = (cx*entities.chunkSize + math.random()*entities.chunkSize)*15
                             local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
                             -- if not in spawn area or wall
-                            if x^2 + y^2 > 192^2 and serverRealm.world:getTile(x, y) ~= tile2id['wall'] then
+                            local noEnemies = {wall=true, water=true}
+                            if x^2 + y^2 > 192^2 and not noEnemies[id2tile[serverRealm.world:getTile(x, y)]] then
                                 entities.server.defs[choice]:new{x=x, y=y}:spawn()
                             end
                         end
@@ -82,9 +83,10 @@ function entities.server.update(dt)
                             local y = (cy*entities.chunkSize + math.random()*entities.chunkSize)*15
                             -- if on grass and grass surrounding
                             local onGrass = true
+                            local grasses = {grass1=true, grass2=true, grass3=true, grass4=true, grass5=true}
                             for i=-1, 1 do
                                 for j=-1, 1 do
-                                    if serverRealm.world:getTile(x + i*15, y + j*15) ~= tile2id['grass'] then
+                                    if not grasses[id2tile[serverRealm.world:getTile(x + i*15, y + j*15)]] then
                                         onGrass = false
                                         break
                                     end

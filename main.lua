@@ -226,7 +226,7 @@ function love.draw()
         chat.draw()
         prof.pop('draw hud/chat')
 
-        if love.keyboard.isScancodeDown('g') then
+        if love.keyboard.isScancodeDown('g') and not chat.active then
             clientRealm.world:drawMap('full')
         end
 
@@ -247,6 +247,20 @@ function love.draw()
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(canvases.game2x, ssx/2-gameScale*gsx/2, ssy/2-gameScale*gsy/2, 0, gameScale/2, gameScale/2)
     prof.pop('draw canvas')
+
+    if love.keyboard.isDown('f2') and playerController.player then
+        love.graphics.setCanvas(canvases.testFull)
+        love.graphics.setShader(shaders.shadedMap)
+        local p = playerController.player
+        local px = math.floor(lume.round(p.body:getX())/15)
+        local py = math.floor(lume.round(p.body:getY())/15)
+        shaders.shadedMap:send('camPos', {px - 480, py - 270})
+        love.graphics.rectangle('fill', 0, 0, 960, 540)
+        love.graphics.setCanvas()
+        love.graphics.setShader()
+        love.graphics.draw(canvases.testFull, ssx/2, ssy/2, 0, ssx/960, ssy/540, 480, 270)
+    end
+
     prof.pop('draw')
     prof.pop('frame')
 end

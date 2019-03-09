@@ -22,15 +22,27 @@ for _, sc in ipairs{'server', 'client'} do
             t.chunkImages = {}
             t.chunkIdImages = {}
             t.tileColors = {
+                --[[
                 {41, 137, 214}, -- water
                 {251, 228, 125}, -- sand
                 {98, 195, 116}, -- grass
                 {98, 98, 98}, -- rock
+                ]]
+                {10, 10, 149}, -- water
+                {170, 135, 69}, -- sand1
+                {190, 186, 141}, -- sand2
+                {149, 153, 64}, -- grass1
+                {51, 62, 33}, -- grass2
+                {77, 93, 55}, -- grass3
+                {64, 139, 71}, -- grass4
+                {89, 131, 51}, -- grass5
+                {247, 247, 247}, -- snow
+                {192, 207, 211}, -- ice
                 {205, 140, 79}, -- path
                 {183, 163, 43}, -- floor
                 {104, 88, 0}, -- wall
                 {73, 73, 73}, -- platform
-                {73, 73, 73} -- platform
+                {73, 73, 73} -- platform2
             }
             for _, color in ipairs(t.tileColors) do
                 for i=1, 3 do
